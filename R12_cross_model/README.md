@@ -75,6 +75,29 @@ any model, whatever the truth is. That is the exact shape of `RELATIVE`. **The c
 `RELATIVE` out of `ABSOLUTE`** — and the two predictions here are `5.6` layers apart with the later
 one winning.
 
+> ### ⚠ RETRACTED, 2026-07-28 — the paragraph above is a `D5` argument that was labelled `D8`
+>
+> **What is structural, and survives:**
+> * at the **last** layer, the number of cross-token paths this intervention can miss is **zero**;
+> * at earlier layers, such paths **may** exist, and the number of layers able to read them is
+>   `NL−1−L`.
+>
+> **What was asserted and is NOT established:** that the missed term is *positive*, that it is
+> *monotone* in `L`, that it has the *same sign* as the final-position effect, or that it pushes the
+> centroid *late*. **Cancellation, backup heads, negative heads and interaction terms all break the
+> inference**, and single-component effects are known to be badly non-additive — some
+> context-dependent heads have near-zero singleton effect and act only when other heads are present.
+> **A count of possible readers is not a magnitude of missed influence.**
+>
+> **The claim this page is entitled to:** `RELATIVE` is **compatible with an uncontrolled
+> intervention-support confound that may covary with normalized depth.** That is enough to keep the
+> verdict at `UNVERIFIED` — which is what it already is — and not enough to say the confound
+> *produces* the result. *"The confound points the way the winner points"* was a mechanism claim
+> dressed as a derivation.
+>
+> **This retraction changes no number on this page.** It changes what the numbers are allowed to
+> mean, which is the failure mode this repository exists to document.
+
 ### The positive control fires *against* the confound — and does not clear it
 
 A profile produced by the bias alone — flat truth × monotone sensitivity — **must be maximal at the

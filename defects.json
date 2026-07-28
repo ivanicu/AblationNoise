@@ -783,6 +783,24 @@
       "defect": "R18's PREREGISTRATION.md shipped in commit 6e8ddac citing R12's bootstrap CI half-width as 1.25 layers. The bootstrap gives 1.2439. The digit was computed in my head from two already-rounded endpoints (21.52, 24.01) instead of read from the object -- the FIFTH hand-rounding detector 6 has caught, after 96.20-for-96.151, 19.97-for-19.9637, 4.79-for-4.847, and 7.50/5.85 for 7.5365/5.8449 in the same session",
       "operation": "THE ROOT CAUSE IS PROCESS, NOT ARITHMETIC: the pre-registration was committed and pushed WITHOUT running `make verify` on it, because a prereg feels like prose rather than a claim. It is a claim -- it carries the numbers a later verdict is judged against. The 1.0-layer THRESHOLD is untouched and was never a function of this digit; only the citation justifying it was wrong. The half-width is now emitted by r12() so the number is backed rather than recomputed by a reader from rounded endpoints. AND IT IS FILED AT ALL BECAUSE R17'S OWN RULE SAYS SO: 'a pattern caught before shipping is not a defect in the artifact' -- this one shipped, so the rule cuts against its author one step after he wrote it, which is the only evidence that the rule is not discretionary in his favour",
       "found_by": "instrument"
+    },
+    {
+      "id": "D87",
+      "round": "R11",
+      "bin": "STATISTIC",
+      "commit": "c29f13c",
+      "defect": "R11's rank-stability check ranked heads by -abs(drop), placing the null at zero -- the SAME centring defect corrected in R1 and again in R2 (D75), a THIRD instance. The front page's rank list is CENTRED on the band mean (+0.0479), so the round that validates those ranks computed a ranking the repository does not use",
+      "operation": "IT MOVES THE HEADLINE. Uncentred: Spearman +0.9778, RMS displacement 10.22, largest mover L23H3 at 43 places, L22H7 56->96. CENTRED, which is what the front page reports: Spearman +0.9570, RMS 14.23, and L22H7 moves 41->160 -- 119 places, THE LARGEST MOVE OF ALL 168 HEADS. So 'the proven copy head ranks 41 of 168' DOES NOT REPLICATE on a disjoint item draw of the same task. The direction strengthens the qualitative claim (160 is further inside the floor) but 41 is not a property of the head and the front page reported it as one. Both rankings are now emitted with the centred one primary, and the front page carries the replication. Predicted as A13 in ADVERSARY.md ONE STEP before it was found",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D88",
+      "round": "R12",
+      "bin": "STATISTIC",
+      "commit": "c29f13c",
+      "defect": "the depth-bias argument was labelled D8 -- 'logical from checked premises' -- and asserted that the instrument's sensitivity is MONOTONE in depth and therefore that the confound MANUFACTURES RELATIVE out of ABSOLUTE. Only two things are structural: at the last layer the missed cross-token paths are zero, and at earlier layers such paths MAY exist with NL-1-L possible readers. A COUNT OF POSSIBLE READERS IS NOT A MAGNITUDE OF MISSED INFLUENCE",
+      "operation": "RETRACTED TO D5. The sign, magnitude and monotonicity of the missed term were never established, and cancellation, backup heads, negative heads and interaction terms each break the inference -- single-component effects are known to be badly non-additive, with some context-dependent heads having near-zero singleton effect and acting only alongside others. The claim the page is entitled to is that RELATIVE is COMPATIBLE WITH an uncontrolled intervention-support confound that may covary with normalized depth. That keeps the verdict at UNVERIFIED, which it already was, and withdraws the mechanism claim dressed as a derivation. No number on the page changes; what the numbers are allowed to mean does. Raised by Ivan, who is not sampled from the weights that wrote it -- the first external correction this project has had",
+      "found_by": "outside_reader"
     }
   ]
 }

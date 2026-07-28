@@ -483,10 +483,20 @@ def r11():
     band = [(x, int(h)) for x in range(14, 28) for h in LA[x]['per_head']]
     dA = {(x, h): LA[x]['per_head'][str(h)] for x, h in band}
     dB = {(x, h): LB[x]['per_head'][str(h)] for x, h in band}
-    oA = sorted(band, key=lambda k: -abs(dA[k]))
-    oB = sorted(band, key=lambda k: -abs(dB[k]))
+    # THE CENTRING WAS NEVER APPLIED HERE, AND THE FRONT PAGE'S RANKS ARE CENTRED. `-abs(dA[k])`
+    # places the null at zero -- the same defect corrected in R1 and again in R2 (D75), a THIRD
+    # instance. It matters: uncentred, L22H7 moves 56 -> 96; CENTRED, which is what the front page
+    # reports, it moves 41 -> 160, the largest move of all 168. So the stability claim published in
+    # this round was computed on a ranking the repository does not use. Both are emitted now, and
+    # the CENTRED one is primary because it is the one that validates a published number.
+    muA = sum(dA.values()) / len(dA)
+    muB = sum(dB.values()) / len(dB)
+    oA = sorted(band, key=lambda k: -abs(dA[k] - muA))
+    oB = sorted(band, key=lambda k: -abs(dB[k] - muB))
     rA = {k: i for i, k in enumerate(oA, 1)}
     rB = {k: i for i, k in enumerate(oB, 1)}
+    uA = {k: i for i, k in enumerate(sorted(band, key=lambda k: -abs(dA[k])), 1)}
+    uB = {k: i for i, k in enumerate(sorted(band, key=lambda k: -abs(dB[k])), 1)}
     eight = {(int(m.group(1)), int(m.group(2))): h
              for h in pe['effects'] if (m := _re.match(r'L(\d+)H(\d+)', h))}
     semA = {(x, int(h)): v for x, L in LA.items() for h, v in L['per_head_sem'].items()}
@@ -520,6 +530,18 @@ def r11():
             'floor_divergence_pct': an['floor_divergence_pct'],
             'kill_threshold_pct': an['kill_threshold_pct'], 'verdict': an['verdict'],
             'rank_spearman_A_vs_B': rho,
+            'centring_muA': muA, 'centring_muB': muB,
+            'rank_spearman_uncentred': _spearman([uA[k] for k in band], [uB[k] for k in band]),
+            'rms_disp_centred': math.sqrt(sum((rA[k] - rB[k]) ** 2 for k in band) / len(band)),
+            'rms_disp_uncentred': math.sqrt(sum((uA[k] - uB[k]) ** 2 for k in band) / len(band)),
+            'L22H7_centred_A': rA[(22, 7)], 'L22H7_centred_B': rB[(22, 7)],
+            'L22H7_uncentred_A': uA[(22, 7)], 'L22H7_uncentred_B': uB[(22, 7)],
+            'worst_mover_centred': (lambda w: {'head': f'L{w[0]}H{w[1]}',
+                                               'move': rA[w] - rB[w]})(
+                max(band, key=lambda k: abs(rA[k] - rB[k]))),
+            'worst_mover_uncentred': (lambda w: {'head': f'L{w[0]}H{w[1]}',
+                                                 'move': uA[w] - uB[w]})(
+                max(band, key=lambda k: abs(uA[k] - uB[k]))),
             'top9_overlap_across_item_sets': len(set(oA[:9]) & set(oB[:9])),
             'published_in_B_top9': sum(1 for k in oB[:9] if k in eight),
             # THE ONE HEAD THAT MOVES. Every other published head shifts by <=5 places of 168;
@@ -2583,7 +2605,23 @@ def main() -> int:
               f"{EL['published_in_B_top9']}")
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
-              f"<=5 -- and it is the proven copy head\n")
+              f"<=5 -- and it is the proven copy head")
+        print("      ^ THAT LINE IS COMPUTED ON A RANKING THE FRONT PAGE DOES NOT USE -- it placed")
+        print(f"        the null at zero; the published ranks are CENTRED on the band mean "
+              f"({EL['centring_muA']:+.4f}). Recomputed:")
+        print(f"          {'':<24}{'Spearman':>10}{'RMS disp':>10}{'largest mover':>20}")
+        print(f"          {'uncentred (this round)':<24}{EL['rank_spearman_uncentred']:>+10.4f}"
+              f"{EL['rms_disp_uncentred']:>10.2f}"
+              f"{EL['worst_mover_uncentred']['head']:>14}{EL['worst_mover_uncentred']['move']:>6}")
+        print(f"          {'CENTRED (front page)':<24}{EL['rank_spearman_A_vs_B']:>+10.4f}"
+              f"{EL['rms_disp_centred']:>10.2f}"
+              f"{EL['worst_mover_centred']['head']:>14}{EL['worst_mover_centred']['move']:>6}")
+        print(f"        L22H7: uncentred {EL['L22H7_uncentred_A']} -> {EL['L22H7_uncentred_B']}, "
+              f"CENTRED {EL['L22H7_centred_A']} -> {EL['L22H7_centred_B']} -- the LARGEST move of 168")
+        print("        SO 'the copy head ranks 41 of 168' DOES NOT REPLICATE. On a disjoint item")
+        print("        draw of the same task it is 160th. The direction STRENGTHENS the qualitative")
+        print("        claim -- 160 is further inside the floor -- but 41 is not a property of the")
+        print("        head, and the front page reported it as one\n")
 
     if AS:
         print("ADV  scoring the adversary-prediction file against what was found AFTER it")
@@ -3216,7 +3254,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 27.163, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 27.227, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -3273,9 +3311,13 @@ def main() -> int:
             ('R11 agreement inside the SEM band', EL['agree_within_sem'] if EL else -1, 164, 0),
             ('R11 floor divergence across item sets',
              EL['floor_divergence_pct'] if EL else -1, 0.4327, 0.0001),
-            ('R11 rank Spearman A vs B', EL['rank_spearman_A_vs_B'] if EL else -1, 0.9778, 0.0001),
+            # CENTRED now (D87). The uncentred +0.9778 is kept as its own row so the correction is
+            # checkable, not merely asserted.
+            ('R11 rank Spearman A vs B', EL['rank_spearman_A_vs_B'] if EL else -1, 0.9570, 0.0001),
+            ('R11 rank Spearman uncentred',
+             EL['rank_spearman_uncentred'] if EL else -1, 0.9778, 0.0001),
             ('R11 top-9 overlap across item sets',
-             EL['top9_overlap_across_item_sets'] if EL else -1, 9, 0),
+             EL['top9_overlap_across_item_sets'] if EL else -1, 7, 0),
             ('REP max input replication difference',
              IR['max_abs_diff'] if IR else -1, 3.608e-06, 1e-8),
             ('RNK published in normalised top nine',
@@ -3293,9 +3335,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 86, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 88, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 24, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.140, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.091, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

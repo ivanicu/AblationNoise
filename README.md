@@ -15,9 +15,29 @@
 what a *random* component of the same size does. This repository measures that — and then points
 the measurement at its own author's prior work.**
 
+> ## ⚠ STATUS: **EXPLORATORY AUDIT — frozen 2026-07-28.** Not a confirmatory result.
+>
+> Everything below is a **case study on one synthetic task and one model family**, and its central
+> quantity is **not** a "noise floor". It is a *conditional reference distribution* that mixes at
+> least five different things — measurement error, true component heterogeneity, the generic cost of
+> ablating anything, the baseline of the *selection procedure*, and task specificity — and it changes
+> with layer, position, `k`, metric, and intervention support.
+>
+> **The scalar `2σ` floor is retained only as the historical object under audit.** With excess
+> kurtosis `+7.43` it is not a normal-theory threshold, and *"beyond 2 sd"* means only *"outside a
+> coarse scale of this particular reference population"*.
+>
+> **The confirmatory experiment this repository points at has not been run.** It is
+> [`R19`](R19_crossed_position_support/PREREGISTRATION.md): a crossed *position × intervention-support*
+> exhaustive scan. Until it lands, **no head-level statement here is confirmatory**, and every one of
+> them is about a **final-query head-output knockout**, written `I_final(L,h)`, not about "a head".
+
 ```bash
 git clone https://github.com/ivanicu/AblationNoise.git && cd AblationNoise && make verify
 ```
+
+> `make verify` is **computational verification** — files exist, hashes match, every prose number
+> recomputes, no detector fires. **It is not evidence for any causal claim.**
 
 **Every number below is recomputed by that command** — no GPU, no model download, no network, no
 dependencies, `2.6 s` on a stock `python3` with `numpy` confirmed absent. It was run from a fresh
@@ -43,7 +63,9 @@ of those 10, ones where ablation HELPS the model:                  7
 >
 > **The reverse direction is not supported, and this page claimed it for one step.** *"Magnitude and
 > role are unrelated"* is a statement about a relationship, and this repository has exactly **one**
-> head with an independently established role — `L22H7`, which ranks `41` of `168` at `0.37×` the
+> head with an independently established role — `L22H7`, which ranks `41` of `168` (**and `160` on a
+> disjoint item draw of the same task — the largest rank move of all `168`; the rank does not
+> replicate, though the direction of the qualitative claim strengthens**) at `0.37×` the
 > floor. **One point is an anecdote, not a relationship.** Five of the other seven were read-head
 > *candidates*; a candidate is a hypothesis, and finding that hypotheses fail to clear a floor is
 > close to tautological.
@@ -439,6 +461,22 @@ law. It is one comparison that did not fire.
 **And the ranking is stable across item sets:** Spearman `+0.9778` over `168` heads, top-nine
 overlap `9 of 9`, `0` published heads in either top nine. That was the last free variable in the
 rank claim and it is now closed.
+
+> **⚠ THOSE THREE NUMBERS ARE UNCENTRED, AND THIS PAGE'S RANKS ARE CENTRED (`D87`).** Ranking by
+> `|drop|` puts the null at zero — the same defect corrected in `R1` and again in `R2`, a **third**
+> instance — so the round validating these ranks computed a ranking this repository does not use.
+> Recomputed on the centred statistic the page actually reports:
+>
+> ```
+>                        Spearman   RMS rank disp   largest mover
+> uncentred (as above)    +0.9778       10.22        L23H3    43
+> CENTRED  (this page)    +0.9570       14.23        L22H7  −119
+> top-nine overlap        7 of 9,  1 published head in B's top nine
+> ```
+>
+> **`L22H7` moves `41 → 160`, the largest move of all `168` heads.** The list as a whole is still
+> stable — median displacement `4`, 90th percentile `17` — but *the one head carrying the
+> load-bearing claim is the exception*, and by three times more than this paragraph said.
 
 > ### The exception is the copy head, and it points the other way
 >
@@ -887,7 +925,7 @@ unreachable at n=`22`.** `THIRTEEN-ONE-OFFS` needs `≥5`, and even then the `�
 first and masks it. **One reachable outcome is not a test**, and `validate_defects.py` now prints
 the reachable set on every run so the collapse is stated rather than discovered.
 
-**What replaces it is the distribution, and that *is* informative.** Chi-square `27.163` against a
+**What replaces it is the distribution, and that *is* informative.** Chi-square `27.227` against a
 uniform null gives a permutation `p` of `0.0002` — `4` of `20000`.
 
 ```
