@@ -734,7 +734,10 @@ def floor_transport():
         'sham_own': cnt(vS, muS, fS), 'sham_by_band_rule': cnt(vS, muB, fB),
         'band_own': cnt(vB, muB, fB), 'band_by_sham_rule': cnt(vB, muS, fS),
         'sham_scale_only': cnt(vS, muS, fB), 'sham_centre_only': cnt(vS, muB, fS),
-        'shift_over_sham_scale': abs(muB - muS) / fS}
+        'shift_over_sham_scale': abs(muB - muS) / fS,
+        # emitted as a PERCENT as well, because the pages quote it that way and a value
+        # the reference set holds only as a fraction cannot back prose that says 55.5%
+        'shift_over_sham_scale_pct': 100 * abs(muB - muS) / fS}
     layer['ratio_down'] = layer['sham_by_band_rule'] / max(layer['sham_own'], 1e-9)
     layer['ratio_up'] = layer['band_by_sham_rule'] / layer['band_own']
     return {'reference_mu': ref[0], 'reference_floor': ref[1], 'rows': rows, 'layer_axis': layer}
