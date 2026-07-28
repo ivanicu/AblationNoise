@@ -102,3 +102,81 @@ becomes reportable for the first time.
 **If OVER-RETRACTED:** `item_noise_bound()`'s retraction was itself too strong, and a claim this
 repository killed has to be partially revived — which would be the second time a self-correction here
 overshot, and that pattern would then be the finding rather than the number.
+
+---
+
+# Amendment 1 — the design above was SUPERSEDED before it was written, and by this repository
+
+Appended 2026-07-28, minutes after the section above, **before any statistic was computed.**
+
+## What happened
+
+The Bland–Altman design above is a re-derivation. Commit `6890700` already ran it, better: R11's
+runner stores `per_head_sem = sd_over_items/sqrt(n)` **per head**, so the measurement error is a
+direct within-run quantity and does not need a two-arm difference at all. That commit reported `8` of
+`8` measurable, `0` of `8` distinguishable, and checked the two estimators against each other —
+run-to-run disagreement fell inside the SEM band `164` of `168` times, `97.6%` against a nominal
+`95.45%`.
+
+**The reason I walked into it is a stale signpost in the handle itself.** `item_noise_bound()`'s
+retraction still ends:
+
+> THE DIRECT TEST IS NOW THE ONLY ROUTE, and it is cheap: re-run the same heads on a DISJOINT item
+> set and store `sd_over_items/sqrt(n)` per head. The runner already computes the per-item drops and
+> throws them away.
+
+That was true when written and false one commit later. **It sits at the exact decision point a reader
+arrives at, and it points the wrong way.** A comment is a hypothesis; I believed the sentence instead
+of opening the file it describes. The sentence is corrected in place rather than deleted, because a
+reader who only sees the corrected version loses the fact that it was ever wrong.
+
+**A second thing the diff exposed, which I had not written down beforehand:** the two arms carry
+different `code_version` stamps, `b3aee67d` and `a6126d03`. Any A-minus-B estimate of item noise is
+therefore contaminated by whatever changed between them. That confound is fatal to the superseded
+design and is absent from the `per_head_sem` route, which is one run's own quantity — a second,
+independent reason the replacement is the right instrument.
+
+## The residue that is genuinely open
+
+`item_noise_bound()` killed this claim outright:
+
+> DEAD — "at most `0.66%` of the floor's variance can be item sampling."
+
+It was killed for **method** — extrapolating a quiet layer's spread to the band. It was never
+recomputed. With per-head SEM in hand the correct decomposition is direct:
+
+```
+var(measured effect over heads)  =  var(true effect over heads)  +  mean(sem^2)
+item-sampling share of the floor's variance  =  mean(sem^2) / var(measured effect)
+```
+
+This is one of the five components the front page says the reference distribution mixes, and it is
+the only one that has never been given a number.
+
+## Registered thresholds, before the computation
+
+| outcome | rule | consequence |
+|---|---|---|
+| **instrument-dominated** | share `> 0.25` | the band floor is substantially measurement error; "component heterogeneity" as its dominant term is **downgraded** on the front page |
+| **heterogeneity-dominated** | share `< 0.05` | the item-sampling axis is negligible **at `n = 120`** and must be labelled with that `n` rather than stated unconditionally |
+| **intermediate** | otherwise | reported as a number with its CI and no verdict word |
+
+Separately, whether the withdrawn `0.66%` was accidentally close is reported but **carries no
+verdict** — a number reached by an unfit method is not vindicated by landing near the right answer.
+
+`N_BOOT = 10000`, seed `20260728`, bootstrap over the `168` band heads.
+
+## Positive controls
+
+1. `per_head_sem` must be strictly positive on every band head, or the SEM route is as blind as the
+   quiet-layer route it replaces.
+2. The retraction's own premise — that a quiet head is quiet in *both* terms — becomes a direct test:
+   `Spearman(|effect_h|, sem_h)` over `336` heads. The retraction argued this from a **layer-level**
+   correlation between mean `|drop|` and **between-head spread**, which is a different quantity. If
+   the head-level correlation with the actual error term is near zero, the retraction reached the
+   right verdict by the wrong argument, and that is worth knowing.
+
+## Boundary
+
+One model, one metric, `I_final` only, `n = 120` items per arm, band `L14-27`. Every `sem` is the
+precision of a `120`-item mean.
