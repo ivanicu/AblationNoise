@@ -1017,6 +1017,15 @@
       "defect": "headline.py contained two f-strings with nested same-type quotes, which is PEP 701 and requires Python 3.12 or newer. The front page advertises clone-and-verify on 'a stock python3' and never named a version. On Python 3.11 the file does not PARSE -- a cloner gets a SyntaxError before a single number is computed. AND make verify COULD NEVER HAVE CAUGHT IT, because the gate runs on the system interpreter, 3.14, which is the one thing that can parse them. The check and the checked shared the only assumption that mattered",
       "operation": "FOUND BY ACCIDENT, WHICH IS WORTH RECORDING: headline.py was imported from a 3.11 virtualenv for an unrelated computation and refused to parse. Both sites rewritten without nested quotes -- one to a concatenation, one to percent formatting -- and the file now parses AND RUNS END TO END under 3.11.15 and 3.14.4, exit 0 on both. Every .py in the repository was then checked for the same pattern: 0 further failures. The front page's promise now names the two verified versions instead of saying 'a stock python3', because a claim about portability that was never tested on a second interpreter is not a portability claim",
       "found_by": "instrument"
+    },
+    {
+      "id": "D113",
+      "round": "repo",
+      "bin": "STATISTIC",
+      "commit": "3dd6002",
+      "defect": "D108, D110 and D111 computed the OV circuit as W_E[t].W_O.W_V.W_E[s], omitting the final RMSNorm's learnable per-dimension scale model.norm.weight, which multiplies the unembedding side and IS the basis the logits are read in. That scale spans 2063x, from 0.0043 to 8.875 -- some dimensions are almost entirely suppressed before unembedding -- so it can reorder",
+      "operation": "THE RANKING IS ROBUST AND THE COUNTS ARE NOT. Spearman between bases is +0.9839, +0.9952 and +0.9926 on rooms, objects and persons, so the three prior steps are NOT in a materially wrong basis and their conclusions stand. BUT PERFECT-WINS NEARLY DOUBLES -- 16 to 25 on rooms, 6 to 11 on objects, 3 to 7 on persons -- so every ABSOLUTE count reported from that instrument was basis-dependent, AND L17H0 MOVES FROM RANK 3 TO RANK 11. That 3 was what made the three-instrument convergence striking, and the framing rested on it; the registered R19 prediction is unchanged because it is about ABLATION rank, but the annotation now sits beside it. GAUGE ARGUMENT, MADE BEFORE COMPUTING: the 1/||x|| half of RMSNorm is a per-DESTINATION scalar shared across every source, so it cannot reorder anything within a column -- only the learnable g can, which is why only g was applied. The frozen file now stores BOTH bases with scaled as primary. AND THE INFORMATIVE PART: g suppresses some dimensions by a factor of 2000 and the ranking still barely moves, so the OV copying signal is not concentrated in the suppressed directions",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

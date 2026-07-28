@@ -701,14 +701,28 @@ def ov_copying():
     if g.exists():
         gg = json.load(open(g))
         rr = gg['per_head']
-        def rk3(key, nm):
-            o = sorted(rr, key=lambda x: -rr[x][nm]['dom'])
+        # TWO BASES. `scaled` multiplies the unembedding side by the final RMSNorm learnable scale
+        # model.norm.weight -- the basis the logits are actually read in. `plain` omits it, which is
+        # what D108/D110/D111 used. The 1/||x|| part of RMSNorm is a per-DESTINATION scalar shared
+        # across all sources and cannot reorder anything; only g can, and g spans 2062x.
+        # THE RANKING IS ROBUST -- Spearman +0.9839 / +0.9952 / +0.9926 between the two -- so those
+        # three steps are not in a materially wrong basis. But the PERFECT-WINS COUNTS nearly double
+        # (16 -> 25 on rooms), so any ABSOLUTE count was basis-dependent, and L17H0 moves 3 -> 11.
+        def rk3(key, nm, tag='scaled'):
+            o = sorted(rr, key=lambda x: -rr[x][f'{nm}_{tag}']['dom'])
             return o.index(key) + 1
-        three = {'sets': gg['sets'], 'n': len(rr),
-                 'perfect': {nm: sum(1 for v in rr.values() if v[nm]['wins'] == n)
+        three = {'sets': gg['sets'], 'n': len(rr), 'norm_scale': gg['final_norm_scale'],
+                 'perfect': {nm: sum(1 for v in rr.values() if v[f'{nm}_scaled']['wins'] == n)
                              for nm, n in gg['sets'].items()},
-                 'max_dom': {nm: max(v[nm]['dom'] for v in rr.values()) for nm in gg['sets']},
-                 'heads': {k: {nm: {'dom': rr[k][nm]['dom'], 'rank': rk3(k, nm)}
+                 'perfect_plain': {nm: sum(1 for v in rr.values() if v[f'{nm}_plain']['wins'] == n)
+                                   for nm, n in gg['sets'].items()},
+                 'max_dom': {nm: max(v[f'{nm}_scaled']['dom'] for v in rr.values())
+                             for nm in gg['sets']},
+                 'basis_spearman': {nm: _spearman([v[f'{nm}_plain']['dom'] for v in rr.values()],
+                                                  [v[f'{nm}_scaled']['dom'] for v in rr.values()])
+                                    for nm in gg['sets']},
+                 'heads': {k: {nm: {'dom': rr[k][f'{nm}_scaled']['dom'], 'rank': rk3(k, nm),
+                                    'rank_plain': rk3(k, nm, 'plain')}
                                for nm in gg['sets']}
                            for k in ('L22H7', 'L17H0', 'L16H3')}}
     d = json.load(open(f))
@@ -3426,10 +3440,18 @@ def main() -> int:
             for nm, n in T['sets'].items():
                 print(f"       {nm:<9}{n:>3}{T['perfect'][nm]:>21}{T['max_dom'][nm]:>16.3f}")
             print(f"       -> positive control passes on ALL THREE; the instrument is blind on none")
-            print(f"       {'head':<8}" + "".join(f"{nm+' dom':>13}{'rank':>6}" for nm in T['sets']))
+            print(f"       basis: the final RMSNorm scale g spans {T['norm_scale']['ratio']:.0f}x "
+                  f"({T['norm_scale']['min']:.4f} to {T['norm_scale']['max']:.3f}) and it CAN reorder")
+            print(f"       ranking is ROBUST to it -- Spearman " +
+                  " / ".join(f"{T['basis_spearman'][nm]:+.4f}" for nm in T['sets']) +
+                  " between bases")
+            print(f"       but the COUNTS are not: perfect-wins " +
+                  " / ".join(f"{T['perfect_plain'][nm]}->{T['perfect'][nm]}" for nm in T['sets']))
+            print(f"       {'head':<8}" + "".join(f"{nm+' dom':>13}{'rank':>10}" for nm in T['sets']))
             for k, v in T['heads'].items():
-                print(f"       {k:<8}" + "".join(f"{v[nm]['dom']:>13.3f}{v[nm]['rank']:>6}"
-                                                 for nm in T['sets']))
+                print(f"       {k:<8}" + "".join(
+                    f"{v[nm]['dom']:>13.3f}{str(v[nm]['rank_plain']) + '->' + str(v[nm]['rank']):>10}"
+                    for nm in T['sets']))
             print(f"       L22H7 is bottom-quartile on ALL THREE -- not a mislabelled copier, its")
             print(f"       direct OV path copies nothing in this task's vocabulary.")
             print(f"       L17H0 is high on ALL THREE -- a GENERIC direct copier, NOT room-specific,")
@@ -4256,7 +4278,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 35.321, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 35.938, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -4337,9 +4359,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 112, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 113, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 28, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.036, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 7.965, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

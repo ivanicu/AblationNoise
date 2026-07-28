@@ -314,6 +314,18 @@ OV.objects x ablation.I_all  (signed)      +0.2171            +0.0430
 and `−0.40`"*. **Within layer the room-attention edge is `+0.006` and `+0.129` — it does not survive.**
 Only the **name**-attention edge holds, and it holds strongly (`−0.43`, `−0.34`).
 
+> **⚠ `D113`: those numbers were computed without the final `RMSNorm`'s learnable scale, and the
+> counts move.** `model.norm.weight` spans `2063×` (`0.0043` to `8.875`) and multiplies the
+> unembedding side — it is the basis the logits are actually read in. **The `1/‖x‖` half of `RMSNorm`
+> is a per-destination scalar shared across all sources and cannot reorder anything; only `g` can.**
+>
+> **The ranking is robust** — Spearman `+0.9839` / `+0.9952` / `+0.9926` between the two bases — so
+> `D108`, `D110` and `D111` are **not** in a materially wrong basis. **But the absolute counts nearly
+> double**: perfect-wins goes `16 → 25` on rooms, `6 → 11` on objects, `3 → 7` on persons, and
+> **`L17H0` moves from rank `3` to rank `11`.** The scaled basis is now primary and both are stored.
+>
+> **What survives unchanged:** `L22H7` at `140` / `136` / `149`, and `L16H3` near the bottom.
+
 **And `attention.room_att × OV.rooms = −0.2124`, surviving the within-layer control at `−0.1788`:**
 attention to the room token **anti-correlates** with the OV circuit's ability to copy the room token.
 

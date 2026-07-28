@@ -321,6 +321,10 @@ hypothesis, not a result.
 > **If it fails, the three-instrument convergence was a coincidence over `168` heads and this line is
 > the record that I bet on it.**
 >
+> **⚠ `D113`: in the correct basis (final `RMSNorm` scale included) `L17H0` is rank `11`,
+> not `3`. The prediction below is still unchanged — it is about ablation rank — but the
+> "three instruments converge" framing rested on a basis-dependent `3`.**
+>
 > **⚠ `D110`, one step later: `L17H0`'s OV signature is *generic*, not room-specific.** Run on all
 > three token sets it ranks `3` / `12` / `27` of `168` on rooms / objects / persons — **it copies
 > everything.** The prediction above is unchanged, because it was about **rank under ablation**, not
