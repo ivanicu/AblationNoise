@@ -115,14 +115,39 @@ def generator_numbers(cmds=None) -> set:
     vals = set()
     for blob in out:
         for tok in NUM.findall(blob):
-            v = float(tok)
-            vals.add(v)
-            # Generators print 3 decimals and prose usually quotes 2 or 1. Register the rounded
-            # forms so "12.27" in JSON backs "12.3" in prose without a tolerance search that would
-            # let any nearby number pass.
-            for nd in (0, 1, 2, 3):
-                vals.add(round(v, nd))
+            vals.add(float(tok))
     return vals
+
+
+def backs(prose_token: str, gen: set) -> bool:
+    """Does some generated value round, AT THE PROSE'S OWN PRECISION, to the prose number?
+
+    THIS REPLACED A LENIENCY BUG THAT LET A WRONG NUMBER THROUGH, and the bug was found by
+    measuring the detector's false-pass rate rather than by reading a green report.
+
+    The first version registered round(v, 0..3) for every emitted v, then accepted a prose number
+    p if p OR round(p,1) OR round(p,2) was in that set. Two failures, one loud and one quiet:
+
+      * it inflated the reference set 4x -- 200 emitted values became 803 -- so a random x.xx in
+        [0,10), which is the shape of nearly every ratio in this repository, matched BY
+        COINCIDENCE 57.9% of the time;
+      * rounding the PROSE is the wrong direction. It let "2.31%" pass against a set containing
+        2.3, because round(2.31, 1) == 2.3. Prose may be a rounding of a generated value; a
+        generated value may not be a rounding of the prose.
+
+    The rule here is the one that was meant all along: p is backed iff some v satisfies
+    round(v, decimals(p)) == p. "12.3" backs 12.2718; "2.31" does not back 2.3.
+
+    THE SIGN IS COMPARED BY MAGNITUDE, and that is a deliberate asymmetry. NUM never captures a
+    leading sign, so prose "-0.0080" arrives here as 0.008 while the generator emits -0.00795.
+    Matching |v| is what the docstring always said and what the first rewrite silently dropped --
+    two real numbers in R2's table went unbacked for that reason alone. The cost is that this
+    detector cannot see a SIGN error in prose; that is recorded as a second blind spot beside the
+    integer one, not papered over.
+    """
+    dec = len(prose_token.split('.')[1]) if '.' in prose_token else 0
+    p = float(prose_token)
+    return any(round(abs(v), dec) == p for v in gen)
 
 
 def check_file(path: Path, gen: set) -> Report:
@@ -152,7 +177,7 @@ def check_file(path: Path, gen: set) -> Report:
                 continue
             v = float(tok)
             n += 1
-            if v in exempt or v in gen or round(v, 2) in gen or round(v, 1) in gen:
+            if v in exempt or backs(tok, gen):
                 continue
             unbacked.append({'line': i, 'value': v, 'text': ln.strip()[:110]})
     return Report('BACKED' if not unbacked else 'UNBACKED', unbacked, n, len(gen), exempt)
@@ -210,6 +235,31 @@ def selftest() -> int:
         if not r.ok():
             print(f"      FAIL: {r.unbacked}"); ok = False
 
+        # 8. THE LENIENCY THE OLD RULE HAD. Prose more precise than anything generated must FLAG.
+        #    Under the previous rule "2.31" passed against a set containing 2.3.
+        p.write_text("The overshoot was 2.31% of writes.\n")
+        r = check_file(p, {2.3, 2.35})
+        print(f"  [8] prose finer than the source -> {r.verdict}  "
+              f"(2.31 must NOT be backed by 2.3)")
+        if r.ok():
+            print("      FAIL: rounding the PROSE is the wrong direction"); ok = False
+
+        # 9. ...and the direction that IS legitimate must still pass: prose rounds a generated
+        #    value. Without this, the fix would simply flag everything and look rigorous.
+        p.write_text("The ratio is 12.3x.\n")
+        r = check_file(p, {12.2718})
+        print(f"  [9] prose rounds the source     -> {r.verdict}  (12.3 IS backed by 12.2718)")
+        if not r.ok():
+            print(f"      FAIL: {r.unbacked}"); ok = False
+
+        # 10. A SIGNED generated value backs an UNSIGNED prose number, because NUM never captures
+        #     the sign. Two real numbers in R2's table were unbacked for exactly this.
+        p.write_text("The null median is -0.0080 on that model.\n")
+        r = check_file(p, {-0.00795})
+        print(f"  [10] signed source, unsigned prose -> {r.verdict}  (magnitude match)")
+        if not r.ok():
+            print(f"      FAIL: {r.unbacked}"); ok = False
+
         # 7. THE DECLARED BLIND SPOT, asserted so it cannot be forgotten. An unbacked integer is
         #    invisible here. This case exists to make a future reader who trusts a clean report
         #    read the line that says what the report does not cover.
@@ -238,10 +288,35 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('files', nargs='*')
     ap.add_argument('--selftest', action='store_true')
+    ap.add_argument('--power', action='store_true',
+                    help='measure the coincidence rate: how often a RANDOM number is "backed"')
     ap.add_argument('--json', action='store_true')
     args = ap.parse_args()
     if args.selftest:
         return selftest()
+    if args.power:
+        # A DETECTOR OF ABSENCE IS ONLY AS GOOD AS THE CHANCE OF A COINCIDENTAL PRESENCE, and that
+        # chance grows every time a generator learns to emit another number. Measured rather than
+        # assumed: an earlier matching rule registered four rounded forms of every emitted value,
+        # inflating the set to 803 and giving a random x.xx in [0,10) -- the shape of nearly every
+        # ratio here -- a 57.9% chance of passing. That is not a detector, and no green report
+        # would have said so.
+        import random as _r
+        gen = generator_numbers()
+        print(f"  reference set: {len(gen)} values emitted by this repo's generators\n")
+        for lo, hi, nd, label in ((0, 10, 2, 'x.xx  in [0,10)'),
+                                  (0, 100, 1, 'xx.x  in [0,100)'),
+                                  (0, 1000, 0, 'integer in [0,1000)')):
+            rng = _r.Random(7)
+            trials = 20000
+            hits = sum(1 for _ in range(trials)
+                       if backs(f"%.{nd}f" % rng.uniform(lo, hi), gen))
+            print(f"  a random {label:<20} is 'backed' by coincidence "
+                  f"{100*hits/trials:5.2f}% of the time")
+        print("\n  Read this as the detector's FALSE-PASS rate. It bounds nothing about the\n"
+              "  sound direction -- a number absent from the set was still not generated -- but a\n"
+              "  clean report on the x.xx row is worth roughly (1 - that rate) per number.")
+        return 0
 
     files = [Path(f) for f in args.files] or sorted(ROOT.glob('**/README.md'))
     files = [f for f in files if '.git' not in f.parts]

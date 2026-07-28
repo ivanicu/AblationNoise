@@ -1,0 +1,98 @@
+{
+  "model": "phi-3.5-mini",
+  "n_items": 120,
+  "n_draws": 30,
+  "k": 1,
+  "dtype": "float32",
+  "band": [
+    16,
+    31
+  ],
+  "sham_band": [
+    0,
+    8
+  ],
+  "pc_layer": 23,
+  "rooms": [
+    "stone",
+    "iron",
+    "glass",
+    "water"
+  ],
+  "draw_seed": 20260727,
+  "randdir_seed": 20260729,
+  "base_margin": 13.046194807688396,
+  "arms": {
+    "zero": {
+      "band_sd": 0.20720220766638717,
+      "band_mean": 0.024445167117648648,
+      "band_floor": 0.015882194825442786,
+      "sham_sd": 0.01688170971770739,
+      "sham_floor": 0.0012939949131955816,
+      "ratio_k1": 12.27376913423945,
+      "positive_control": 0.5751771926879883,
+      "readability": 2.775922125376538,
+      "pc_clears_own_floor": true,
+      "realized_disp_rms": 2.045500426451764,
+      "n_overshoot_past_origin": 0
+    },
+    "mean": {
+      "band_sd": 0.10709541156669247,
+      "band_mean": 0.03666433016459147,
+      "band_floor": 0.008208938556059189,
+      "sham_sd": 5.0215115290048314e-05,
+      "sham_floor": 3.8490238747972315e-06,
+      "ratio_k1": 2132.732563653334,
+      "positive_control": 0.068943723042806,
+      "readability": 0.6437598215855593,
+      "pc_clears_own_floor": false,
+      "realized_disp_rms": 0.6698811314086794,
+      "n_overshoot_past_origin": 0
+    },
+    "shrink": {
+      "band_sd": 0.07425026801420752,
+      "band_mean": -0.0013704978095160593,
+      "band_floor": 0.005691335221397298,
+      "sham_sd": 0.0004074359272378402,
+      "sham_floor": 3.1230250141422825e-05,
+      "ratio_k1": 182.23790061317789,
+      "positive_control": 0.4216703732808431,
+      "readability": 5.679041767231844,
+      "pc_clears_own_floor": true,
+      "realized_disp_rms": 0.6698811306405233,
+      "n_overshoot_past_origin": 83
+    },
+    "randdir": {
+      "band_sd": 0.003099647279590088,
+      "band_mean": 0.00043133417765299487,
+      "band_floor": 0.0002375901422047907,
+      "sham_sd": 5.609678303985777e-05,
+      "sham_floor": 4.299857841061729e-06,
+      "ratio_k1": 55.255348196842824,
+      "positive_control": -0.012259387969970703,
+      "readability": 3.9550912939977936,
+      "pc_clears_own_floor": true,
+      "realized_disp_rms": 0.6698811325896049,
+      "n_overshoot_past_origin": 0
+    }
+  },
+  "rr": {
+    "shrink": 8.821677863095822,
+    "randdir": 6.143737402338241
+  },
+  "check1_matched": true,
+  "check1_spread": 2.9095931666475428e-09,
+  "check2_zero_reproduces_r1": {
+    "available": true,
+    "r1_ratio_k1": 12.27376913423945,
+    "r7_zero_ratio_k1": 12.27376913423945,
+    "rel_diff": 0.0,
+    "reproduces": true
+  },
+  "check3_dead_arms": [
+    "mean"
+  ],
+  "include": true,
+  "include_fail": [],
+  "round_valid": false
+}

@@ -41,6 +41,7 @@ def r1():
         c = d['cells']
         rows.append({'model': name, 'ratio_k1': c['band_k1']['floor'] / c['sham_k1']['floor'],
                      'band_floor': c['band_k1']['floor'], 'sham_floor': c['sham_k1']['floor'],
+                     'band_sd': c['band_k1']['sd'], 'sham_sd': c['sham_k1']['sd'],
                      'base_margin': d['base_margin'],
                      'verdict': d['verdict'], 'n_items': d['n_items'],
                      'replicate': name.endswith('-bf16')})
@@ -76,10 +77,33 @@ def r1_vocabulary():
             if ck not in o['cells'] or nk not in n['cells']:
                 continue
             rows.append({'model': name, 'k': k,
+                         # THE NUMBER THE '7 OF 8' CLAIM RESTS ON. The author's eight prior
+                         # single-head effects were measured in the ORIGINAL room vocabulary, so
+                         # the floor they are placed against must be the original one too. Emitted
+                         # here, from the original-vocabulary file, rather than left as a figure
+                         # in prose whose provenance is invisible.
+                         'two_sd_original': 2 * o['cells'][ck]['sd'],
+                         'sd_original': o['cells'][ck]['sd'],
                          'sd_pct': 100 * (n['cells'][nk]['sd'] / o['cells'][ck]['sd'] - 1),
                          'floor_pct': 100 * (n['cells'][nk]['floor'] / o['cells'][ck]['floor'] - 1),
                          'base_old': o['base_margin'], 'base_new': n['base_margin']})
     return rows
+
+
+def _pct(vals):
+    v = sorted(vals)
+    n = len(v)
+    def q(f):
+        # Linear interpolation, matching numpy's default so the runner's own percentile keys and
+        # these recomputed ones cannot disagree on the files that have both.
+        if n == 1:
+            return v[0]
+        x = f * (n - 1)
+        lo = int(x)
+        hi = min(lo + 1, n - 1)
+        return v[lo] + (x - lo) * (v[hi] - v[lo])
+    return {'null_median': q(0.5), 'null_p10': q(0.10),
+            'null_iqr': q(0.75) - q(0.25), 'null_min': min(v), 'null_max': max(v)}
 
 
 def r2():
@@ -93,8 +117,12 @@ def r2():
                      # The heavy-tailed null R2's docstring is about: one draw of thirty at -13.66
                      # while the other 29 sat inside +-1.0. Emitted so the prose that cites it has
                      # a generator behind it.
-                     'null_min': d['null']['min'], 'null_max': d['null']['max'],
-                     'null_sd': d['null']['sd'], 'null_median': d.get('null_median')})
+                     'null_sd': d['null']['sd'],
+                     # COMPUTED FROM THE DRAWS, not read from a key. The percentile keys were
+                     # added to the runner after the first models were measured, so d.get()
+                     # returns None on phi and qwen -- and a table row rendered from None is a row
+                     # with nothing behind it. The 30 draws are in every file; use them.
+                     **_pct(d['null']['values'])})
     valid = [r for r in rows if r['valid']]
     return {'rows': rows, 'n_valid': len(valid),
             'n_inverted': sum(not r['sign_correct'] for r in valid)}
@@ -120,6 +148,9 @@ def r5():
                 'read_w_final': abs(F['effect']) / wF, 'read_w_all': abs(A['effect']) / wA,
                 'floor_widen_sd': A['null_sd'] / F['null_sd'], 'floor_widen_w': wA / wF,
                 'effect_change': abs(A['effect']) / abs(F['effect']),
+                'change_2sd': (abs(A['effect']) / (2 * A['null_sd'])) /
+                              (abs(F['effect']) / (2 * F['null_sd'])),
+                'change_w': (abs(A['effect']) / wA) / (abs(F['effect']) / wF),
                 'mech_attn': d['mechanism_attn'], 'mechanism': d['mechanism'],
                 'effect_final': F['effect'], 'effect_all': A['effect'],
                 'baseline_final': F['baseline'],
@@ -178,6 +209,9 @@ def r6():
         n = len(xs)
         return None if not n else (xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2)
     return {'rows': rows, 'n_informative': len(inf),
+            # The pre-registered gate band, emitted so a threshold quoted in prose is traceable to
+            # the code that applies it rather than to someone's memory of the pre-registration.
+            'gate_band_low': 0.67, 'gate_band_high': 1.5,
             # Emitted into the JSON, not only into the human print. Detector 6 reads --json, and a
             # quantity that exists in one output mode and not the other is how the two drift: the
             # prose cites a number the machine-readable path never produced, and nothing notices.
@@ -206,7 +240,9 @@ def r7():
              'check2_rel_diff': d['check2_zero_reproduces_r1'].get('rel_diff'),
              'dead_arms': d['check3_dead_arms'],
              'anchor_ratio': a['zero']['realized_disp_rms'] / a['mean']['realized_disp_rms'],
-             'overshoot': a['shrink'].get('n_overshoot_past_origin', 0)}
+             'overshoot': a['shrink'].get('n_overshoot_past_origin', 0),
+             'overshoot_pct': 100 * a['shrink'].get('n_overshoot_past_origin', 0) /
+                              max(1, d['n_items'] * d['n_draws'])}
         for arm in ('zero', 'mean', 'shrink', 'randdir'):
             r[f'read_{arm}'] = a[arm]['readability']
             r[f'floor_{arm}'] = a[arm]['band_floor']
@@ -241,6 +277,16 @@ def r7():
             out['order_consistent'] = all(
                 sorted(('mean', 'shrink', 'randdir'), key=lambda a: r[f'read_{a}']) == order
                 for r in inc)
+            # THE ORDER IS REPORTED OVER EVERY CELL, not only the included ones. It is a
+            # WITHIN-CELL comparison -- three readabilities measured on the same model, the same
+            # items and the same draws -- so it needs no ratio, no cross-model aggregation and no
+            # inclusion rule. The inclusion rule exists to protect a RATIO whose denominator can
+            # be a dead arm; an ordering has no denominator to protect. Both counts are printed
+            # so a reader can see that the wider one is not the gate.
+            out['n_cells_total'] = len(rows)
+            out['n_cells_matching_order'] = sum(
+                sorted(('mean', 'shrink', 'randdir'), key=lambda a: r[f'read_{a}']) == order
+                for r in rows)
     return out
 
 
@@ -301,6 +347,11 @@ def main() -> int:
           '  '.join(f"{r['model']} {r['base_margin']:.3f}" for r in A['rows']) + "\n")
     if V:
         print("R1' changing ONLY the four answer nouns (Amendment 2)")
+        for r in V:
+            if r['k'] == 1:
+                print(f"      {r['model']:<16} k=1   2 sd in the ORIGINAL vocabulary = "
+                      f"{r['two_sd_original']:.3f} margin units  <- the floor the author's own "
+                      f"prior effects are placed against")
         for r in V:
             print(f"      {r['model']:<16} k={r['k']:<3} raw sd {r['sd_pct']:+6.1f}%   "
                   f"floor {r['floor_pct']:+6.1f}%   baseline {r['base_old']:.3f}"
@@ -400,7 +451,8 @@ def main() -> int:
                   f"  -> {R['gate']}")
             print(f"      readability order low->high: "
                   f"{' < '.join(R['readability_order_low_to_high'])}"
-                  f"  (same order in every included cell: {R['order_consistent']})")
+                  f"  -- same order in {R['n_cells_matching_order']} of "
+                  f"{R['n_cells_total']} cells (within-cell, no ratio, no inclusion rule)")
 
     if args.check:
         claims = [

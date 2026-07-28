@@ -23,7 +23,9 @@ verdict holds for any threshold up to 4.3× — the chosen 3.0 sits inside that 
 
 ## Applied to the author's own prior results
 
-2 sd of a random single head in the studied band is **0.442 margin units**. Against that, of eight
+2 sd of a random single head in the studied band is **0.442 margin units** — measured in the
+**original** room vocabulary, because that is the vocabulary the eight prior effects were measured
+in and Amendment 2 showed the floor moves when the vocabulary does. Against that, of eight
 previously measured single-head effects, **seven are inside the floor** — including the head an
 earlier experiment had independently proved was the copy head (−0.132, a third of the floor). The
 largest effect in the set clears by 6%.

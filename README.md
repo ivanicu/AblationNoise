@@ -10,9 +10,10 @@ independently established as the copy head for that task. Its apparent "redundan
 limit, and the limit is now a number.
 
 Everything here runs on one consumer GPU. Every round is pre-registered with a kill condition
-committed **before** the run. **Five of the six completed rounds killed the hypothesis their author
-preferred** — one had its own verdict withdrawn by the round after it, and one was defeated by a
-diagnostic its author wrote to attack it.
+committed **before** the run. **Six of the seven completed rounds killed, withdrew or failed to
+reach the hypothesis their author preferred** — one had its verdict withdrawn by the round after it,
+one was defeated by a diagnostic its author wrote to attack it, and one found two of its own
+pre-registered worlds had identical predictions.
 
 ```bash
 make verify     # the whole gate: 4 detector selftests, 11 recomputed numbers, 6 READMEs checked
@@ -44,6 +45,7 @@ Each round is a folder: its pre-registration, its amendments, its runner, its re
 | **[R4](R4_predictability/)** | can readability be predicted from cheap observables? | across models **UNVERIFIED** — the pre-registered gate is met by 60 of 324 admissible estimators, so its own first verdict was withdrawn. Within a model the floor is a power law and **two measured points fix the curve** (12/12 held-out within 2×) |
 | **[R5](R5_factorial/)** | which factor decides readability: site, readout, or mechanism size? | ablating at **every** position instead of one made the effect-to-floor ratio **worse in 6 of 6** model × readout cells |
 | **[R6](R6_intervention/)** | is the floor a property of ablation, or of *zeroing*? | **NOT MET** — its own control arm reproduced R1 to **0.0% on 4 of 4 models**, then a pre-registered diagnostic showed the comparison arms move the residual stream 4–7× less, so the design cannot decide. The question stays open |
+| **[R7](R7_norm_matched/)** | at a **fixed** perturbation size, does the *direction* change readability? | **NOT MET** on the gate (2 of the 4 cells were droppable). But with displacement matched to **0.00%**, a known effect is **least** readable in the on-distribution direction and **most** readable in the zeroing direction, in **4 of 4** cells — the opposite of what the off-manifold objection predicts |
 
 ### R6 was the round that could break this repository. It did not — and it did not clear it either.
 
@@ -58,17 +60,25 @@ against `mean` and `resample` — and a pre-registered diagnostic, run before th
 at the final position a head's output is **73–86% item-independent** on all four models. The
 comparison arms displace the residual stream by only **14–27%** of what zeroing does. Comparing
 those floors compares two *magnitudes*, not two *kinds*, so the round **cannot decide** and reports
-`NOT MET`. The off-distribution question is untested, not answered. [R6 in full](R6_intervention/).
+`NOT MET`. [R6 in full](R6_intervention/).
 
-What R6 did establish, on the way: its zero arm reproduced R1's `ratio_k1` to **0.0% on four models
-out of four**, through a completely rewritten measurement path. R1's number is not an artifact of
-R1's own code.
+**[R7](R7_norm_matched/) fixed the size and varied only the direction** — three arms writing a point
+exactly `‖x − μ‖` away from `x`, matched to **0.00%**. Its gate also returns `NOT MET`, on a count:
+two of four cells were droppable, one for a dead arm and one by R1's own live-sham exclusion. But
+the part that needs no gate is unambiguous — **in 4 of 4 cells a known effect is *least* readable in
+the on-distribution direction and *most* readable in the zeroing direction.** The off-manifold
+objection predicts the reverse. It is one family short of the pre-registered bar, so it is reported
+as an ordering across 4 models and 3 families, not as a verdict.
+
+What both rounds established on the way: the zero arm reproduced R1's `ratio_k1` to **0.0% on four
+models out of four, twice**, through two independently rewritten measurement paths. R1's number is
+not an artifact of R1's own code.
 
 ## The result that is most useful to someone else
 
 **A floor cannot be looked up.** Changing four English nouns in the answer vocabulary moved it 1.7×
 on a fixed model; across models the exponent spans 0.3–0.8 and the scale spans 8.8× on an identical
-task. But within a model it is a clean power law in set size (R² 0.94–0.99), so **measuring two set
+task. But within a model it is a clean power law in set size (R² 0.935–0.985), so **measuring two set
 sizes fixes the whole curve** — two conditions instead of a sweep.
 
 **And ablating harder makes it worse.** When an ablation shows nothing the reflex is to cut more.
@@ -88,13 +98,14 @@ replays the real incident that produced it.
 | [`readout_tokens`](detectors/readout_tokens.py) | does your readout distinguish the answers you are scoring? | a run reported `n=0` because a SentencePiece tokenizer gave all four answers the same first token |
 | [`circularity`](detectors/circularity.py) | is your predictor already the answer? | a prospective law validated out-of-sample to 0.02, retracted 15 minutes later as a copy-head tautology |
 | [`control_fitness`](detectors/control_fitness.py) | can your control fail, and is your positive control the right sign? | a control whose two hypotheses both predicted the same reading, and a positive control that fired inverted |
-| [`prose_numbers`](detectors/prose_numbers.py) | does any code in this repository actually emit the number you wrote? | R4's fold errors and R5's whole results table, both quoted from commit messages, neither regenerable |
+| [`prose_numbers`](detectors/prose_numbers.py) | does any code in this repository actually emit the number you wrote? | R4's fold errors and R5's whole results table, both quoted from commit messages, neither regenerable. It reports its own false-pass rate — `--power` |
 
 ```bash
 python3 detectors/readout_tokens.py --selftest
 python3 detectors/circularity.py    --selftest
 python3 detectors/control_fitness.py --selftest
 python3 detectors/prose_numbers.py   --selftest
+python3 detectors/prose_numbers.py   --power      # what fraction of RANDOM numbers it clears
 ```
 
 ## Running a round
@@ -125,7 +136,7 @@ entitled to see the shape of the open ones.
 
 | | raised by | what would settle it |
 |---|---|---|
-| **Is the floor a property of ablation or of zeroing?** | every round — all of them zero | **still open after R6.** A norm-matched intervention comparison: hold the displacement size fixed and vary only its direction. R6 varied the description of the intervention and got a 4–7× size difference for free, which is what defeated it |
+| **Is the floor a property of ablation or of zeroing?** | every round — all of them zero | **still open after R6 and R7,** but narrowing. R7 matched the displacement and found the ordering runs against the objection in 4 of 4 cells; it fell one valid cell short of its gate. R8 needs three valid cells and an arm (`constant_only`) that separates the two worlds R7's matrix could not |
 | **Does readability transfer across models?** | R4, whose across-model verdict is `UNVERIFIED` | an order of magnitude more models. Five cannot decide it: the best of 324 admissible estimators fits three model-level parameters to four model-level observations |
 | **Which readout is more readable?** | R5, whose readout axis is **withdrawn as confounded** | a mechanism-**strength**-matched design. The identified head's attention was 0.244 on one model and 0.852/0.877 on the others, so the readout comparison is confounded with mechanism quality. More models do not fix this; matched mechanisms do |
 | **Does any of it hold outside attention heads?** | scope of every round | MLP neurons, SAE features, residual directions. Nothing here is evidence about them, and the two-point calibration is a hypothesis there, not a method |

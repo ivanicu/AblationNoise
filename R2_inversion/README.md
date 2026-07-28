@@ -16,9 +16,9 @@ ablation.
 | model | baseline P | valid | d_top | null median | IQR | sd | sign |
 |---|---|---|---|---|---|---|---|
 | qwen2.5-1.5b | 0.811 | yes | −4.728 | −0.0088 | 0.029 | 0.125 | ok |
-| qwen2.5-3b | 0.824 | yes | −0.860 | −0.0063 | 0.026 | 0.029 | ok |
+| qwen2.5-3b | 0.824 | yes | −0.860 | −0.0063 | 0.026 | 0.028 | ok |
 | phi-3.5-mini | 0.546 | yes | −1.061 | −0.0080 | 0.028 | **2.491** | ok |
-| llama-3.1-8b | 0.636 | yes | −1.224 | −0.0171 | 0.047 | 0.091 | ok |
+| llama-3.1-8b | 0.636 | yes | −1.224 | −0.0171 | 0.047 | 0.090 | ok |
 | internlm2-1.8b | **0.000** | **no** | — | — | — | — | — |
 
 internlm2 assigns probability 5e-6 to the correct next token: it does not do induction at all, so an
@@ -36,3 +36,14 @@ next-token log-probability; neither is computed from the other.
 because it used the lowest-scoring heads as an inert comparator and they are not inert. The fix is
 the size-matched random null. The amendment also records a prediction made in it and **refuted
 fifteen minutes later**.
+
+> **Corrected 2026-07-28.** Two cells of the `sd` column above were wrong — qwen2.5-3b read `0.029`
+> (true 0.028) and llama-3.1-8b read `0.091` (true 0.090), the first apparently copied from the row
+> above it. Neither changes a verdict; both were found by tightening Detector 6, whose earlier
+> matching rule accepted a prose number whenever its *own* rounding appeared in the reference set,
+> and so cleared them by coincidence. The same tightening also revealed that phi-3.5-mini's and
+> qwen's median and IQR had **no data behind them in this repository** — those result files predate
+> the runner's percentile keys, so the table was rendering values the JSON did not contain.
+> `make headline` now computes every percentile from the 30 stored draws instead of reading a key
+> that older files lack.
+
