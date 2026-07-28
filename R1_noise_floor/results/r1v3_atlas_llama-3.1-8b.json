@@ -1,0 +1,54 @@
+{
+  "model": "llama-3.1-8b",
+  "n_layers": 32,
+  "n_heads": 32,
+  "band": [
+    16,
+    31
+  ],
+  "sham_band": [
+    0,
+    8
+  ],
+  "n_items": 120,
+  "n_draws": 30,
+  "draw_seed": 20260727,
+  "base_margin": 5.061458333333333,
+  "rooms": [
+    "stone",
+    "iron",
+    "glass",
+    "water"
+  ],
+  "dtype": "bfloat16",
+  "set_sizes_run": [
+    1
+  ],
+  "reduced_scope": true,
+  "cells": {
+    "band_k1": {
+      "arm": "band",
+      "k": 1,
+      "n_draws": 30,
+      "mean": 0.01501736111111111,
+      "sd": 0.05141599836190953,
+      "min": -0.06145833333333333,
+      "max": 0.2046875,
+      "floor": 0.010158336782760475,
+      "peak_to_peak_frac": 0.05258283597448034
+    },
+    "sham_k1": {
+      "arm": "sham",
+      "k": 1,
+      "n_draws": 30,
+      "mean": 0.006944444444444445,
+      "sd": 0.01877858081383853,
+      "min": -0.0265625,
+      "max": 0.0515625,
+      "floor": 0.003710112694234408,
+      "peak_to_peak_frac": 0.015435274747890512
+    }
+  },
+  "median_band_floor": 0.010158336782760475,
+  "verdict": "FLOOR-IS-SMALL"
+}

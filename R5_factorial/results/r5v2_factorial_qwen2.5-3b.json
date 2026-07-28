@@ -1,0 +1,89 @@
+{
+  "model": "qwen2.5-3b",
+  "n_items": 90,
+  "n_draws": 30,
+  "mechanism": [
+    [
+      31,
+      7
+    ]
+  ],
+  "mechanism_attn": 0.24389166235923768,
+  "mechanism_identified": "in-run: max final-position attention to the correct room token",
+  "rooms": [
+    "stone",
+    "iron",
+    "glass",
+    "water"
+  ],
+  "cells": {
+    "final_margin": {
+      "site": "final",
+      "readout": "margin",
+      "baseline": 6.136336178249783,
+      "effect": -0.3221345689561632,
+      "positive_control": -0.8525935173034664,
+      "null_mean": -0.015313646528455897,
+      "null_sd": 0.18078644692742452,
+      "null_median": -0.011902205149332712,
+      "null_p10": -0.2366243457794189,
+      "null_p90": 0.1940087276034885,
+      "effect_pct_in_null": 6.666666666666667,
+      "pc_pct_in_null": 0.0,
+      "clears_p10p90": true,
+      "pc_clears": true,
+      "ratio_effect_over_2sd": 0.8909256596139696
+    },
+    "final_kl": {
+      "site": "final",
+      "readout": "kl",
+      "baseline": 0.0,
+      "effect": 0.01506458370325466,
+      "positive_control": 0.10292386447803842,
+      "null_mean": 0.011063089025500869,
+      "null_sd": 0.01604047170225623,
+      "null_median": 0.004861328062704867,
+      "null_p10": 0.0003384846429819138,
+      "null_p90": 0.019739022058331317,
+      "effect_pct_in_null": 73.33333333333333,
+      "pc_pct_in_null": 100.0,
+      "clears_p10p90": false,
+      "pc_clears": true,
+      "ratio_effect_over_2sd": 0.46958044572765584
+    },
+    "all_margin": {
+      "site": "all",
+      "readout": "margin",
+      "baseline": 6.136336178249783,
+      "effect": -0.31977599461873396,
+      "positive_control": -0.9820041868421763,
+      "null_mean": 0.015262776480780746,
+      "null_sd": 0.34099981174421723,
+      "null_median": -0.01952869627210818,
+      "null_p10": -0.32717788908216705,
+      "null_p90": 0.2726837317148848,
+      "effect_pct_in_null": 10.0,
+      "pc_pct_in_null": 0.0,
+      "clears_p10p90": false,
+      "pc_clears": true,
+      "ratio_effect_over_2sd": 0.4688800163599457
+    },
+    "all_kl": {
+      "site": "all",
+      "readout": "kl",
+      "baseline": 0.0,
+      "effect": 0.013579619591796977,
+      "positive_control": 0.07852211275862322,
+      "null_mean": 0.01819263894396297,
+      "null_sd": 0.021037330089926157,
+      "null_median": 0.01154485835124635,
+      "null_p10": 0.0010218222120440463,
+      "null_p90": 0.04830244755165447,
+      "effect_pct_in_null": 53.333333333333336,
+      "pc_pct_in_null": 96.66666666666667,
+      "clears_p10p90": false,
+      "pc_clears": true,
+      "ratio_effect_over_2sd": 0.3227505470929425
+    }
+  }
+}
