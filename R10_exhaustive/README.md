@@ -1,8 +1,15 @@
 # R10 — every head, once, no sampling, in the vocabulary the published effects were measured in
 
-[R9](../R9_depth_profile/) found that neighbouring layers differ **tenfold** in how much a single
-head's ablation moves the answer. So the floor R1 compares an effect against — **thirty draws
-pooled across fourteen layers** — mixes *which head you picked* with *which layer you picked*.
+[R9](../R9_depth_profile/) found that a model's quietest and noisiest layer differ by **8.1× to
+96.2×** in how much a single head's ablation moves the answer. So the floor R1 compares an effect
+against — **thirty draws pooled across fourteen layers** — mixes *which head you picked* with
+*which layer you picked*.
+
+> The earlier wording here said *"neighbouring layers differ tenfold"*. That is the **wrong scope**
+> for the number: the largest **adjacent**-layer jump is `4.8×`, `4.9×`, `5.1×` and `15.2×` on the
+> four models, and the one that clears ten is `L0→L1` — the embedding boundary, not a mid-stack
+> neighbour. Tenfold is a whole-stack fact. It is corrected rather than deleted because the
+> conclusion below never needed the stronger version.
 
 The repository's most striking sentence depends on that floor: *the independently proven copy head
 `L22H7` moves the margin by −0.132 against a floor of 0.442, so even it is inside the noise.*

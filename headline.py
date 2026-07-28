@@ -158,6 +158,65 @@ def r10():
     return out or None
 
 
+def r9():
+    """Is R1's headline a DEPTH artifact? The per-layer floor, and the estimator that failed twice.
+
+    R1 compares a LATE band against an EARLY sham band and reports the ratio between their floors.
+    If the floor simply grows with depth, that ratio is a fact about where the two pools sit in the
+    stack, not about the heads inside them. R9 measures the floor at EVERY layer so the curve can
+    be read directly instead of inferred.
+
+    THE GATE IS REFUSED AND ITS NUMBERS ARE STILL EMITTED. The gate predicted the band's floor by
+    extrapolating the sham half's trend to the band's depth. The band IS the upper half of the
+    stack, so there is no data at the band's depth except the band -- every such prediction is
+    extrapolation, and it shows: the linear form returns a NEGATIVE standard deviation on two of
+    four models, and the log form returned 0.0016 and 16.18 for the same quantity. A refused
+    verdict still has to carry its number or the refusal cannot be checked.
+    """
+    out = {}
+    for name, d in load('R9_depth_profile/results/*.json').items():
+        fl = {int(k): v['floor'] for k, v in d['layers'].items()}
+        nz = {k: v for k, v in fl.items() if v > 0}
+        if not nz:
+            continue
+        mn, mx = min(nz, key=nz.get), max(nz, key=nz.get)
+        adj = [(max(nz[a], nz[a + 1]) / min(nz[a], nz[a + 1]), a)
+               for a in sorted(nz) if a + 1 in nz]
+        r_adj, l_adj = max(adj) if adj else (float('nan'), -1)
+        lo, hi = d['band']
+        slo, shi = d['sham_band']
+        band = [fl[k] for k in range(lo, hi + 1) if k in fl]
+        sham = [fl[k] for k in range(slo, shi + 1) if k in fl]
+        bm, sm = sum(band) / len(band), sum(sham) / len(sham)
+        pred = d['band_sd_predicted_from_sham_trend']
+        out[name] = {
+            'n_layers': d['n_layers'], 'n_heads': d['n_heads'], 'n_items': d['n_items'],
+            'n_draws': d['n_draws'], 'band': d['band'], 'sham_band': d['sham_band'],
+            'base_margin': abs(d['base_margin']),
+            'quietest_layer': mn, 'quietest_floor': nz[mn],
+            'noisiest_layer': mx, 'noisiest_floor': nz[mx],
+            'stack_spread': nz[mx] / nz[mn],
+            # THE SCOPE THAT WAS WRONG ON TWO PAGES. "neighbouring layers differ tenfold" is the
+            # whole-stack number wearing the adjacent-layer label; the largest adjacent jump is
+            # ~5x on three of four models. Emitted separately so the two can never merge again.
+            'largest_adjacent_ratio': r_adj, 'largest_adjacent_at_layer': l_adj,
+            'band_mean_floor': bm, 'sham_mean_floor': sm, 'band_over_sham': bm / sm,
+            'spearman_rho_layer_sd': d['spearman_rho_layer_sd'],
+            'refused_gate_predicted_sd': pred,
+            'refused_gate_prediction_is_negative': pred < 0,
+            'refused_gate_verdict': d['verdict'],
+        }
+    if not out:
+        return None
+    neg = sum(v['refused_gate_prediction_is_negative'] for v in out.values())
+    return {'models': out, 'n_models': len(out), 'n_negative_predicted_sd': neg,
+            'stack_spread_min': min(v['stack_spread'] for v in out.values()),
+            'stack_spread_max': max(v['stack_spread'] for v in out.values()),
+            'adjacent_ratio_min': min(v['largest_adjacent_ratio'] for v in out.values()),
+            'adjacent_ratio_max': max(v['largest_adjacent_ratio'] for v in out.values()),
+            'n_rho_positive': sum(v['spearman_rho_layer_sd'] > 0 for v in out.values())}
+
+
 def r1_set_null_range():
     """The k=5 null's FULL RANGE, and the COPY set, as fractions of the flip distance.
 
@@ -564,11 +623,12 @@ def main() -> int:
     D, V, S, G, R, E8 = r4(), r1_vocabulary(), r6(), r6_diag(), r7(), r8()
     PE, SN = r1_prior_effects(), r1_set_null()
     BS, CR = r1_behavioural_scale(), cross_round_scale()
-    SR, TEN = r1_set_null_range(), r10()
+    SR, TEN, NINE = r1_set_null_range(), r10(), r9()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
-                          'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR, 'r10': TEN,
+                          'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
+                          'r9': NINE, 'r10': TEN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -623,6 +683,26 @@ def main() -> int:
         print(f"      across models the k=1 floor is at most "
               f"{BS['max_pct_to_flip_k1']:.1f}% of the distance to a flip")
         print(f"      -> at k=1 the SIGNAL AND THE NOISE ARE BOTH SUB-BEHAVIOURAL\n")
+
+    if NINE:
+        print("R9  the floor at every layer -- is R1's band-vs-sham ratio a DEPTH artifact?")
+        print(f"      {'model':<17}{'quietest':>16}{'noisiest':>16}{'stack':>8}"
+              f"{'max adj':>12}{'band/sham':>11}{'rho':>7}")
+        for nm, r in NINE['models'].items():
+            print(f"      {nm:<17}L{r['quietest_layer']:<3}{r['quietest_floor']:>11.4f}"
+                  f"  L{r['noisiest_layer']:<3}{r['noisiest_floor']:>11.4f}"
+                  f"{r['stack_spread']:>7.1f}x"
+                  f"  L{r['largest_adjacent_at_layer']}->{r['largest_adjacent_at_layer']+1}"
+                  f"{r['largest_adjacent_ratio']:>5.1f}x{r['band_over_sham']:>10.2f}x"
+                  f"{r['spearman_rho_layer_sd']:>7.3f}")
+        print(f"      stack spread {NINE['stack_spread_min']:.1f}x-{NINE['stack_spread_max']:.1f}x"
+              f"  |  largest ADJACENT jump {NINE['adjacent_ratio_min']:.1f}x-"
+              f"{NINE['adjacent_ratio_max']:.1f}x -- NOT the same number, and the pages said it was")
+        print(f"      rho > 0 on {NINE['n_rho_positive']} of {NINE['n_models']}: the floor grows "
+              f"with depth, so R1's two arms differ in WHERE they sit as well as in what they are")
+        print(f"      gate REFUSED: predicted band sd is NEGATIVE on "
+              f"{NINE['n_negative_predicted_sd']} of {NINE['n_models']} "
+              f"-- the estimator extrapolates to a depth only the band occupies\n")
 
     if TEN:
         for nm, r in TEN.items():
@@ -793,6 +873,16 @@ def main() -> int:
              list(TEN.values())[0]['n_inside_own'] if TEN else -1, 8, 0),
             ('R10 inside pooled floor',
              list(TEN.values())[0]['n_inside_pooled'] if TEN else -1, 7, 0),
+            # THE SCOPE ERROR ASSERTED AS TWO SEPARATE NUMBERS. Both pages read the whole-stack
+            # spread and wrote "neighbouring layers"; asserting only one of them would let the
+            # confusion come back as soon as either page is edited.
+            ('R9 stack spread min', NINE['stack_spread_min'] if NINE else -1, 8.062, 0.001),
+            ('R9 stack spread max', NINE['stack_spread_max'] if NINE else -1, 96.151, 0.001),
+            ('R9 largest adjacent jump min', NINE['adjacent_ratio_min'] if NINE else -1, 4.847, 0.001),
+            ('R9 largest adjacent jump max', NINE['adjacent_ratio_max'] if NINE else -1, 15.217, 0.001),
+            ('R9 models with negative predicted sd',
+             NINE['n_negative_predicted_sd'] if NINE else -1, 2, 0),
+            ('R9 models with rho > 0', NINE['n_rho_positive'] if NINE else -1, 4, 0),
             ('R2 valid cells', B['n_valid'], 4, 0),
             ('R2 inverted', B['n_inverted'], 0, 0),
             ('R5 cells', E['n_cells'], 6, 0),

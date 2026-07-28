@@ -70,23 +70,42 @@ pre-registered worlds had identical predictions.
 > current, and is treated as standard in at least one active programme — which is enough to kill
 > *"almost none"*.
 >
-> **Is *that* narrower thing novel? UNVERIFIED, and the check failed its own positive control.**
-> A second query aimed at "does anyone report how the random-ablation null SCALES with the number
-> of components ablated" returned **zero relevant papers** — and returned **none of the ten above**,
-> which are known to exist and are known to be relevant. An instrument that cannot retrieve its own
-> known positives returns silence, not absence. The narrower claim is therefore **not** asserted as
-> novel here. Abstracts are also an unfit instrument for it: whether a null was swept across set
-> sizes is a methods detail.
+> ### AND THE FALLBACK CLAIM WENT TOO — *"nobody characterises the floor's properties"*, also false
 >
-> **What survives is narrower and is what this repository actually measured:** not *that* a random
-> baseline should be reported, but **what that baseline is like** — a power law in set size, moving
-> 1.7× when four nouns change, varying tenfold between adjacent layers, and sitting at a tenth of
-> the distance to any behavioural change at k=1. And the measurement was pointed at its own
-> author's prior work first, where the null had been **a single draw at the 96.7th percentile** of
-> the proper distribution.
+> The retreat above was to a narrower claim: fine, the practice exists, but **what that baseline is
+> like** — layer dependence, per-model variation, its spread — is uncharacterised. A first query
+> aimed at that returned zero papers *and none of the ten above*, so it was recorded as
+> **UNVERIFIED**: an instrument that cannot retrieve its own known positives returns silence, not
+> absence. Abstracts were the wrong instrument anyway — whether a null was characterised is a
+> **methods** detail.
+>
+> Reading the methods sections settled it. **This is not the earlier silence promoted to a verdict;
+> it is a different instrument returning content.**
+>
+> | the property | where it already is |
+> |---|---|
+> | the null's **spread**, not just its mean | `2606.05378` §6 reports every cell as `mean ± std` over ten seeds |
+> | **layer dependence** of the null | same §6: *"L0-concentrated screens **cannot use same-layer matched-random as a tight null**"* — `−57.5 ± 18.1pp`, so a screen at `−80.5pp` is only `1.4×`, and *"removing any 5 of them is destructive regardless of which 5"* |
+> | a **per-model** noise floor | `2605.24059` §3.5 is titled *"Null-selectivity as a per-model noise floor"* — the null drawn **500 times per model**, `null_p99` used as the threshold |
+> | **scope-limiting** a floor-derived number | same §3.5: their conserved fraction is *"best stated as within-family-and-scale rather than universal"* |
+>
+> **So the floor is not this repository's object, and neither are its properties.** Two consecutive
+> retreats, both refuted, is not four bad sentences — it is the same error twice, and it has a name:
+> *what comes easily to me came easily to everyone.*
+>
+> **What is left, stated at the size the evidence supports.** Two things were absent from the four
+> sections read — and *absent from four sections* is the entire claim, not a claim about the field:
+> those papers hold **k fixed** (§6 sweeps *seeds*, not set size) and report the null in **raw
+> percentage points** rather than as a dimensionless `sd(null)/|baseline margin|` that compares
+> across models. Eight of the ten papers remain unread.
+>
+> And one thing is structural rather than novel: every control in those papers certifies **its own
+> paper's screen**. This one is pointed **backwards, at eight already-published effects** that were
+> reported without it — where the null had been **a single draw at the 96.7th percentile** of the
+> proper distribution. That is an audit, not an instrument. It is the honest description.
 
 ```bash
-make verify     # the whole gate: 4 detector selftests, 11 recomputed numbers, 6 READMEs checked
+make verify     # 5 detector selftests + the attack suite, 23 recomputed numbers, 11 READMEs
 make headline   # just the numbers, recomputed from the checked-in results
 ```
 
@@ -118,7 +137,7 @@ Each round is a folder: its pre-registration, its amendments, its runner, its re
 | **[R7](R7_norm_matched/)** | at a **fixed** perturbation size, does the *direction* change readability? | **NOT MET** on the gate (2 of the 4 cells were droppable). But with displacement matched to **0.00%**, a known effect is **least** readable in the on-distribution direction and **most** readable in the zeroing direction, in **4 of 4** cells — the opposite of what the off-manifold objection predicts |
 
 | **[R8](R8_component/)** | *which component* of a head's output does the intervention destroy? | **NOT MET** — and the round's own prediction matrix had a **mis-derived row**, which collapsed two of its three worlds. One world still died: destroying the item-**constant** component is worth as much as destroying both (`4 of 4`), while destroying only the item-**varying** component is worth far less (`3 of 3`) |
-| **[R9](R9_depth_profile/)** | is R1's headline a **depth** artifact? | gate **UNVERIFIED** — its estimator extrapolates the sham half to the band's depth and returns negative or absurd values. The **curve** stands: neighbouring layers differ **tenfold**, so R1's two arms compare pools whose internal spread exceeds the difference between them |
+| **[R9](R9_depth_profile/)** | is R1's headline a **depth** artifact? | gate **UNVERIFIED** — its estimator extrapolates the sham half to the band's depth and returns negative or absurd values. The **curve** stands: a model's quietest and noisiest layer differ by **8.1× to 96.2×** (4 of 4 models), so R1's two arms compare pools whose internal spread exceeds the difference between them |
 | **[R10](R10_exhaustive/)** | is the floor pooled over the wrong population? | **no — and the sharper test strengthens the headline.** Every head ablated once, zero sampling error: against each effect's **own layer's** floor, **8 of 8** published effects are inside, including the one that cleared the pooled floor |
 
 ### R9 is the round that can retract R1, and an outside reader found the hole
