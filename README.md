@@ -22,6 +22,38 @@ the measurement at its own author's prior work.**
 > reference distribution, ran no matched-layer randomization, tested no all-position intervention and
 > used no disjoint item set. `D94`.
 
+> ### ⚠ This is **not an audit**. It is a two-instrument disagreement in which **both** instruments have measured defects — and this repository measured both.
+>
+> An audit presupposes the auditor is more reliable than the audited. **Nothing here establishes
+> that.** [R16](R16_selection_vs_effect/) says so explicitly: *two instruments disagreeing says
+> neither is a proxy for the other; it does not rank them.*
+>
+> **The asymmetry that would privilege ablation is real** — ablation is *interventional*, attention is
+> *observational*, and an intervention can establish counterfactual dependence where a weight cannot.
+> **But this repository has measured that its own intervention is substantially off-manifold:**
+>
+> ```
+> R6, readability = |positive control| / band sd, per arm
+>                       zero    mean   resample     rr mean   rr resample
+> qwen2.5-1.5b          2.35    1.03       0.77        0.44          0.33
+> qwen2.5-3b           10.07    2.38       1.57        0.24          0.16
+>
+> median rr:  mean 0.24x   resample 0.22x        (3 informative cells, 2 of 4 rounds fully valid)
+> R8: randdir's positive control SIGN-INVERTS on 4 of 4 models -- that arm is inadmissible
+> ```
+>
+> **Replacing a head's output with its own mean, or with a resampled value, recovers only `22`–`24%`
+> of what zeroing does.** So roughly three quarters of the zeroing effect is not *"this head's
+> contribution"* — it is *"this activation pattern being absent entirely."* **An intervention into a
+> state the model never occupies does not establish counterfactual dependence on the state it does.**
+>
+> **And on the other side, `D100`:** every role claim in this project — including `L22H7`'s — was
+> established by **attention**. There is no third instrument.
+>
+> **So the honest description is:** two compromised instruments, disagreeing, with their compromises
+> measured. That is a smaller claim than *"an audit"* and it is the one the evidence carries.
+> `n` is small — three informative cells across four models — and that is stated rather than smoothed.
+
 > ## ⚠ STATUS: **EXPLORATORY AUDIT — frozen 2026-07-28.** Not a confirmatory result.
 >
 > Everything below is a **case study on one synthetic task and one model family**, and its central
