@@ -70,6 +70,17 @@ def r1_prior_effects():
     return json.load(open(p)) if p.exists() else None
 
 
+def r1_set_null():
+    """The k=5 set-level null that splits "inside the floor" into its two causes.
+
+    A single-head effect inside the k=1 floor is UNVERIFIED, not unreadable -- and the cheap way to
+    tell which is to ablate the SET. E132d did exactly that with a 30-draw null and the answer is
+    opposite for two head sets the repository's headline sentence used to cover together.
+    """
+    p = HERE / 'R1_noise_floor' / 'results' / 'prior_effects' / 'e132d_set_null.json'
+    return json.load(open(p)) if p.exists() else None
+
+
 def r1_vocabulary():
     """AMENDMENT 2's measurement: the dimensionless floor moves for two reasons.
 
@@ -411,11 +422,11 @@ def main() -> int:
 
     A, B, E = r1(), r2(), r5()
     D, V, S, G, R, E8 = r4(), r1_vocabulary(), r6(), r6_diag(), r7(), r8()
-    PE = r1_prior_effects()
+    PE, SN = r1_prior_effects(), r1_set_null()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
-                          'r1_prior_effects': PE},
+                          'r1_prior_effects': PE, 'r1_set_null': SN},
                          indent=2, default=float))
         return 0
 
@@ -443,6 +454,16 @@ def main() -> int:
         print(f"      -> {PE['n_inside']} of {PE['n_total']} inside a floor of "
               f"{PE['floor_2sd_same_vocabulary']:.4f}; the largest clears by "
               f"{PE['largest']['clears_floor_by_pct']:.1f}%\n")
+
+    if SN:
+        n = SN['null']
+        print(f"R1'' the k=5 SET-level null -- which splits \"inside the floor\" into two causes")
+        print(f"      null over {SN['n_draws']} random 5-head draws: mean {n['mean']:+.4f} "
+              f"sd {n['sd']:.4f}  p95 {n['p95']:+.4f}")
+        for k, v in SN['sets'].items():
+            print(f"      {k:<26}{v['drop']:>+10.4f}   {v['pct_in_null']:>5.1f}th percentile")
+        print(f"      -> the COPY circuit is a genuine resolution limit; the READ candidates are "
+              f"not\n")
 
     if V:
         print("R1' changing ONLY the four answer nouns (Amendment 2)")
@@ -579,6 +600,8 @@ def main() -> int:
             ('R1 informative models', A['n_informative'], 4, 0),
             ('R1 prior effects inside the floor', PE['n_inside'] if PE else -1, 7, 0),
             ('R1 prior effects total', PE['n_total'] if PE else -1, 8, 0),
+            ('R1 COPY set percentile', SN['sets']['COPY']['pct_in_null'] if SN else -1, 0.0, 0.05),
+            ('R1 READ set percentile', SN['sets']['READ']['pct_in_null'] if SN else -1, 46.667, 0.01),
             ('R2 valid cells', B['n_valid'], 4, 0),
             ('R2 inverted', B['n_inverted'], 0, 0),
             ('R5 cells', E['n_cells'], 6, 0),

@@ -6,8 +6,20 @@ measures that.**
 
 Then it points the measurement at its own author's prior results, and **seven of eight published
 single-head effects turn out to sit inside the noise floor** — including a head that had been
-independently established as the copy head for that task. Its apparent "redundancy" was a resolution
-limit, and the limit is now a number.
+independently established as the copy head for that task.
+
+**And "inside the floor" turns out to have two different causes, which the same sentence used to
+cover.** Ablating the *sets* and placing them against a 30-draw set-size null separates them:
+
+```
+COPY circuit, 5 heads    −1.428     0.0th percentile of the null   invisible alone, enormous together
+READ candidates, 5 heads +0.088    46.7th percentile               indistinguishable from 5 random heads
+```
+
+For the copy circuit it **is** a resolution limit — the effect is there and k=1 cannot see it. For
+the read candidates there is **no hidden effect to resolve**: five of them together do what five
+random heads do. A single-head result inside the floor is therefore `UNVERIFIED`, never
+"unreadable", and the cheap way to tell which is to ablate the set.
 
 Everything here runs on one consumer GPU. Every round is pre-registered with a kill condition
 committed **before** the run. **Six of the seven completed rounds killed, withdrew or failed to

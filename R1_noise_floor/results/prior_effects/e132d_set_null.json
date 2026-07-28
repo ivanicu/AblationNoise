@@ -1,0 +1,68 @@
+{
+  "source_experiment": "E132d (5-head set ablation with a 30-draw null)",
+  "model": "qwen2.5-1.5b",
+  "vocabulary": "original",
+  "n_items": 120,
+  "n_draws": 30,
+  "draw_seed": 20260727,
+  "base_margin": 4.476821851730347,
+  "null": {
+    "mean": 0.18818618191613093,
+    "sd": 0.49109639538971567,
+    "min": -1.2391115347544353,
+    "max": 1.2428778012593586,
+    "p95": 0.8411626958847046
+  },
+  "null_values": [
+    0.5403331359227498,
+    -0.16448588371276857,
+    0.30136903127034503,
+    0.450592565536499,
+    -0.006838814417521159,
+    -0.03366499741872152,
+    0.8373099327087402,
+    0.8443149566650391,
+    -0.1920581261316935,
+    0.07374202410380046,
+    0.5997677803039551,
+    -0.12028123537699381,
+    0.28596609433492026,
+    0.22344346841176352,
+    -1.2391115347544353,
+    -0.2414467414220174,
+    0.36753966013590494,
+    0.4634879112243652,
+    0.7788722356160481,
+    -0.13793217341105143,
+    -0.4979483286539714,
+    -0.3579521656036377,
+    0.5507614771525066,
+    0.4480240980784098,
+    0.21935831705729167,
+    -0.13779532114664714,
+    0.0014054298400878907,
+    0.64039200146993,
+    -0.09445714155832927,
+    1.2428778012593586
+  ],
+  "sets": {
+    "READ": {
+      "drop": 0.08834475676218669,
+      "pct_in_null": 46.666666666666664
+    },
+    "COPY": {
+      "drop": -1.4278578996658324,
+      "pct_in_null": 0.0
+    },
+    "CAUSAL5": {
+      "drop": -0.3404271999994914,
+      "pct_in_null": 10.0
+    },
+    "E132c_single_random_draw": {
+      "drop": 0.8728200594584147,
+      "pct_in_null": 96.66666666666667
+    }
+  },
+  "why_it_matters": "A single-head effect inside the k=1 floor has TWO possible causes and this file separates them: ablate the SET and place it against the set-size null. The COPY circuit clears at the 0th percentile -- individually invisible, collectively enormous, a genuine resolution limit. The READ candidates sit at the 46.7th -- indistinguishable from five random heads, so for them there is no hidden effect to resolve.",
+  "founding_incident": "E132c used the single random draw at +0.8728 as its null. It is the 96.7th percentile of the proper 30-draw null. That is why E132c is marked INADMISSIBLE and why this project exists."
+}
