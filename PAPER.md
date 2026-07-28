@@ -234,7 +234,10 @@ floor is not a test in either arm and the percentile replaces it.
 
 ## The finding, as the scalar floor described it
 
-`L22H7` was independently established, by a prior experiment, as the copy head for this task.
+`L22H7` was independently established, by a prior experiment, as the copy head for this task. **[⚠ `D100`: *independent of `E132`*, yes — *independent of the INSTRUMENT CLASS*, no.
+`E123` established `L22H7` by **per-head final-position attention mass**
+(`e123_retrieval_source.py:10,22`), which is the same kind of instrument that selected the other
+seven. There is **no** intervention-based corroboration of any head's role in this repository.]**
 Ablate **every one** of the `168` heads in the studied band, once each — no sampling — and place the
 eight previously published single-head effects in that ranking:
 

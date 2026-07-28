@@ -270,7 +270,10 @@ floor is not a test in either arm and the percentile replaces it.
 
 ### And the descriptive picture the scalar floor gave
 
-`L22H7` was independently established, by a prior experiment, as the copy head for this task.
+`L22H7` was independently established, by a prior experiment, as the copy head for this task. **[⚠ `D100`: *independent of `E132`*, yes — *independent of the INSTRUMENT CLASS*, no.
+`E123` established `L22H7` by **per-head final-position attention mass**
+(`e123_retrieval_source.py:10,22`), which is the same kind of instrument that selected the other
+seven. There is **no** intervention-based corroboration of any head's role in this repository.]**
 Knock out **every one** of the `168` heads in the studied band at the final query position, once
 each — no sampling — and place the eight previously published single-head effects in that ranking:
 
@@ -286,7 +289,8 @@ of those 10, ones where ablation HELPS the model:                  7
 >
 > **The reverse does not follow, and this page claimed it for one step.** *"Magnitude and role are
 > unrelated"* is a claim about a relationship and there is exactly **one** head here with an
-> independently established role. **One point is an anecdote.**
+> independently established role. **One point is an anecdote.** **And `D100` narrows it further: that role is
+> attention-established, not intervention-established.**
 >
 > **And `41` does not replicate** — the same head ranks `160` on a disjoint item draw, the largest
 > rank move of all `168`. The direction of the qualitative claim survives; the number is not a
