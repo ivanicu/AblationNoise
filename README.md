@@ -47,6 +47,22 @@ Each round is a folder: its pre-registration, its amendments, its runner, its re
 | **[R6](R6_intervention/)** | is the floor a property of ablation, or of *zeroing*? | **NOT MET** — its own control arm reproduced R1 to **0.0% on 4 of 4 models**, then a pre-registered diagnostic showed the comparison arms move the residual stream 4–7× less, so the design cannot decide. The question stays open |
 | **[R7](R7_norm_matched/)** | at a **fixed** perturbation size, does the *direction* change readability? | **NOT MET** on the gate (2 of the 4 cells were droppable). But with displacement matched to **0.00%**, a known effect is **least** readable in the on-distribution direction and **most** readable in the zeroing direction, in **4 of 4** cells — the opposite of what the off-manifold objection predicts |
 
+| **[R8](R8_component/)** | *which component* of a head's output does the intervention destroy? | **NOT MET** — and the round's own prediction matrix had a **mis-derived row**, which collapsed two of its three worlds. One world still died: destroying the item-**constant** component is worth as much as destroying both (`4 of 4`), while destroying only the item-**varying** component is worth far less (`3 of 3`) |
+| **[R9](R9_depth_profile/)** | is R1's headline a **depth** artifact? | **pre-registered, running.** R1's band is deep and its sham is shallow — see below |
+
+### R9 is the round that can retract R1, and an outside reader found the hole
+
+R1's statistic is `sd(band draws) / sd(sham draws)`. **The band is the upper half of the stack and
+the sham is the early layers.** So two explanations predict the same number — *this band holds a
+mechanism, so which head you pick matters*, and *later layers are generically more head-heterogeneous
+than earlier ones* — and nothing in R1–R8 separates them. Eight rounds inherited the confound, and
+R6's and R7's exact reproductions of R1 reproduced it perfectly along with the number.
+
+[R9](R9_depth_profile/) replaces the ratio with the **whole curve**: 30 single-head draws from each
+layer separately, with the band's baseline being the **sham half's own trend extrapolated to the
+band's depth** — the comparison R1 should have made. Its `DEPTH-EXPLAINS-IT` branch rewrites the
+first sentence of this page in the same commit as the result.
+
 ### R6 was the round that could break this repository. It did not — and it did not clear it either.
 
 Every number above came from setting a component's output to **zero**, which hands the downstream
