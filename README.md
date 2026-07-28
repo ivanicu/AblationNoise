@@ -1,4 +1,7 @@
-<!-- unbacked-ok: 2605.24059 2606.05378 2605.29126 2605.00333 2607.01002 2604.01094
+<!-- unbacked-ok: 2.62 24 27.58 17.2 35 -- the fresh-clone verification's wall time, peak memory and
+ false-pass rate, plus the earlier rate and the ceiling. Measured once on 2026-07-28 against a clone of the published remote; they
+ describe that run and cannot be regenerated from checked-in data.
+ 2605.24059 2606.05378 2605.29126 2605.00333 2607.01002 2604.01094
  2603.11793 2606.09607 2607.04167 2607.18921 -- arXiv identifiers, not measurements: they name the
  papers that refuted this project's novelty premise and no generator here could emit them.
  57.5 18.1 80.5 1.4 -- results QUOTED FROM 2606.05378 section 6, which this repository did not run.
@@ -355,12 +358,35 @@ pre-registered worlds had identical predictions.
 > proper distribution. That is an audit, not an instrument. It is the honest description.
 
 ```bash
-make verify     # 5 selftests + the attack suite, 41 recomputed numbers, 27 markdown files
+make verify     # 5 selftests + the attack suite, 73 recomputed numbers, 28 markdown files
 make headline   # just the numbers, recomputed from the checked-in results
 ```
 
-**No GPU, no model download, no network, and no dependencies** — `make verify` runs on a stock
-Python 3 interpreter with nothing installed, in about two seconds. That is deliberate: a repository
+**No GPU, no model download, no network, and no dependencies** — and on 2026-07-28 that was
+**tested rather than asserted**, from a fresh clone of the published remote, on `/usr/bin/python3`
+with `numpy` confirmed absent:
+
+```
+git clone https://github.com/ivanicu/AblationNoise.git && cd AblationNoise && make verify
+
+5 detector selftests    PASS          provenance      49 result files audited
+attack suite            6 of 6 refuse recomputed      73 numbers
+markdown files          28 of 28 fully backed         2.62 s, 24 MB
+```
+
+> **That run also shows `0 CONFIRMED` on provenance, and that is the honest state rather than a
+> bug.** Every runner's `_PRODUCER` field was changed the same day — it had recorded a *basename*
+> that eleven rounds share — so no existing result's stamp matches its runner's **current** source.
+> Three resolve against an **earlier** committed version and say so; the rest predate stamping.
+> **Re-stamping without re-running would be a lie**, because the results were produced by the code
+> that existed then. The mismatch is left visible and explained.
+>
+> **And the gate weakens as the repository grows.** The detector's false-pass rate is `27.58%`
+> against the `35%` ceiling that fails the build; it was `17.2%` two sessions ago. Every generator
+> added to strengthen the gate widens the reference set and weakens this check — which is why the
+> figure is printed on every run instead of being inferred.
+
+`make verify` runs in about two seconds. That is deliberate: a repository
 whose subject is *whether you can check a claim* has no business requiring a scientific stack before
 you can check its own. (Reproducing a *round* needs `torch` and `transformers`; verifying the
 **claims** needs neither, and the two paths are separate targets.)
@@ -561,24 +587,24 @@ it does not fail, and it does not claim the rows are wrong. There is no reposito
 against, which is a fact about your directory and not about the ledger.
 
 ```
-    PROVENANCE     17      whether the number has a generator at all
+    PROVENANCE     19      whether the number has a generator at all
     SCOPE           9      which population the claim covers
     CONTROL        11      what the control arm actually holds fixed
     STATISTIC      10      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 29 · instrument 12 · outside reader 7
+    found by:  author reading the object 30 · instrument 13 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 57 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 59 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 57 were findable only by an outside reader** — `12.3%`. That fraction was 27% at n=22 and
+**7 of 59 were findable only by an outside reader** — `11.9%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -588,7 +614,7 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 
 ```
 joint            by the author   by an instrument   by an outside reader
-PROVENANCE            10                7                    0
+PROVENANCE            11                8                    0
 SCOPE                  9                0                    2
 STATISTIC              6                4                    1
 CONTROL                7                1                    4
@@ -596,7 +622,7 @@ UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**An instrument has finally caught a `CONTROL` defect — the first, at n=`57`.** It was the
+**An instrument has finally caught a `CONTROL` defect — the first, at n=`59`.** It was the
 provenance validator, firing on its own during a routine gate run, and what it revealed was a
 false-conviction rule **inside itself**. The `--check` line asserting `0` had been written at n=`37`
 precisely so the build would fail the day this happened; it failed, and the expected count was
@@ -611,12 +637,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`57` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
-the pre-registered threshold of ≥8 and now stands at `17`.
+`AMBIGUOUS` by one instance. At n=`59` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+the pre-registered threshold of ≥8 and now stands at `19`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`57` a bin of `17` is `29.8%`, which is not domination
+> ledger; at n=`59` a bin of `19` is `32.2%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

@@ -522,6 +522,24 @@
       "defect": "'clearing the sham floor is being in the second half of the network' -- written one step earlier as the interpretation of the 46% figure",
       "operation": "TOO COARSE, and the direct measurement shows why. The per-layer clearing rate rises with depth (Spearman +0.645 over 28 layers) but NOT monotonically: it peaks at 83% in L16-L17 and falls back to 8% by L25, so L25 clears LESS often than L11. A hump, not a half. Two facts place the copy head exactly: L22's own rate is 42%, the band average, and within its layer L22H7 is the 5th of 5 heads that clear -- the smallest. And 4 of the 8 published heads live in the PEAK layers where 83% of heads clear, which is why they clear the sham floor and why it establishes nothing",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D58",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "f477ada",
+      "defect": "the page promised a stranger can check every claim with no dependencies, and that path had not been re-tested since the gate grew from 11 files to 28 and gained a refusal artifact, two round directories and the provenance validator",
+      "operation": "TESTED, not asserted: fresh clone of the published remote, /usr/bin/python3 with numpy confirmed absent, every stage runs, 28 of 28 files backed, 73 numbers recomputed, attack suite 6 of 6, 2.62 s and 24 MB. It PASSES. The run also surfaced a state the page did not mention -- provenance reports 0 CONFIRMED because _PRODUCER changed in all 12 runners the same day -- now explained on the page rather than left to surprise the reader",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D59",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "f477ada",
+      "defect": "the Bash tool reset the working directory to /home/ivan after a subshell cd, so every subsequent relative-path command in that step targeted a DIFFERENT repository -- a grep for the front page returned '# BroueLean'",
+      "operation": "NEAR MISS, and the thing that stopped it was not designed to. The edit script asserted its anchor text was present BEFORE writing, so it aborted on the wrong file instead of clobbering it; /home/ivan/README.md's mtime is still 2026-04-17. An assertion written as a correctness check on the TEXT functioned as a guard on the DIRECTORY. All subsequent file operations in this project now use absolute paths",
+      "found_by": "instrument"
     }
   ]
 }
