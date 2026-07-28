@@ -594,9 +594,32 @@ def selection_vs_effect():
     r_abl = sorted(band, key=lambda k: -abl[k])
     r_room = sorted(band, key=lambda k: -ra[k])
     r_name = sorted(band, key=lambda k: -na[k])
+    # SIGNED AS WELL AS ABSOLUTE, because |.| throws away the thing this project already showed
+    # matters -- 100 positive against 68 negative in this band, and 7 of the 9 clearing heads
+    # clearing by HELPING. A reader given only a negative number on |drop| will fill in "so
+    # high-attention heads help when ablated". They do not. The signed correlation is THREE TIMES
+    # weaker, so the anti-correlation is about MAGNITUDE: attention picks heads that do LESS, in
+    # either direction.
+    S = [d - mu for d in (L[x]['per_head'][str(h)] for x, h in band)]
+
+    def quartiles(att):
+        order = sorted(band, key=lambda k: att[k])
+        q = len(order) // 4
+        out = []
+        for i in range(4):
+            grp = order[i * q:(i + 1) * q] if i < 3 else order[3 * q:]
+            sg = [L[k[0]]['per_head'][str(k[1])] - mu for k in grp]
+            out.append({'q': i + 1, 'n': len(grp), 'mean_signed': sum(sg) / len(sg),
+                        'n_pos': sum(1 for v in sg if v > 0),
+                        'n_neg': sum(1 for v in sg if v < 0)})
+        return out
+
     return {'n_band': len(band),
             'spearman_room': _spearman(A, [ra[k] for k in band]),
             'spearman_name': _spearman(A, [na[k] for k in band]),
+            'spearman_room_signed': _spearman(S, [ra[k] for k in band]),
+            'spearman_name_signed': _spearman(S, [na[k] for k in band]),
+            'room_quartiles': quartiles(ra), 'name_quartiles': quartiles(na),
             'top_ablation': [{'head': f'L{x}H{h}', 'abl': abl[(x, h)],
                               'room_rank': r_room.index((x, h)) + 1,
                               'name_rank': r_name.index((x, h)) + 1}
@@ -2255,6 +2278,14 @@ def main() -> int:
         print(f"        Spearman(|centred ablation|, room attention) = {SV['spearman_room']:+.4f}")
         print(f"        Spearman(|centred ablation|, name attention) = {SV['spearman_name']:+.4f}")
         print(f"      BOTH NEGATIVE -- the instruments mildly ANTI-correlate")
+        print(f"      SIGNED, so the negative number is not misread: room "
+              f"{SV['spearman_room_signed']:+.4f}  name {SV['spearman_name_signed']:+.4f} -- about "
+              f"THREE TIMES weaker, so this is a MAGNITUDE effect, not a direction one.")
+        print(f"        attention picks heads that do LESS, not heads that help. But the top "
+              f"name-attention quartile does skew to hurting:")
+        for q in SV['name_quartiles']:
+            print(f"          name-att Q{q['q']}  n={q['n']:>3}  mean signed "
+                  f"{q['mean_signed']:+.4f}   pos/neg {q['n_pos']}/{q['n_neg']}")
         print(f"      {'head':<9}{'ablation':>10}{'room rank':>11}{'name rank':>11}")
         for r in SV['top_ablation']:
             print(f"      {r['head']:<9}{r['abl']:>10.4f}{r['room_rank']:>11}{r['name_rank']:>11}")
@@ -2740,6 +2771,8 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('R16 spearman name signed',
+             SV['spearman_name_signed'] if SV else -1, -0.1142, 0.0001),
             ('R16 spearman room', SV['spearman_room'] if SV else -1, -0.1885, 0.0001),
             ('R16 spearman name', SV['spearman_name'] if SV else -1, -0.3952, 0.0001),
             ('R2T fixed offset', TA2['offset_to_answer'] if TA2 else -1, 64, 0),
@@ -2751,7 +2784,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 26.630, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 26.585, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -2826,9 +2859,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 81, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 82, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 22, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.642, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.537, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

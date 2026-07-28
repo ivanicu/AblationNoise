@@ -738,6 +738,15 @@
       "defect": "fifteen rounds treated 'the eight published effects' as a given set without asking how it was chosen -- the set is the heads ATTENTION picked, and the audit measures them with ABLATION, a two-instrument comparison that had never been run",
       "operation": "THE INSTRUMENTS ANTI-CORRELATE. Over 168 band heads: Spearman(|centred ablation|, room attention) = -0.1885 and (name attention) = -0.3952. L15H7 is 168th of 168 on BOTH attention criteria and 9th by ablation. Top-5 by name attention land at ablation ranks 129, 137, 157, 88, 167. NOT A DISCOVERY -- attention as an unreliable proxy for causal importance is established background, stated as such in arXiv 2504.13752's abstract, and the literature query's positive control is reported (one relevant hit, noisy, no completeness claimed). What R16 adds is the consequence for this audit: the eight were selected by exactly the proxy known to fail, which gives 'the loudest heads were never identified' a named cause",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D82",
+      "round": "R16",
+      "bin": "STATISTIC",
+      "commit": "28ea129",
+      "defect": "R16 correlated attention with |centred ablation| only. The absolute value discards the sign, which this project had already shown matters -- 100 positive against 68 negative in the band, 7 of 9 clearing heads clearing by HELPING -- and a reader given only a negative number would fill in 'high-attention heads help when ablated'",
+      "operation": "IT IS A MAGNITUDE EFFECT, NOT A DIRECTION ONE. Signed Spearman is about three times weaker: room -0.0583 against -0.1885, name -0.1142 against -0.3952. Attention picks heads that do LESS, in either direction. The top name-attention quartile does carry a direction -- 9 positive against 33 negative, mean signed drop -0.0311 -- so those heads do tend to hurt when ablated, which is what a real role predicts; their effects are simply small, which is why they rank low on |ablation|. Both forms now emitted so the negative number cannot be misread",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

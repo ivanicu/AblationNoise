@@ -44,6 +44,33 @@ L16H3         0.5147         120         126
 **`L15H7` attends less than any other head in the band, on both criteria, and ablating it is the
 9th largest effect.**
 
+### It is a **magnitude** effect, not a direction one — and the negative number invites the wrong reading
+
+`|drop|` throws away the sign, and this project has already shown the sign matters: `100` positive
+against `68` negative in this band, and `7` of the `9` clearing heads clear by **helping**. A reader
+given only `−0.40` will fill in *"so high-attention heads help when ablated."* **They do not.**
+
+```
+                      on |drop|     on SIGNED drop
+room attention          −0.1885         −0.0583
+name attention          −0.3952         −0.1142        ~3× weaker
+```
+
+**Attention picks heads that do *less*, in either direction.** But the top quartile does carry a
+direction:
+
+```
+name-att quartile   n    mean signed drop   pos/neg
+Q1 (lowest)        42          +0.0504       21/21
+Q2                 42          +0.0201       18/24
+Q3                 42          −0.0394       16/26
+Q4 (highest)       42          −0.0311        9/33
+```
+
+**`Q4` is `9` positive against `33` negative** — the heads that attend most to names do tend to
+*hurt* when ablated, which is the direction you would expect if they do something. **Their effects
+are simply small, which is exactly why they rank low on `|ablation|`.**
+
 ## This is **not** a discovery, and saying so is the point
 
 That attention weight is an unreliable proxy for causal importance is **established background**.
