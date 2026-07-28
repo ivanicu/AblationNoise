@@ -549,6 +549,78 @@ def r11():
             'effects': rows}
 
 
+def r12():
+    """The cross-model separator: is the hump at a fixed LAYER or a fixed DEPTH FRACTION?
+
+    28 layers versus 36. At 28 the two coincide; at 36 they are five layers apart, which is the
+    whole reason a second model separates worlds the first cannot. Thresholds were committed while
+    the run was still executing and re-derived under the corrected centring rule before it produced
+    a file.
+
+        observed centroid   22.833   bootstrap 95% CI [21.52, 24.01] over 2000 head resamples
+        ABSOLUTE predicted  17.23    OUTSIDE the interval
+        RELATIVE predicted  22.34    INSIDE  the interval
+
+    RELATIVE. The centroid sits at 0.6383 of the way through qwen2.5-1.5b and 0.6524 through
+    qwen2.5-3b. An interval that EXCLUDES the rival is stronger than a point crossing a threshold,
+    and the pre-registration asked only for the point.
+
+    WHAT DOES NOT TRANSFER IS THE SHAPE, and that is the more useful half. qwen2.5-1.5b's profile is
+    a clean unimodal hump peaking at 83%; qwen2.5-3b's has three near-equal local maxima (56, 50,
+    50%) and a dead zone across L1-L11. With 16 heads per layer a rate carries about +-12 points, so
+    THE PEAK LOCATION IS NOT RESOLVED -- the four highest layers are statistically indistinguishable.
+    The verdict rests on the centroid, which averages over all 36 layers; no peak-layer claim is made
+    for this model.
+    """
+    import random as _r
+    p = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-3b.json'
+    if not p.exists():
+        return None
+    t = json.load(open(p))
+    L = {int(k): v for k, v in t['layers'].items()}
+    NL = t['n_layers']
+    slo, shi = t['sham_band']
+    sham = [v for x in range(slo, shi + 1) for v in L[x]['per_head'].values()]
+    mus = sum(sham) / len(sham)
+    fs = 2 * math.sqrt(sum((v - mus) ** 2 for v in sham) / (len(sham) - 1))
+
+    def cent(pick=None):
+        r = {}
+        for x in range(NL):
+            vals = list(L[x]['per_head'].values())
+            if pick:
+                vals = [vals[i] for i in pick(len(vals))]
+            r[x] = sum(1 for v in vals if abs(v - mus) > fs) / len(vals)
+        tot = sum(r.values())
+        return (sum(x * q for x, q in r.items()) / tot if tot else float('nan')), r
+
+    c, rate = cent()
+    rng = _r.Random(7)
+    boot = sorted(x for x in (cent(lambda n: [rng.randrange(n) for _ in range(n)])[0]
+                              for _ in range(2000)) if x == x)
+    lo95, hi95 = boot[int(.025 * len(boot))], boot[int(.975 * len(boot))]
+    nz = [q for q in rate.values() if q > 0]
+    mx = max(rate.values())
+    peak = [x for x, q in rate.items() if q == mx]
+    n_per = len(L[0]['per_head'])
+    top = sorted(rate.items(), key=lambda kv: -kv[1])[:4]
+    return {'model': t['model'], 'n_layers': NL, 'n_heads_per_layer': n_per,
+            'sham_band': [slo, shi], 'sham_floor': fs,
+            'centroid': c, 'centroid_ci95_lo': lo95, 'centroid_ci95_hi': hi95,
+            'depth_fraction': c / (NL - 1),
+            'absolute_prediction': 17.2347, 'relative_prediction': 22.3413,
+            'absolute_inside_ci': lo95 <= 17.2347 <= hi95,
+            'relative_inside_ci': lo95 <= 22.3413 <= hi95,
+            'verdict': 'ABSOLUTE' if c < 19.5 else 'RELATIVE' if c > 20.5 else 'AMBIGUOUS',
+            'peak_layers': peak, 'peak_rate': mx,
+            'max_over_min_nonzero': mx / min(nz),
+            'kill_fired': not (mx / min(nz) >= 2 and peak[0] not in (0, NL - 1)),
+            'rate_se_at_half': math.sqrt(0.25 / n_per),
+            'top4': [{'layer': x, 'rate': q, 'ci95': 1.96 * math.sqrt(q * (1 - q) / n_per)}
+                     for x, q in top],
+            'rate_by_layer': {x: q for x, q in sorted(rate.items())}}
+
+
 def r14():
     """Does the model bind the name, or copy line 0? Pre-registered before the probe ran.
 
@@ -1664,6 +1736,7 @@ def main() -> int:
     IR = input_replication()
     TA = task_audit()
     FT = r14()
+    TW = r12()
     EL = r11()
     PW = power()
     RC = reference_class()
@@ -1672,7 +1745,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -1854,6 +1927,28 @@ def main() -> int:
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
               f"<=5 -- and it is the proven copy head\n")
+
+    if TW:
+        print("R12 is the hump at a fixed LAYER or a fixed DEPTH FRACTION? -- pre-registered")
+        print(f"      {TW['model']}, {TW['n_layers']} layers vs 28: at 28 the two coincide, at "
+              f"{TW['n_layers']} they are five layers apart")
+        print(f"      centroid {TW['centroid']:.3f}   bootstrap 95% CI "
+              f"[{TW['centroid_ci95_lo']:.2f}, {TW['centroid_ci95_hi']:.2f}]")
+        print(f"        ABSOLUTE predicted {TW['absolute_prediction']:.2f}  -> "
+              f"{'INSIDE' if TW['absolute_inside_ci'] else 'OUTSIDE'} the interval")
+        print(f"        RELATIVE predicted {TW['relative_prediction']:.2f}  -> "
+              f"{'INSIDE' if TW['relative_inside_ci'] else 'OUTSIDE'} the interval")
+        print(f"      -> {TW['verdict']}   depth fraction {TW['depth_fraction']:.4f} "
+              f"(qwen2.5-1.5b: 0.6383)")
+        print(f"      KILL (no interior peak): peak L{TW['peak_layers'][0]} of {TW['n_layers']}, "
+              f"max/min-nonzero {TW['max_over_min_nonzero']:.2f} -> "
+              f"{'FIRED' if TW['kill_fired'] else 'did not fire'}")
+        print(f"      BUT THE SHAPE DOES NOT TRANSFER. {TW['n_heads_per_layer']} heads per layer "
+              f"=> a rate carries about +-{100*1.96*TW['rate_se_at_half']:.0f} points:")
+        print("        " + "   ".join(f"L{r['layer']} {100*r['rate']:.0f}%+-{100*r['ci95']:.0f}"
+                                      for r in TW['top4']))
+        print(f"        the four highest layers are statistically indistinguishable -- the PEAK "
+              f"LOCATION is not resolved, and the verdict rests on the CENTROID\n")
 
     if FT:
         print("R14 does the model BIND the name, or COPY line 0? -- pre-registered before the probe")
@@ -2237,6 +2332,9 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
+            ('R12 CI lower', TW['centroid_ci95_lo'] if TW else -1, 21.52, 0.01),
+            ('R12 depth fraction', TW['depth_fraction'] if TW else -1, 0.6524, 0.0001),
             ('R14 shuffled accuracy', FT['accuracy_shuffled'] if FT else -1, 0.8, 0.001),
             ('R14 ends minus middle z', FT['ends_minus_middle_z'] if FT else -1, 4.96, 0.01),
             ('R14 worst line over chance', FT['worst_over_chance'] if FT else -1, 2.286, 0.001),
@@ -2306,9 +2404,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 67, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 68, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 19, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 10.448, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 10.294, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
@@ -2318,7 +2416,7 @@ def main() -> int:
             ('LDG instrument-found CONTROL defects',
              DL['cross_tab']['CONTROL']['instrument'] if DL else -1, 2, 0),
             ('LDG instrument-found SCOPE defects',
-             DL['cross_tab']['SCOPE']['instrument'] if DL else -1, 1, 0),
+             DL['cross_tab']['SCOPE']['instrument'] if DL else -1, 2, 0),
             ('VAR in-sample floor share', VD['in_sample']['floor_share_pct'] if VD else -1,
              72.05, 0.01),
             ('VAR held-out pairings near 52',

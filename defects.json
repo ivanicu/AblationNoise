@@ -612,6 +612,15 @@
       "defect": "across two steps I let R13's task-level finding hang as an implication about the MODEL -- that L22H7 'may be copying from position 0' -- without testing it",
       "operation": "REFUTED BY THE PRE-REGISTERED PROBE. Shuffling the fact lines so the answer lands at a random index: accuracy 1.000 -> 0.800 against chance 0.25, pre-registered verdict MIXED. Every line is above chance and the worst is 2.3x it. The confound control, built to separate a STEP (position-copying) from a SMOOTH DECAY (primacy), returned a THIRD shape -- a U, primacy AND recency, ends 0.966 vs middle 0.639, z=+4.96. R13's statement about what the TASK permits stands unchanged; the insinuation about what the MODEL does was mine and is dead",
       "found_by": "instrument"
+    },
+    {
+      "id": "D68",
+      "round": "R12",
+      "bin": "SCOPE",
+      "commit": "35bc6fb",
+      "defect": "qwen2.5-1.5b's clearing profile was described as a HUMP peaking at L16-L17, and the peak location was quoted as a fact about the model rather than about a rate measured on 12 heads",
+      "operation": "THE PEAK DOES NOT TRANSFER AND ON THE SECOND MODEL IT IS NOT EVEN RESOLVED. qwen2.5-3b's profile has three near-equal maxima (56, 50, 50%) and a dead zone across L1-L11; with 16 heads per layer a rate carries +-24 points at 95%, so its four highest layers are statistically indistinguishable. What DOES transfer is the CENTROID: 22.833 with a bootstrap 95% CI of [21.52, 24.01], which excludes the ABSOLUTE prediction of 17.23 and contains the RELATIVE one of 22.34 -- depth fraction 0.6383 vs 0.6524. The pre-registered verdict RELATIVE fires on an interval rather than a point, which is more than it asked for; no peak-layer claim is made for the second model",
+      "found_by": "instrument"
     }
   ]
 }

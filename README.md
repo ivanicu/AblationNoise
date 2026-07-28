@@ -77,6 +77,28 @@ the measurement at its own author's prior work.**
 > named that outcome as a kill aimed at my own steps and required it be reported as loudly as the
 > other one.
 
+> ### And [R12](R12_cross_model/) settled where the hump lives — a fixed **fraction** of the stack, not a fixed layer
+>
+> `qwen2.5-3b` has `36` layers against `qwen2.5-1.5b`'s `28`. At `28` a fixed layer *index* and a
+> fixed depth *fraction* coincide; at `36` they are five layers apart. Thresholds were committed
+> while the run was executing and re-derived under the centring correction **before** it produced a
+> file.
+>
+> ```
+> centroid   22.833     bootstrap 95% CI [21.52, 24.01]
+> ABSOLUTE predicted 17.23   OUTSIDE the interval
+> RELATIVE predicted 22.34   INSIDE  the interval        -> RELATIVE
+>
+> depth fraction   qwen2.5-1.5b 0.6383      qwen2.5-3b 0.6524
+> ```
+>
+> **The shape does not transfer, and that is the more useful half.** `qwen2.5-1.5b`'s profile is a
+> clean hump peaking at `83%`; `qwen2.5-3b`'s has three near-equal maxima (`56` · `50` · `50%`) and
+> a dead zone across `L1`–`L11`. With `16` heads per layer a rate carries about `±24` points at
+> `95%`, so **the four highest layers are statistically indistinguishable and the peak location is
+> not resolved.** The verdict rests on the centroid, which averages over all `36` layers. `n=2`
+> models establishes no law.
+
 > **And the reason it took thirteen rounds:** an elaborate apparatus was built to audit
 > *measurements* — `4` detectors, `62` logged defects, a pre-registration per round — and **none of
 > it was ever pointed at the thing being measured.** The task's own construction was read for the
@@ -698,23 +720,23 @@ against, which is a fact about your directory and not about the ledger.
 
 ```
     PROVENANCE     19      whether the number has a generator at all
-    SCOPE          12      which population the claim covers
+    SCOPE          13      which population the claim covers
     CONTROL        10      what the control arm actually holds fixed
     STATISTIC      12      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 35 · instrument 15 · outside reader 7
+    found by:  author reading the object 35 · instrument 16 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 67 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 68 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 67 were findable only by an outside reader** — `10.4%`. That fraction was 27% at n=22 and
+**7 of 68 were findable only by an outside reader** — `10.3%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -725,7 +747,7 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 ```
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE            11                8                    0
-SCOPE                 12                1                    2
+SCOPE                 13                2                    2
 STATISTIC              8                4                    1
 CONTROL                8                2                    4
 UNCLASSIFIED           4                0                    0
@@ -738,7 +760,7 @@ INTERVENTION           1                1                    0
 
 * **`CONTROL` fell at n=`49`.** The provenance validator fired on its own during a routine gate run,
   and what it revealed was a false-conviction rule **inside itself**.
-* **`SCOPE` fell at n=`67`.** [R14](R14_position_vs_binding/)'s pre-registered probe refuted an
+* **`SCOPE` fell at n=`67`, and again at n=`68`.** [R14](R14_position_vs_binding/)'s pre-registered probe refuted an
   implication its author had left hanging across two steps.
 
 Both times **the expected count was updated and the check was not.** It took `30` further ledger
@@ -748,18 +770,18 @@ being read — **each fired on its own.** That original measurement is what
 never reached, with the real defect eight rounds inherited as its first selftest case.
 
 **An outside reader still holds the lead on both**: `4` `CONTROL` and `2` `SCOPE` against the
-instruments' `2` and `1`.
+instruments' `2` and `2`.
 
 ### The taxonomy test now returns `ONE-JOINT-DOMINATES` — **and the threshold that produced it is a defect**
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`67` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`68` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `19`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`67` a bin of `19` is `28.4%`, which is not domination
+> ledger; at n=`68` a bin of `19` is `27.9%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The
