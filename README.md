@@ -1,8 +1,8 @@
 # AblationNoise
 
-**Interpretability work reports the effect of ablating a component and reads its size as evidence of
-localisation. Almost none report what a *random* component of the same size does. This repository
-measures that.**
+**An ablation effect is reported as a number, and whether that number is large depends entirely on
+what a *random* component of the same size does. This repository measures that — and then points
+the measurement at its own author's prior work.**
 
 Then it points the measurement at its own author's prior results, and **seven of eight published
 single-head effects turn out to sit inside the noise floor** — including a head that had been
@@ -45,6 +45,23 @@ committed **before** the run. **Six of the seven completed rounds killed, withdr
 reach the hypothesis their author preferred** — one had its verdict withdrawn by the round after it,
 one was defeated by a diagnostic its author wrote to attack it, and one found two of its own
 pre-registered worlds had identical predictions.
+
+> **How common is it to report that baseline? This repository does not know, and now says so.**
+> Until 2026-07-28 the sentence above read *"almost none report what a random component does"* — a
+> proportion over an unbounded corpus, stated as fact, with no measurement behind it, on the front
+> page of a project whose subject is claims stated as fact. It had no executable falsifier, so by
+> this repository's own rule it could never have been more than D4.
+>
+> What **is** measured is n=1 and it is the author's own. The experiment this line descends from
+> used **a single random draw** as its null — and that draw sits at the **96.7th percentile** of the
+> proper thirty-draw distribution, which is why it is stamped `INADMISSIBLE` and why this whole
+> line exists. Settling the general claim needs a claim-level survey of the literature. That is a
+> different project, and it is named in *What is open*.
+>
+> A prior-art check on the *concept* — does the field already have a name for this baseline? — was
+> attempted twice on 2026-07-28 and returned **rate-limited both times**. That is `UNRUNNABLE`, and
+> it is recorded as such rather than as "no prior art found", because a silenced instrument returns
+> silence and not an acquittal. It is the cheapest remaining check and it has not been run.
 
 ```bash
 make verify     # the whole gate: 4 detector selftests, 11 recomputed numbers, 6 READMEs checked
@@ -366,6 +383,7 @@ entitled to see the shape of the open ones.
 | **Does readability transfer across models?** | R4, whose across-model verdict is `UNVERIFIED` | an order of magnitude more models. Five cannot decide it: the best of 324 admissible estimators fits three model-level parameters to four model-level observations |
 | **Which readout is more readable?** | R5, whose readout axis is **withdrawn as confounded** | a mechanism-**strength**-matched design. The identified head's attention was 0.244 on one model and 0.852/0.877 on the others, so the readout comparison is confounded with mechanism quality. More models do not fix this; matched mechanisms do |
 | **Does any of it hold outside attention heads?** | scope of every round | MLP neurons, SAE features, residual directions. Nothing here is evidence about them, and the two-point calibration is a hypothesis there, not a method |
+| **How often does published work report a random-component baseline at all?** | the front page's original first paragraph, which asserted "almost none" with no measurement | a **claim-level** survey: decompose each paper's headline ablation claim into (intervention, control, statistic, scope) and check whether a same-size random null is reported *with its spread*. Abstract search cannot answer it — whether a null was reported is a methods detail — so an abstract-level result here would be an unfit instrument, not a weak one |
 | **Does it hold off a synthetic task?** | scope of every round | a natural-text task with a known mechanism. The synthetic binding task was chosen so the answer key is not arguable, which is also why it is not a claim about language modelling |
 
 One item that is **not** open: whether R1's number is an artifact of R1's own code. R6's zero arm
