@@ -293,11 +293,30 @@ def main():
     # NO CORRECTNESS FILTER, per R15's finding that filtering selects on position.
 
     # ---- the scan
-    n_cells_per_scope = len(items)
-    flips = {'final': 0, 'all': 0}
+    # PER-LAYER CHECKPOINTING. This box has SIGKILLed 2 of 3 long GPU jobs -- 232 at 22m47s and
+    # 242 at 71m, both 'killed by system or user' with no traceback even under -u. The cause is
+    # UNVERIFIED and may stay that way; what is fixable is the COST. Without this, a kill throws
+    # away the entire run: 242 died at layer 13 of 28 and its restart began again at layer 1.
+    ckpt = Path(str(out_path) + '.ckpt')
+    done_layers = set()
     res = {}
+    if ckpt.exists():
+        c = json.load(open(ckpt))
+        if c.get('code_version') == _CODE_VERSION and c.get('n_prompts') == len(items):
+            res = c['cells']
+            done_layers = set(c['done_layers'])
+            print(f'  RESUMING from checkpoint: {len(done_layers)} layers already done',
+                  flush=True)
+        else:
+            # A checkpoint from a DIFFERENT code version or dataset is not a resume point, it is
+            # a silent corruption. Refuse it rather than mixing two runs' cells.
+            print('  checkpoint present but code_version/n_prompts differ -- IGNORED', flush=True)
+    n_cells_per_scope = len(items)
+    flips = c['flips'] if (ckpt.exists() and done_layers) else {'final': 0, 'all': 0}
     Z = torch.zeros
     for L in range(NL):
+        if L in done_layers:
+            continue
         for h in range(NH):
             for scope in ('final', 'all'):
                 state.update(layer=L, head=h, scope=scope)
@@ -346,6 +365,12 @@ def main():
                     'base_pos': [[[round(mbp[k][bi][pj], 7) for k in range(3)]
                                   for pj in range(N_POS)] for bi in range(N_BASE)]}
         print(f'  layer {L + 1}/{NL} done', flush=True)
+        done_layers.add(L)
+        tmp = Path(str(ckpt) + '.tmp')
+        json.dump({'code_version': _CODE_VERSION, 'n_prompts': len(items),
+                   'done_layers': sorted(done_layers), 'flips': flips,
+                   'cells': res}, open(tmp, 'w'))
+        tmp.replace(ckpt)   # atomic: a kill mid-write must not leave a truncated checkpoint
 
     n_flip_all, n_flip_final = flips['all'], flips['final']
     n_cells = 2 * NL * NH * n_cells_per_scope
@@ -379,6 +404,8 @@ def main():
                'cells': res},
               open(out_path, 'w'), indent=1)
     print(f'  wrote {out_path}')
+    if ckpt.exists():
+        ckpt.unlink()
 
 
 if __name__ == '__main__':
