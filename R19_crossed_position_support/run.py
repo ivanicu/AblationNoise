@@ -294,6 +294,15 @@ def main():
                 state.update(layer=L, head=h, scope=scope)
                 sp = Z(3, N_POS, device=m.device)
                 sb = Z(3, N_BASE, device=m.device)
+                # BASE x POSITION CELLS. Caught by writing analyze.py BEFORE the data existed:
+                # Amendment 1 to the pre-registration commits H-position to a median head-wise
+                # ICC(1,1) across the 8 positions, and an ICC needs the variance components, which
+                # need the base-by-position cells. Marginal means over each axis cannot produce it.
+                # The runner recorded only the margins, so the pre-registered statistic was not
+                # computable from its own output -- a threshold committed against data that would
+                # never exist. Adding it here costs 336*2*64*8*3 floats, about 12 MB of JSON.
+                sbp = Z(3, N_BASE, N_POS, device=m.device)
+                nbp = Z(N_BASE, N_POS, device=m.device)
                 np_ = Z(N_POS, device=m.device)
                 nb_ = Z(N_BASE, device=m.device)
                 nflip = 0
@@ -308,19 +317,25 @@ def main():
                         kl = (b['bp'] * (b['blp'] - lp)).sum(1)
                         fl = (sub.argmax(1) != b['barg']).float()
                         nflip += int((am < 0).sum())
+                        flat = b['base'] * N_POS + b['pos']
                         for k, v in enumerate((d, kl, fl)):
                             sp[k].index_add_(0, b['pos'], v.float())
                             sb[k].index_add_(0, b['base'], v.float())
+                            sbp[k].view(-1).index_add_(0, flat, v.float())
                         one = torch.ones_like(d, dtype=torch.float32)
                         np_.index_add_(0, b['pos'], one)
                         nb_.index_add_(0, b['base'], one)
+                        nbp.view(-1).index_add_(0, flat, one)
                 state['layer'] = None
                 flips[scope] += nflip
                 mp = (sp / np_.clamp(min=1)).cpu().tolist()
                 mb = (sb / nb_.clamp(min=1)).cpu().tolist()
+                mbp = (sbp / nbp.clamp(min=1)).cpu().tolist()
                 res[f'L{L:02d}H{h:02d}.{scope}'] = {
                     'pos': [[round(mp[k][j], 7) for k in range(3)] for j in range(N_POS)],
-                    'base': [[round(mb[k][j], 7) for k in range(3)] for j in range(N_BASE)]}
+                    'base': [[round(mb[k][j], 7) for k in range(3)] for j in range(N_BASE)],
+                    'base_pos': [[[round(mbp[k][bi][pj], 7) for k in range(3)]
+                                  for pj in range(N_POS)] for bi in range(N_BASE)]}
         print(f'  layer {L + 1}/{NL} done', flush=True)
 
     n_flip_all, n_flip_final = flips['all'], flips['final']

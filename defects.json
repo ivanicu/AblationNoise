@@ -963,6 +963,15 @@
       "defect": "the front page's clone-and-verify promise said the handle runs in 2.6 s on a stock python3. Re-measured: 41.26 s, peak 38 MB -- 16x slower than advertised. The 2.6 s was measured once on 2026-07-28 against a version that had none of the randomization tests added since, and the page kept quoting it while the handle grew",
       "operation": "RE-MEASURED RATHER THAN RE-TUNED. The cost is four 50,000-replicate matched-layer nulls plus an 80,000-evaluation calibration loop, all added in the last several steps. Cutting replicates would have made the number true again by MOVING EVERY p-VALUE, which is churn dressed as a fix -- so the page now states 41.26 s and names the cause. THE TRADE IS STATED RATHER THAN HIDDEN: every randomization test that makes a claim checkable also makes the handle slower. THE CLASS OF FAILURE IS THE ONE THIS REPOSITORY DOCUMENTS ELSEWHERE: a number measured once and never re-measured while the thing it describes kept growing -- the same shape as the detector false-pass rate rising from 17.2% to 24.3% as the reference set grew, which was caught only because a prediction file happened to quote it",
       "found_by": "instrument"
+    },
+    {
+      "id": "D107",
+      "round": "R19",
+      "bin": "STATISTIC",
+      "commit": "17c4f9d",
+      "defect": "Amendment 1 to R19's pre-registration committed H-position to a median head-wise ICC(1,1) across the 8 positions. AN ICC NEEDS THE VARIANCE COMPONENTS, WHICH NEED THE BASE-BY-POSITION CELLS, and the runner recorded only the two marginal means -- per position over bases, and per base over positions. Marginal means cannot produce an ICC. So the pre-registration had committed a threshold against a statistic that would never be computable from its own output",
+      "operation": "CAUGHT BY WRITING THE ANALYSIS BEFORE THE DATA EXISTED, which is the entire reason to do that. results/ held only the n_base=2 smoke file and the 64-base run was still QUEUED, so the runner could be fixed without invalidating anything: it now accumulates a base x position tensor alongside the two margins, costing 336*2*64*8*3 floats or about 12 MB of JSON. The analysis reports NOT COMPUTABLE rather than substituting a different statistic when a result file lacks base_pos, so an older file cannot silently be scored by a proxy. AND THE BROADER POINT IS THE REASON THIS STEP HAPPENED AT ALL: pre-registered PROSE fixes thresholds, but pre-registered CODE fixes the estimators, the aggregation, the bootstrap unit and the tie-breaking -- every place a verdict can move after the fact without touching a single stated number. analyze.py is committed with results/ still empty, and its header says so",
+      "found_by": "author_attacking_own_detector"
     }
   ]
 }
