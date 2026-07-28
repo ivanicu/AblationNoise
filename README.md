@@ -21,6 +21,25 @@ the read candidates there is **no hidden effect to resolve**: five of them toget
 random heads do. A single-head result inside the floor is therefore `UNVERIFIED`, never
 "unreadable", and the cheap way to tell which is to ablate the set.
 
+**And the whole k=1 comparison is sub-behavioural.** The answer flips exactly when the margin
+reaches zero, so the distance to a behavioural change *is* the baseline margin. Measured against
+it:
+
+```
+baseline margin            4.477    the whole distance to a different answer
+the floor (2 sd, k=1)      0.442     9.9% of it
+the largest of the eight   0.467    10.4%
+the copy head L22H7        0.132     2.9%
+
+at k=5 the null's full range 2.482   55.4%   — this regime does reach behaviour
+```
+
+Across all models the k=1 floor is **at most 16.7%** of the distance to a flip. So at k=1, on this
+task, **both the signal and the noise live inside a tenth of the way to the model answering
+differently** — the comparison is real, and it happens entirely in a regime where the task outcome
+never changes. That is the fourth scope (*regime*) this repository requires of every claim and had
+never answered for its own headline.
+
 Everything here runs on one consumer GPU. Every round is pre-registered with a kill condition
 committed **before** the run. **Six of the seven completed rounds killed, withdrew or failed to
 reach the hypothesis their author preferred** — one had its verdict withdrawn by the round after it,

@@ -70,6 +70,38 @@ def r1_prior_effects():
     return json.load(open(p)) if p.exists() else None
 
 
+def r1_behavioural_scale():
+    """How far is any of this from the model actually answering differently?
+
+    The readout is margin = correct-room logit minus the best wrong one, so the answer flips
+    exactly when the margin reaches zero. The distance to a behavioural change is therefore the
+    BASELINE MARGIN itself -- and nothing in this repository had ever expressed the floor, or the
+    effects, against it. Four scopes are required of every claim here (population, instrument,
+    baseline, REGIME) and the fourth was never answered for the headline.
+    """
+    rows = []
+    for name, d in load('R1_noise_floor/results/*.json').items():
+        bm = abs(d['base_margin']); c = d['cells']
+        r = {'model': name, 'baseline_margin': bm}
+        for k in (1, 5):
+            cell = c.get(f'band_k{k}')
+            r[f'floor2sd_k{k}'] = 2 * cell['sd'] if cell else None
+            r[f'pct_to_flip_k{k}'] = 100 * 2 * cell['sd'] / bm if cell else None
+        c5 = c.get('band_k5')
+        r['p2p_k5_pct_to_flip'] = 100 * (c5['max'] - c5['min']) / bm if c5 else None
+        rows.append(r)
+    pe = r1_prior_effects()
+    orig = None
+    if pe:
+        bm = pe['base_margin']
+        orig = {'baseline_margin': bm,
+                'floor_pct_to_flip': 100 * pe['floor_2sd_same_vocabulary'] / bm,
+                'largest_effect_pct_to_flip': 100 * max(e['abs'] for e in pe['effects'].values()) / bm,
+                'copy_head_pct_to_flip': 100 * pe['effects']['L22H7']['abs'] / bm}
+    return {'rows': rows, 'original_vocabulary': orig,
+            'max_pct_to_flip_k1': max(r['pct_to_flip_k1'] for r in rows)}
+
+
 def r1_set_null():
     """The k=5 set-level null that splits "inside the floor" into its two causes.
 
@@ -423,10 +455,12 @@ def main() -> int:
     A, B, E = r1(), r2(), r5()
     D, V, S, G, R, E8 = r4(), r1_vocabulary(), r6(), r6_diag(), r7(), r8()
     PE, SN = r1_prior_effects(), r1_set_null()
+    BS = r1_behavioural_scale()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
-                          'r1_prior_effects': PE, 'r1_set_null': SN},
+                          'r1_prior_effects': PE, 'r1_set_null': SN,
+                          'r1_behavioural_scale': BS},
                          indent=2, default=float))
         return 0
 
@@ -454,6 +488,18 @@ def main() -> int:
         print(f"      -> {PE['n_inside']} of {PE['n_total']} inside a floor of "
               f"{PE['floor_2sd_same_vocabulary']:.4f}; the largest clears by "
               f"{PE['largest']['clears_floor_by_pct']:.1f}%\n")
+
+    if BS and BS['original_vocabulary']:
+        o = BS['original_vocabulary']
+        print(f"R1''' how far is ANY of this from the model answering differently?")
+        print(f"      the answer flips when the margin reaches 0, so the distance IS the baseline")
+        print(f"      baseline margin {o['baseline_margin']:.3f}  = the whole distance")
+        print(f"        the floor (2 sd, k=1)  {o['floor_pct_to_flip']:>5.1f}% of it")
+        print(f"        the largest of the 8   {o['largest_effect_pct_to_flip']:>5.1f}%")
+        print(f"        the copy head L22H7    {o['copy_head_pct_to_flip']:>5.1f}%")
+        print(f"      across models the k=1 floor is at most "
+              f"{BS['max_pct_to_flip_k1']:.1f}% of the distance to a flip")
+        print(f"      -> at k=1 the SIGNAL AND THE NOISE ARE BOTH SUB-BEHAVIOURAL\n")
 
     if SN:
         n = SN['null']
