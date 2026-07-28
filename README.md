@@ -46,22 +46,36 @@ reach the hypothesis their author preferred** — one had its verdict withdrawn 
 one was defeated by a diagnostic its author wrote to attack it, and one found two of its own
 pre-registered worlds had identical predictions.
 
-> **How common is it to report that baseline? This repository does not know, and now says so.**
-> Until 2026-07-28 the sentence above read *"almost none report what a random component does"* — a
-> proportion over an unbounded corpus, stated as fact, with no measurement behind it, on the front
-> page of a project whose subject is claims stated as fact. It had no executable falsifier, so by
-> this repository's own rule it could never have been more than D4.
+> ### RETRACTED 2026-07-28 — the first sentence used to claim *"almost none report what a random component does"*, and that is **false**
 >
-> What **is** measured is n=1 and it is the author's own. The experiment this line descends from
-> used **a single random draw** as its null — and that draw sits at the **96.7th percentile** of the
-> proper thirty-draw distribution, which is why it is stamped `INADMISSIBLE` and why this whole
-> line exists. Settling the general claim needs a claim-level survey of the literature. That is a
-> different project, and it is named in *What is open*.
+> It was a proportion over an unbounded corpus, stated as fact, with no measurement behind it, on
+> the front page of a project whose subject is claims stated as fact. It had no executable
+> falsifier, so by this repository's own rule it could never have been more than D4. **One arXiv
+> query refuted it.**
 >
-> A prior-art check on the *concept* — does the field already have a name for this baseline? — was
-> attempted twice on 2026-07-28 and returned **rate-limited both times**. That is `UNRUNNABLE`, and
-> it is recorded as such rather than as "no prior art found", because a silenced instrument returns
-> silence and not an acquittal. It is the cheapest remaining check and it has not been run.
+> Ten of the ten relevant papers returned report a random-component control, several as required
+> methodology:
+>
+> | | |
+> |---|---|
+> | `2605.24059` | *"group ablation against a **matched-random control** completes the causal claim"* — a recipe step |
+> | `2606.05378` | *"the matched-random null **sampled across ten seeds per cell**"* — a distribution, not a draw |
+> | `2605.29126` | *"indistinguishable from the angle between two **random subspaces** (the Haar-uniform null)"* |
+> | `2605.00333` | a layer-matched negative control, a **hypergeometric null**, and permutation tests |
+> | `2607.01002` · `2604.01094` · `2603.11793` · `2606.09607` · `2607.04167` · `2607.18921` | random-heads, random-direction and layer-matched controls |
+>
+> **The sampling is biased and that bound is stated, not hidden:** the query contained the word
+> *random*, so it selected for papers that report one. **This sample can refute a universal
+> negative and cannot estimate a base rate.** What it establishes is that the practice exists, is
+> current, and is treated as standard in at least one active programme — which is enough to kill
+> *"almost none"*.
+>
+> **What survives is narrower and is what this repository actually measured:** not *that* a random
+> baseline should be reported, but **what that baseline is like** — a power law in set size, moving
+> 1.7× when four nouns change, varying tenfold between adjacent layers, and sitting at a tenth of
+> the distance to any behavioural change at k=1. And the measurement was pointed at its own
+> author's prior work first, where the null had been **a single draw at the 96.7th percentile** of
+> the proper distribution.
 
 ```bash
 make verify     # the whole gate: 4 detector selftests, 11 recomputed numbers, 6 READMEs checked

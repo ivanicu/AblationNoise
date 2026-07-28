@@ -288,6 +288,15 @@
       "defect": "R7's headline ordering `mean < randdir < shrink` in 4 of 4 cells",
       "operation": "randdir's positive control is sign-INVERTED on 4 of 4 models, so its readability was |PC|/sd of a control pointing the wrong way. Retracted to `mean < shrink` on 3 of 3 admissible cells",
       "found_by": "outside_reader"
+    },
+    {
+      "id": "D32",
+      "round": "repo",
+      "bin": "SCOPE",
+      "commit": "4b21394",
+      "defect": "the front page's first sentence: 'almost none report what a random component of the same size does' -- the project's entire novelty premise",
+      "operation": "FALSE. One arXiv query returned ten of ten relevant papers reporting a random-component control, several as required methodology, including one that samples the null across TEN SEEDS per cell. The query contained the word 'random' so the sample cannot estimate a base rate -- but it refutes a universal negative, which is what the sentence was",
+      "found_by": "author_reading_the_object"
     }
   ]
 }
