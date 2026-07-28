@@ -1,3 +1,9 @@
+<!-- unbacked-ok: 3.2 3.22 2.14 2.43 -- per-position baseline margins from the n_base=2 SMOKE
+ run, quoted in the control below only to show that it CANNOT decide. They are deliberately NOT
+ wired into the handle: emitting 4-items-per-cell numbers as generated values would make them
+ look like results, which is exactly what that section says they are not. The full run's
+ margins will be generated. -->
+
 # R19 — pre-registration: crossed **position × intervention-support** exhaustive scan
 
 **Committed 2026-07-28, before the dataset builder or the runner were written.** This supersedes the
@@ -271,3 +277,43 @@ rather than a correction of it.
 **The corrected description of the audited set:** *seven attention-selected read-head candidates,
 published under a `REDUNDANT` verdict, plus one externally-established copy head.* Not *"eight
 published single-head effects."*
+
+---
+
+## Predicted verdicts — written with `results/` empty, and they change **no threshold**
+
+**These are predictions, not thresholds.** Every threshold above and in both amendments is fixed and
+untouched. What follows is what I expect those fixed thresholds to return, committed before the data
+so that when it lands it **scores my calibration about my own project**, which §5 of the method says
+is worth more than any individual verdict.
+
+| hypothesis | predicted | confidence | why | **the outcome I would find most expensive** |
+|---|---|---|---|---|
+| **H-support** | **FAIL** | `~0.85` | [R18](../R18_all_positions/) already failed all four components on the unshuffled task with these same two arms — Spearman `+0.62` against `≥0.9`, `6/8` agreement, centroid shift `0.17` against `≤0.03`, top-10 `4/10`. R19 changes the *task*, not the *arms*. | **PASS** — it would mean R18's failure was a property of the degenerate fixed-position task rather than of the intervention, and `I_final` is a proxy after all |
+| **H-published** | **NOT enriched** | `~0.80` | the matched-layer randomization has returned not-enriched twice already, `p = 0.8069` and `0.6917` distinct-per-layer, with `T_pub` *below* the null median both times | **ENRICHED** — it would mean the eight *are* special once position is crossed and the winner's curse removed, and the audit's central negative was an artifact of the task they were selected on |
+| **H-position** | **genuinely open** | `~0.50` | no prior evidence points either way. [R14](../R14_position_vs_binding/) shows the model uses position (a `0.33` accuracy swing across lines); [R16](../R16_selection_vs_effect/) shows the eight were picked for *name* and *room* attention, not position. | **the eight are MORE position-dependent than matched controls** — they would be position machinery, and every "binding" reading in this repository would be wrong |
+| **H-depth** | `UNTESTED` | `1.0` | pre-declared: two models is `n=2` | — |
+
+> **The meta-prediction, which is the part worth scoring.** I expect to be right on `H-support` and
+> `H-published`, and therefore to learn from them only *replication on a task built independently of
+> the eight* — which is not nothing, because [`D91`](../DEFECT_LEDGER.md) established that every
+> earlier number about them was measured on their own selection data. **The information is
+> concentrated in `H-position`.** If I turn out to be wrong on either of the first two, that is the
+> more valuable outcome, and this table is what makes the difference legible.
+
+### A control that ran, and could not decide
+
+The crossed design should behave like the old task where they overlap. Compared against
+[R14](../R14_position_vs_binding/):
+
+```
+R14   single shuffle, n=120      accuracy by line   1.00 1.00 0.60 0.63 0.75 0.57 0.86 1.00
+R19   smoke, n_base=2            accuracy by pos    1.00 1.00 1.00 1.00 1.00 0.75 1.00 1.00
+                                 margin   by pos    4.48 3.20 1.83 3.22 2.14 1.95 2.12 2.43
+```
+
+**`UNVERIFIED`, and the reason is `n`.** At `n_base=2` each position holds `4` items, so the accuracy
+profile cannot be compared to anything. The **margin** profile does show primacy (`4.48 → 1.83`) and
+mild recency (`2.43` at the last position against `1.83`–`2.14` in the middle), qualitatively like
+R14's U — **but R19 balances the query across eight persons and R14 did not, so a difference could be
+the balancing rather than noise.** The full run is the test; this is not it.
