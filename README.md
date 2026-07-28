@@ -444,6 +444,43 @@ extremes says nothing about which of them moved.
 > The one-sided `p` here is at the permutation floor `1/20001` and means **"never reached in
 > 20,000 draws"**, not a value resolved to five places — the same floor caveat as the permutation null above.
 
+### ⚠ The "third instrument" is not a contribution — the paper that says so was already in this repository's own prior-art table
+
+`D108` introduced the `OV` circuit as *"a third instrument, independent of both attention and
+ablation"*, and `D111` framed the finding as *attention captures where a head reads, not what it
+writes.* **Both are the abstract of a paper published `2026-07-01` — and that paper's arXiv id is
+cited in [`PAPER.md`](PAPER.md)'s own prior-art table, filed under "random-heads controls."**
+
+> `arXiv 2607.01002`, *Logit-Contribution Scoring Identifies Non-Literal Retrieval Heads*
+> (Gema, Alex, Minervini):
+>
+> *"existing detectors miss these heads by construction: they reward heads whose attended token
+> matches the generated token, a literal-copy criterion that captures **where a head reads but not
+> what it writes through its output-value (OV) circuit**"*
+>
+> *"a **write-aware detector that scores each head by the projection of its OV-circuit output onto
+> the answer-token unembedding direction**"* — three model families, causal validation by
+> mean-ablation, **and a random-heads control.**
+
+**`LOCOS` is the instrument, better formulated and causally validated.** Scoring against the
+*answer-token* unembedding with a needle / off-needle contrast is sharper than the diagonal-dominance
+statistic used here, and they demonstrate the consequence by ablation rather than by correlation.
+
+**This repository read that paper as *"a paper that uses a random-heads control"* and never as
+*"a paper whose contribution is the distinction I would later claim."*** That is the failure mode
+named elsewhere in this ledger as *a label is not a description* — committed against a citation
+already on the page.
+
+**What is void:** the framing of `D108`/`D110`/`D111` as introducing something. **What is not:** the
+measurements themselves. `L22H7` really does rank `140`/`136`/`149` of `168`; the permutation null
+really does put those counts beyond `20,000` draws. **Independent re-derivation is not a
+contribution, and the numbers are unaffected by learning that.**
+
+**What may still be this repository's:** the *transport* result — that a random-component floor fails
+to carry across configurations while carrying perfectly across item samples. **Neither paper does
+that. But an abstract-level search cannot settle it**, which is the confound written before this
+search ran and the same reason the original novelty premise died. **`UNVERIFIED`, not `novel`.**
+
 ### ⚠ The meta-separator, stated once: **there is no ground truth here, and that limits everything above**
 
 Two checks, both cheap, both aimed at the section above rather than at the eight heads.
