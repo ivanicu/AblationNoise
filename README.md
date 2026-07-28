@@ -144,6 +144,39 @@ RESOLVABLE at 2σ      8 of 8            DISTINGUISHABLE from a random head     
 > *distinguishable from a random component* are different properties, and only the second failed —
 > for all eight, including the head independently proven to implement the behaviour.
 
+> ### Which null? The choice moves the floor `6.15×`, and the pre-registered test did not fire
+>
+> `distinguishable` is measured against the **studied band's** own heads. A defensible rival null is
+> the **sham band** — layers `0–7`, heads presumed not to implement this task, which is what
+> [R1](R1_noise_floor/) originally used. R10 measured all `28` layers, so the comparison was free.
+>
+> ```
+> studied band  L14–27   n=168   floor 0.4870
+> sham band     L0–7     n=96    floor 0.0792      6.15× apart, from reference class alone
+>
+>              x band   x sham                       x band   x sham
+> L16H3          0.96     5.90  clears sham         L17H11     0.08     0.48
+> L17H0          0.27     1.69  clears sham         L19H5      0.08     0.47
+> L22H7          0.27     1.66  clears sham         L17H7      0.07     0.44
+> L18H9          0.08     0.52                      L19H0      0.03     0.19
+> ```
+>
+> **Pre-registered before running: `≥4` of `8` clearing the sham floor would mean the reference
+> class decides the verdict. Observed `3`. It did not fire**, so that claim is not made.
+>
+> **But the shape is sharper than the threshold it was testing.** `78` of the `168` band heads —
+> **`46%`** — also clear the sham floor. Clearing it is not a mark of distinction; it is what
+> roughly half of all late-layer heads do. Put beside [R9](R9_depth_profile/)'s result that the
+> floor *grows with depth*, the reading is exact:
+>
+> > **`L22H7` is distinguishable from an early-layer head and indistinguishable from a late-layer
+> > one. Its ablation number carries *depth* information, not *role* information.**
+>
+> Both floors are defensible and answer different questions. The front page's verdict is against the
+> band floor — *is this head special among the heads I might have picked instead?* — and it stands
+> at `0` of `8`. The sham comparison answers *is this head in the second half of the network?*, and
+> the eight answer it the same way `46%` of the band does.
+
 > ### The positive control for that zero — which this repository required of itself and had never supplied
 >
 > `0 of 8` is a **measured zero**, and this project's own rule is that a measured zero is
@@ -516,22 +549,22 @@ against, which is a fact about your directory and not about the ledger.
 ```
     PROVENANCE     17      whether the number has a generator at all
     SCOPE           8      which population the claim covers
-    CONTROL        10      what the control arm actually holds fixed
+    CONTROL        11      what the control arm actually holds fixed
     STATISTIC      10      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 27 · instrument 12 · outside reader 7
+    found by:  author reading the object 28 · instrument 12 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 55 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 56 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 55 were findable only by an outside reader** — `12.7%`. That fraction was 27% at n=22 and
+**7 of 56 were findable only by an outside reader** — `12.5%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -544,12 +577,12 @@ joint            by the author   by an instrument   by an outside reader
 PROVENANCE            10                7                    0
 SCOPE                  8                0                    2
 STATISTIC              6                4                    1
-CONTROL                6                1                    4
+CONTROL                7                1                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**An instrument has finally caught a `CONTROL` defect — the first, at n=`55`.** It was the
+**An instrument has finally caught a `CONTROL` defect — the first, at n=`56`.** It was the
 provenance validator, firing on its own during a routine gate run, and what it revealed was a
 false-conviction rule **inside itself**. The `--check` line asserting `0` had been written at n=`37`
 precisely so the build would fail the day this happened; it failed, and the expected count was
@@ -564,12 +597,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`55` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`56` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `17`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`55` a bin of `17` is `30.9%`, which is not domination
+> ledger; at n=`56` a bin of `17` is `30.4%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

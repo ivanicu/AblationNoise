@@ -504,6 +504,15 @@
       "defect": "the project's central claim is a MEASURED ZERO -- 0 of 8 distinguishable -- and no positive control for it had ever been stated, in violation of the repository's own rule that a measured zero is inadmissible until the same instrument has returned non-zero",
       "operation": "IT PASSES, and the control was in the same run all along: 9 heads are BOTH resolvable at 2 sigma AND beyond the exhaustive floor, at 1.18x-2.54x the floor and 2.5x-22.1x their own SEM. Also a dynamic-range check that had never been run: for 167 of 168 heads the floor exceeds that head's own measurement noise. The exception is NAMED, not averaged away -- L26H7 has 2*SEM 0.4991 against a floor of 0.4870, so no verdict about it is possible at all",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D56",
+      "round": "repo",
+      "bin": "CONTROL",
+      "commit": "f0c2b24",
+      "defect": "the distinguishability verdict uses the STUDIED BAND's own heads as the null -- a distribution of heads that DO things -- and the alternative null R1 originally used (the sham band, L0-7) had never been applied to the eight",
+      "operation": "PRE-REGISTERED >=4 of 8 clearing the sham floor as 'the reference class decides the verdict'; observed 3, DID NOT FIRE, so that claim is not made. But the shape is sharper: the two floors are 6.15x apart from reference class alone, and 78 of 168 band heads (46%) also clear the sham floor. Clearing it is not distinction, it is being in the second half of the network. With R9's depth result the reading is exact -- L22H7 is distinguishable from an early-layer head and indistinguishable from a late-layer one, so its ablation number carries DEPTH information, not ROLE information",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

@@ -183,6 +183,56 @@ def _spearman(a, b):
     return num / den if den else float('nan')
 
 
+def reference_class():
+    """Does the CHOICE of null decide the verdict? Pre-registered before running: >=4 of 8 clearing
+    the sham-band floor would mean the reference class is doing the work. Observed 3. IT DID NOT FIRE.
+
+    But the shape is the result, and it is sharper than the threshold it was testing. The studied
+    band's floor is 0.4870; the SHAM band's (L0-7, heads presumed not to implement this task) is
+    0.0792 -- a 6.15x difference from reference class alone. Against the sham floor three of the
+    eight clear, including L22H7 at 1.66x.
+
+    AND 78 OF THE 168 BAND HEADS -- 46% -- ALSO CLEAR IT. So clearing the sham floor is not a mark
+    of distinction; it is what a coin-flip's worth of late-layer heads do. Combined with R9's result
+    that the floor GROWS with depth, the reading is exact:
+
+        L22H7 is distinguishable from an EARLY-layer head and indistinguishable from a LATE-layer
+        one. Its ablation number therefore carries DEPTH information, not ROLE information.
+
+    Both floors are defensible and they answer different questions. The verdict on the front page is
+    against the band floor -- "is this head special among the heads I might have picked instead?" --
+    and it stands at 0 of 8. The sham comparison answers "is this head in the second half of the
+    network?", and the eight answer that the same way 46% of the band does.
+    """
+    p = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    pe = r1_prior_effects()
+    if not (p.exists() and pe):
+        return None
+    t = json.load(open(p))
+    L = {int(k): v for k, v in t['layers'].items()}
+
+    def sd(xs):
+        m = sum(xs) / len(xs)
+        return math.sqrt(sum((y - m) ** 2 for y in xs) / (len(xs) - 1))
+
+    def pool(lo, hi):
+        return [v for x in range(lo, hi + 1) for v in L[x]['per_head'].values()]
+
+    band, sham = pool(14, 27), pool(0, 7)
+    fb, fs = 2 * sd(band), 2 * sd(sham)
+    rows = [{'head': h, 'drop': e['drop'], 'x_band': e['abs'] / fb, 'x_sham': e['abs'] / fs,
+             'clears_sham': e['abs'] > fs}
+            for h, e in sorted(pe['effects'].items(), key=lambda kv: -kv[1]['abs'])]
+    return {'band_floor': fb, 'sham_floor': fs, 'ratio': fb / fs,
+            'n_band': len(band), 'n_sham': len(sham),
+            'n_clear_band': sum(r['x_band'] > 1 for r in rows),
+            'n_clear_sham': sum(r['clears_sham'] for r in rows),
+            'preregistered_threshold': 4, 'fired': sum(r['clears_sham'] for r in rows) >= 4,
+            'band_heads_clearing_sham': sum(1 for v in band if abs(v) > fs),
+            'pct_band_clearing_sham': 100 * sum(1 for v in band if abs(v) > fs) / len(band),
+            'rows': rows}
+
+
 def power():
     """THE POSITIVE CONTROL FOR THE PROJECT'S CENTRAL NULL, which had never been stated.
 
@@ -1285,11 +1335,12 @@ def main() -> int:
     IR = input_replication()
     EL = r11()
     PW = power()
+    RC = reference_class()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'r11': EL, 'power': PW,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'r11': EL, 'power': PW, 'reference_class': RC,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -1374,6 +1425,24 @@ def main() -> int:
               f"{h['min_pct']:.1f}%-{h['max_pct']:.1f}%, and "
               f"{h['n_within_3pp_of_52']} land within 3pp of the retracted 52%")
         print(f"      -> the ESTIMATOR was free, so the held-out claim is WITHDRAWN, not weakened\n")
+
+    if RC:
+        print("REF does the CHOICE of null decide the verdict? (pre-registered: >=4 of 8 would say yes)")
+        print(f"      studied band L14-27  n={RC['n_band']}  floor {RC['band_floor']:.4f}")
+        print(f"      SHAM band     L0-7   n={RC['n_sham']}   floor {RC['sham_floor']:.4f}"
+              f"   = {RC['ratio']:.2f}x apart, from reference class alone")
+        print(f"      {'head':<9}{'drop':>10}{'x band':>9}{'x sham':>9}")
+        for r in RC['rows']:
+            print(f"      {r['head']:<9}{r['drop']:>+10.4f}{r['x_band']:>9.2f}{r['x_sham']:>9.2f}"
+                  f"{'   clears sham' if r['clears_sham'] else ''}")
+        print(f"      clears band floor {RC['n_clear_band']} of 8   |   clears SHAM floor "
+              f"{RC['n_clear_sham']} of 8   -> threshold "
+              f"{'FIRED' if RC['fired'] else 'DID NOT FIRE'}")
+        print(f"      but {RC['band_heads_clearing_sham']} of {RC['n_band']} band heads "
+              f"({RC['pct_band_clearing_sham']:.0f}%) also clear the sham floor -- clearing it is "
+              f"not distinction, it is being in the second half of the network")
+        print(f"      -> the copy head's ablation number carries DEPTH information, not ROLE "
+              f"information\n")
 
     if PW:
         print("PWR the POSITIVE CONTROL for the project's central null -- never previously stated")
@@ -1753,6 +1822,11 @@ def main() -> int:
             ('SET copy circuit z vs null mean',
              SL['sets']['COPY']['z_from_null_mean'] if SL else -1, -3.291, 0.001),
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
+            ('REF sham floor', RC['sham_floor'] if RC else -1, 0.0792, 0.0001),
+            ('REF band over sham ratio', RC['ratio'] if RC else -1, 6.1508, 0.0001),
+            ('REF eight clearing sham', RC['n_clear_sham'] if RC else -1, 3, 0),
+            ('REF band heads clearing sham',
+             RC['band_heads_clearing_sham'] if RC else -1, 78, 0),
             ('PWR positive-control heads', PW['n_positive_control'] if PW else -1, 9, 0),
             ('PWR heads with dynamic range', PW['n_with_room'] if PW else -1, 167, 0),
             ('PWR undecidable heads', len(PW['undecidable']) if PW else -1, 1, 0),
@@ -1780,9 +1854,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 56, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 55, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 56, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 17, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 12.727, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 12.5, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
