@@ -46,7 +46,7 @@ L16H3         0.5147         120         126
 
 ### It is a **magnitude** effect, not a direction one — and the negative number invites the wrong reading
 
-`|drop|` throws away the sign, and this project has already shown the sign matters: `100` positive
+`|drop|` throws away the sign, and this project has already shown the sign matters: `100` positive **[⚠ that split is RAW; centred on the band mean `+0.0479` — the statistic every verdict in this repository actually uses — it is `64` above and `104` below, and the qualitative reading inverts. `D90`.]**
 against `68` negative in this band, and `7` of the `9` clearing heads clear by **helping**. A reader
 given only `−0.40` will fill in *"so high-attention heads help when ablated."* **They do not.**
 

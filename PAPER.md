@@ -29,15 +29,15 @@ null  = replace each published head with a uniform random head FROM ITS OWN LAYE
 
               T_pub   matched-layer null median      p     excess kurtosis
 I_final      0.1154            0.1670            0.7994         7.31
-I_all        0.3196            0.4004            0.6782         6.67
+I_all        0.3196            0.3991            0.6817         6.67
 ```
 
 **Not enriched under either intervention — and `T_pub` is *below* the null median in both.** The
 eight published heads are, on average, **less** extreme than random heads from the same layers.
 
 > **The instrument was checked before the null was believed.** Positive control: the actual top-`8`
-> by `|centred|` is reached by only `1` of `50000` matched sets, so the test can separate. Null calibration: `200`
-> random matched sets fall under `0.05` at a rate of `0.035` against a nominal `0.05`.
+> by `|centred|` is reached by only `0` of `50000` matched sets, so the test can separate. Null calibration: `200`
+> random matched sets fall under `0.05` at a rate of `0.065` against a nominal `0.05`.
 >
 > **Layer matching is not decoration.** The eight sit in `L16`–`L22`, magnitude varies strongly with
 > depth, and an unmatched null would manufacture enrichment out of nothing but where the heads live.
@@ -360,7 +360,7 @@ RESOLVABLE at 2σ      8 of 8            DISTINGUISHABLE from a random head     
 >
 > `distinguishable` was `|drop| > 2·sd`, which silently places the null at `0`. **The studied band's
 > mean drop is `+0.0479` — `0.20` sd.** Ablating a random late-layer head *improves* the
-> correct-answer margin more often than it hurts: **`100` positive, `68` negative of `168`.** A head
+> correct-answer margin more often than it hurts: **`100` positive, `68` negative of `168`.** **[⚠ that split is RAW; centred on the band mean `+0.0479` — the statistic every verdict in this repository actually uses — it is `64` above and `104` below, and the qualitative reading inverts. `D90`.]** A head
 > that does nothing therefore sits `0.0479` away from the null's centre, and the question *"is this
 > head unusual among random heads"* is `|drop − mean| > 2·sd`.
 >

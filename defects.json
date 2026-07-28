@@ -810,6 +810,15 @@
       "defect": "R18's page and the reported headline called L17H0 at rank 4 of 168 under I_all 'the result'. It is the maximum of EIGHT pre-specified heads surfaced by scanning 168, tested without any correction. Its one-head exact randomization p is 0.0296, which is 0.2367 after Bonferroni over the eight tested -- a POST-SELECTION DESCRIPTIVE TAIL, not a finding. Ivan named this exact failure mode before the run: scanning many components requires multiple-comparison correction or an explicit post-selection label",
       "operation": "AND THE TEST THAT SETTLES IT HAD NEVER BEEN RUN IN THIS PROJECT. Every earlier round compared heads one at a time against a SCALAR floor whose reference class does not hold LAYER fixed. The right question is whether the PRE-SPECIFIED SET of eight is more extreme than a random set from the SAME LAYERS. T_pub = mean |tau - mu_band| over the set; the null replaces each published head with a uniform random head from its own layer, 50,000 times. I_final: T_pub 0.1154 against a null median of 0.1670, p = 0.7994. I_all: 0.3196 against 0.4004, p = 0.6782. NOT ENRICHED UNDER EITHER, AND BELOW THE NULL MEDIAN IN BOTH -- the eight are on average LESS extreme than same-layer random heads. Instrument checked before the null was believed: positive control on the actual top-8 gives p = 0.00004, and 200 random matched sets fall under 0.05 at a rate of 0.035 against a nominal 0.05. Layer matching is load-bearing: the eight sit in L16-L22 and magnitude varies strongly with depth, so an unmatched null manufactures enrichment from position alone. Both arms are heavy-tailed, excess kurtosis 7.31 and 6.67, which is why the percentile replaces 2*sd",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D90",
+      "round": "repo",
+      "bin": "STATISTIC",
+      "commit": "2ef42a2",
+      "defect": "the repository quotes '100 positive, 68 negative of 168' to characterise the band's sign distribution, and that split is RAW. Every verdict here uses the CENTRED statistic, and centred on the band mean +0.0479 the split is 64 above and 104 below. The qualitative reading INVERTS: raw says 'ablation hurts more often than it helps', centred says 'most heads are LESS harmful than the average head'",
+      "operation": "BOTH ARE TRUE OF DIFFERENT QUANTITIES AND ONLY ONE MATCHES THE ANALYSIS. Annotated in place at both sites rather than replaced, because the raw split is what the sign-matters argument was originally built on and deleting it would hide that the argument was made on a different quantity from the one the tests use. The centred counts are now emitted so either can be checked",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

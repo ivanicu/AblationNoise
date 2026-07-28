@@ -72,7 +72,7 @@ together; the intervention re-sorts them.
 > L17H0 under I_all      |centred| 1.3703 = 2.81 sd      one-head exact randomization p = 0.0296
 >                                                        Bonferroni over the 8 tested   p = 0.2367
 >
-> the SET of eight, matched-layer randomization, 50,000 replicates:   p = 0.6782   NOT enriched
+> the SET of eight, matched-layer randomization, 50,000 replicates:   p = 0.6817   NOT enriched
 > ```
 >
 > `168` heads were scanned to surface it, the eight were tested without correction, and **the set

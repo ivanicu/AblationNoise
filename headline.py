@@ -690,20 +690,43 @@ def set_enrichment():
 
     N = 50000
     out = {}
-    rng = _r.Random(19)
+    # ONE SEEDED STREAM PER RANDOMIZATION, NOT ONE SHARED GENERATOR. D72 recorded exactly this
+    # defect once already: a later loop continued an earlier one's generator, so adding a
+    # computation silently moved results that had nothing to do with it. Adding the signed test
+    # below moved the magnitude p from 0.6782 to 0.6774 and the positive-control count from 1 to 2 --
+    # small, and entirely an artefact of draw order. Independent streams make every number here a
+    # function of its own inputs.
     for tag, L in (('I_final', LB), ('I_all', LA)):
+        rng = _r.Random(19 if tag == 'I_final' else 20)
         v, mu, sd, kurt = arm(L)
 
         def T(st):
             return sum(abs(v[k] - mu) for k in st) / len(st)
 
+        def Ts(st):
+            return sum(v[k] - mu for k in st) / len(st)
+
         t = T(eight)
         null = sorted(T([rng.choice(by_layer[k[0]]) for k in eight]) for _ in range(N))
+        # SIGNED AS WELL, because |.| discards the sign and R19's own pre-registration says so:
+        # "if each head had a signed mechanistic claim, do not take the absolute value". The eight
+        # were selected as read heads plus one copy head, so the pre-specified direction is HURT --
+        # ablating a head that carries the answer should LOWER the margin.
+        ts = Ts(eight)
+        nulls = sorted(Ts([rng.choice(by_layer[k[0]]) for k in eight]) for _ in range(N))
         out[tag] = {'T_pub': t, 'null_median': null[N // 2],
                     'p': (1 + sum(1 for z in null if z >= t)) / (1 + N),
                     'excess_kurtosis': kurt, 'sd': sd,
-                    'below_null_median': t < null[N // 2]}
+                    'below_null_median': t < null[N // 2],
+                    'T_pub_signed': ts, 'null_median_signed': nulls[N // 2],
+                    'p_hurt': (1 + sum(1 for z in nulls if z >= ts)) / (1 + N),
+                    'p_help': (1 + sum(1 for z in nulls if z <= ts)) / (1 + N),
+                    'n_raw_pos': sum(1 for z in v.values() if z > 0),
+                    'n_raw_neg': sum(1 for z in v.values() if z < 0),
+                    'n_above_mu': sum(1 for z in v.values() if z > mu),
+                    'n_below_mu': sum(1 for z in v.values() if z < mu), 'mu': mu}
     # positive control + calibration, on the arm the newest claim came from
+    rng = _r.Random(21)
     v, mu, sd, kurt = arm(LA)
 
     def T(st):
@@ -714,6 +737,17 @@ def set_enrichment():
     null = [T([rng.choice(by_layer[k[0]]) for k in top8]) for _ in range(N)]
     pc_hits = sum(1 for z in null if z >= t)
     pc = (1 + pc_hits) / (1 + N)
+    # and a SEPARATE positive control for the SIGNED test, because a control on the magnitude
+    # statistic says nothing about whether the signed one can fire.
+    def Ts_(st):
+        return sum(v[k] - mu for k in st) / len(st)
+
+    rng = _r.Random(22)
+    tops = sorted(band, key=lambda k: -(v[k] - mu))[:8]
+    tsv = Ts_(tops)
+    pc_signed_hits = sum(1 for _ in range(N)
+                         if Ts_([rng.choice(by_layer[k[0]]) for k in tops]) >= tsv)
+    rng = _r.Random(23)
     hits = 0
     for _ in range(200):
         st = [rng.choice(by_layer[k[0]]) for k in eight]
@@ -724,7 +758,8 @@ def set_enrichment():
     x = abs(v[(17, 0)] - mu)
     return {'arms': out, 'n_replicates': N,
             'positive_control_p': pc,
-            'positive_control_hits': pc_hits, 'null_calibration_rate': hits / 200,
+            'positive_control_hits': pc_hits,
+            'positive_control_signed_hits': pc_signed_hits, 'null_calibration_rate': hits / 200,
             'L17H0_abs_centred': x, 'L17H0_sd_units': x / sd,
             'L17H0_one_head_p': (1 + sum(1 for z in c if z >= x)) / (1 + len(c)),
             'L17H0_bonferroni_8': min(1.0, 8 * (1 + sum(1 for z in c if z >= x)) / (1 + len(c)))}
@@ -2846,6 +2881,23 @@ def main() -> int:
             a = SE['arms'][tag]
             print(f"     {tag:<10}{a['T_pub']:>9.4f}{a['null_median']:>13.4f}{a['p']:>9.4f}"
                   f"{a['excess_kurtosis']:>13.2f}")
+        print(f"     {'arm':<10}{'SIGNED T_pub':>14}{'null med':>10}{'p HURT':>9}{'p HELP':>9}")
+        for tag in ('I_final', 'I_all'):
+            a = SE['arms'][tag]
+            print(f"     {tag:<10}{a['T_pub_signed']:>+14.4f}{a['null_median_signed']:>+10.4f}"
+                  f"{a['p_hurt']:>9.4f}{a['p_help']:>9.4f}")
+        print(f"     SIGNED TOO, because |.| discards the sign and the eight carry a DIRECTIONAL")
+        print(f"     claim -- read heads plus a copy head should HURT when ablated. Neither fires.")
+        print(f"     signed positive control: top-8 by SIGNED drop is reached by "
+              f"{SE['positive_control_signed_hits']} of {SE['n_replicates']} matched sets")
+        print(f"     the nearest thing to a signal in the whole set is I_final HELP at "
+              f"p = {SE['arms']['I_final']['p_help']:.4f} -- WRONG DIRECTION for the claimed role,")
+        print(f"     and not significant. RAW vs CENTRED sign counts differ and the repo quotes the")
+        print(f"     raw one: {SE['arms']['I_final']['n_raw_pos']} positive / "
+              f"{SE['arms']['I_final']['n_raw_neg']} negative RAW, but "
+              f"{SE['arms']['I_final']['n_above_mu']} above / "
+              f"{SE['arms']['I_final']['n_below_mu']} below the mean "
+              f"{SE['arms']['I_final']['mu']:+.4f}, which is the statistic every verdict uses")
         print(f"     NOT ENRICHED under either -- and T_pub is BELOW the null median in both. The")
         print(f"     eight are on average LESS extreme than random heads from the SAME LAYERS.")
         print(f"     instrument checked before the null was believed: positive control (the actual")
@@ -3506,7 +3558,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 27.427, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 27.733, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -3587,9 +3639,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 89, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 90, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 24, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.989, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.889, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

@@ -57,15 +57,15 @@ null  = replace each published head with a uniform random head FROM ITS OWN LAYE
 
               T_pub   matched-layer null median      p     excess kurtosis
 I_final      0.1154            0.1670            0.7994         7.31
-I_all        0.3196            0.4004            0.6782         6.67
+I_all        0.3196            0.3991            0.6817         6.67
 ```
 
 **Not enriched under either intervention — and `T_pub` is *below* the null median in both.** The
 eight published heads are, on average, **less** extreme than random heads from the same layers.
 
 > **The instrument was checked before the null was believed.** Positive control: the actual top-`8`
-> by `|centred|` is reached by only `1` of `50000` matched sets, so the test can separate. Null calibration: `200`
-> random matched sets fall under `0.05` at a rate of `0.035` against a nominal `0.05`.
+> by `|centred|` is reached by only `0` of `50000` matched sets, so the test can separate. Null calibration: `200`
+> random matched sets fall under `0.05` at a rate of `0.065` against a nominal `0.05`.
 >
 > **Layer matching is not decoration.** The eight sit in `L16`–`L22`, magnitude varies strongly with
 > depth, and an unmatched null would manufacture enrichment out of nothing but where the heads live.
