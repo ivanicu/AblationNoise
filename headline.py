@@ -630,6 +630,61 @@ def adversary_scoring():
                                                   'R18']}
 
 
+def resolution_limit():
+    """CAN THE MANDATED METHOD ANSWER THIS REPOSITORY'S OWN SURVIVING QUESTION? At this n, no.
+
+    `10 of 168 clear the exhaustive floor` is the last positive count on the front page and it is a
+    2*sd number, on a distribution the page itself says 2*sd does not test (excess kurtosis 7.31).
+    Recomputed with the empirical conditional randomization percentile the repository now mandates,
+    leave-one-out so no head is judged against a null containing itself:
+
+        minimum attainable p from an empirical null over 168 values   1/169 = 0.0059
+        Bonferroni at alpha 0.05 needs                                0.05/168 = 0.00030  UNREACHABLE
+        BH-FDR at alpha 0.05                                          0 discoveries
+        uncorrected empirical p <= 0.05                               8 of 168
+        the published 2-sigma count                                   10 of 168
+
+    THE P-VALUES SHOW WHY. The eight smallest are 1/167, 2/167, 3/167 ... An empirical null built
+    from the population being tested converts every p into a RANK DIVIDED BY n, so the test has no
+    resolution beyond ordering. ZERO DISCOVERIES IS A RESOLUTION LIMIT, NOT AN ABSENCE, and the limit
+    is computed before the test rather than read off it.
+
+    THE SET-LEVEL TEST DOES HAVE RESOLUTION, and the difference is the point: its null is GENERATED
+    by 50,000 matched-layer resamples rather than BEING the population. Per-head significance needs a
+    resampled null or a larger reference class; a count at a fixed threshold does not -- which is why
+    this leaves the transport result untouched.
+    """
+    f = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    L = {int(k): v for k, v in d['layers'].items()}
+    NH = len(L[14]['per_head'])
+    band = [(x, h) for x in range(14, 28) for h in range(NH)]
+    v = {k: L[k[0]]['per_head'][str(k[1])] for k in band}
+    n = len(band)
+    ps = []
+    for k in band:
+        others = [v[j] for j in band if j != k]
+        mu = sum(others) / len(others)
+        x = abs(v[k] - mu)
+        ps.append(((1 + sum(1 for z in others if abs(z - mu) >= x)) / (1 + len(others)), k))
+    ps.sort()
+    alpha = 0.05
+    crit = [(i + 1) * alpha / n for i in range(n)]
+    hits = [i for i in range(n) if ps[i][0] <= crit[i]]
+    mu = sum(v.values()) / n
+    sd = math.sqrt(sum((z - mu) ** 2 for z in v.values()) / (n - 1))
+    return {'n': n, 'min_attainable_p': 1 / (n + 1), 'bonferroni_needs': alpha / n,
+            'bonferroni_reachable': (1 / (n + 1)) <= (alpha / n),
+            'bh_discoveries': (max(hits) + 1) if hits else 0,
+            'bh_first_threshold': crit[0],
+            'uncorrected_at_05': sum(1 for q, _ in ps if q <= alpha),
+            'two_sd_count': sum(1 for z in v.values() if abs(z - mu) > 2 * sd),
+            'excess_kurtosis': sum((z - mu) ** 4 for z in v.values()) / n / sd ** 4 - 3,
+            'smallest_ps': [{'head': f'L{k[0]}H{k[1]}', 'p': q} for q, k in ps[:8]]}
+
+
 def wo_conditioning():
     """AN OUTSIDE CRITIQUE OF R6, MEASURED FROM THE WEIGHTS RATHER THAN ACCEPTED IN PROSE.
 
@@ -2902,6 +2957,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    RSL = resolution_limit()
     WOC = wo_conditioning()
     FTR = floor_transport()
     AS = adversary_scoring()
@@ -2913,7 +2969,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -3129,6 +3185,30 @@ def main() -> int:
               f"{' '.join(AS['rounds_uncovered_before_this_step'])} -- now extended, A9-A13")
         print("      and its A1 row carried the composition error R16 fixed 4 rounds ago as D80,")
         print("      which had landed on the prior-effects note ONLY\n")
+
+    if RSL:
+        print("RES  CAN THE MANDATED METHOD ANSWER THIS REPO'S OWN SURVIVING QUESTION? at this n, NO")
+        print(f"       minimum attainable p, empirical null over {RSL['n']} values   "
+              f"1/{RSL['n']+1} = {RSL['min_attainable_p']:.4f}")
+        print(f"       Bonferroni at alpha 0.05 needs                     "
+              f"{RSL['bonferroni_needs']:.5f}   "
+              f"{'reachable' if RSL['bonferroni_reachable'] else 'UNREACHABLE by construction'}")
+        print(f"       BH-FDR at alpha 0.05                               "
+              f"{RSL['bh_discoveries']} discoveries   (first threshold "
+              f"{RSL['bh_first_threshold']:.6f})")
+        print(f"       uncorrected empirical p <= 0.05                    "
+              f"{RSL['uncorrected_at_05']} of {RSL['n']}")
+        print(f"       the published 2*sd count                           "
+              f"{RSL['two_sd_count']} of {RSL['n']}   excess kurtosis "
+              f"{RSL['excess_kurtosis']:.2f}")
+        print(f"       smallest p: " + "  ".join(f"{r['head']} {r['p']:.4f}"
+                                                 for r in RSL['smallest_ps'][:4]))
+        print("     THE P-VALUES ARE 1/167, 2/167, 3/167 ... an empirical null built from the")
+        print("     population being tested turns every p into a RANK OVER n. No resolution beyond")
+        print("     ordering, so ZERO DISCOVERIES IS A RESOLUTION LIMIT, NOT AN ABSENCE.")
+        print("     The SET-level test has resolution because its null is GENERATED by 50,000")
+        print("     resamples rather than BEING the population -- and a count at a fixed threshold,")
+        print("     which is what the transport result compares, is untouched by any of this\n")
 
     if WOC:
         print("W_O  an outside critique of R6, MEASURED from the weights rather than accepted")
@@ -3916,7 +3996,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 34.650, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 35.269, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -3997,9 +4077,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 103, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 104, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 26, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.738, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.654, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

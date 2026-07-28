@@ -246,6 +246,40 @@ own verdict was already `UNDECIDABLE`; this does not change it, **it explains pa
 > that diagnostic never covered `L0`–`7`. `UNVERIFIED` there is now **checked** as unverifiable from
 > current data, not merely asserted.
 
+### The repository's own mandated method **cannot answer its own surviving question** at this `n`
+
+`10 of 168` is the last positive count on this page and it is a `2σ` number — on a distribution the
+page itself says `2σ` does not test, at excess kurtosis `7.31`. So: recompute it with the empirical
+conditional randomization percentile the repository now mandates, leave-one-out.
+
+```
+minimum attainable p from an empirical null over 168 values   1/169 = 0.0059
+Bonferroni at alpha 0.05 needs                                0.05/168 = 0.00030   UNREACHABLE
+BH-FDR at alpha 0.05                                          0 discoveries
+uncorrected empirical p <= 0.05                               8 of 168
+the published 2-sigma count                                   10 of 168
+```
+
+**Look at the p-values themselves.** The eight smallest are `0.0060 · 0.0119 · 0.0179 · 0.0238 ·
+0.0298 · 0.0357 · 0.0417 · 0.0476` — that is `1/167, 2/167, 3/167, …`. **An empirical null built from
+the population being tested converts every p-value into a rank divided by `n`.** The test has no
+resolution beyond ordering.
+
+> **So the mandated method cannot support any multiplicity-corrected per-head claim at this sample
+> size, and `0 discoveries` is a RESOLUTION LIMIT, not an absence.** The floor was computed before
+> the test and is what makes it interpretable: no family-wise-corrected test on this null can fire,
+> whatever the data says.
+
+**The set-level test does have resolution**, and the difference is instructive: its null is
+*generated* by `50,000` matched-layer resamples rather than *being* the population, so it can return
+`p = 0.0296` for a single head and `p = 0.6817` for the set. **Per-head significance needs a
+resampled null or a larger reference class; the count-at-a-threshold does not.**
+
+**The precise status of `10 of 168`:** a **descriptive** count at a chosen threshold on a heavy-tailed
+distribution — `8` under the repository's own preferred uncorrected method, `0` under any correction,
+where `0` is an artifact of `n`. **This does not touch the transport result above**, which compares
+counts under a *fixed* rule across configurations and never claims per-head significance.
+
 ### ⚠ The meta-separator, stated once: **there is no ground truth here, and that limits everything above**
 
 Two checks, both cheap, both aimed at the section above rather than at the eight heads.
