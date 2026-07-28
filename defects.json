@@ -855,6 +855,15 @@
       "defect": "E132b's own verdict field reads W-READ-REDUNDANT. The source experiment concluded that the read heads are REDUNDANT -- that individually they do not carry the effect -- and its own largest reported drop is L16H3 at 10.4% of the base margin. This repository has framed itself as pointing a measurement at PUBLISHED POSITIVE CLAIMS and finding them inside the noise. For seven of the eight there was no positive claim to deflate",
       "operation": "THE AUDIT'S NULL IS CONSISTENT WITH THE SOURCE'S OWN CONCLUSION rather than a correction of it, and the framing is now stated that way. THE CORRECTION MUST NOT OVERSHOOT IN THE OTHER DIRECTION AND THAT IS STATED TOO: E132b never measured a reference distribution at all, never ran a matched-layer set randomization, never tested the all-position intervention, and never used a disjoint item set -- those four results are this repository's and are unaffected. And L22H7 is different: its copy-head status comes from E123, an independent positive claim, which is why the front page narrowed to 'one head with an independently established role' several steps ago. The corrected description of the audited set is SEVEN ATTENTION-SELECTED READ-HEAD CANDIDATES PUBLISHED UNDER A REDUNDANT VERDICT, PLUS ONE EXTERNALLY-ESTABLISHED COPY HEAD -- not 'eight published single-head effects'",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D95",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "5811d99",
+      "defect": "I reported 'pueue 232 still running' in FOUR consecutive steps. The job started 12:48:50 and ENDED 13:11:37 -- it had been dead for over two hours. I read the STATUS WORD from `pueue status` and never read the End timestamp in `pueue log`. Worse, I monitored the queue with a hardcoded id grep (`^ (232|237)`), so a duplicate 3b job sitting in the same queue was invisible to every check I ran, and pueue task ids are not stable identifiers for a job I care about",
+      "operation": "A STATUS WORD IS NOT A STATE; THE End TIMESTAMP IS. Three fixes. (1) The queue is now read BY LABEL, not by remembered id -- `pueue status -g gpu | grep -iE 'R18-|R19-'` -- which immediately surfaced the duplicate 3b job that four id-greps had missed; the duplicate was removed. (2) The retry runs under `python3 -u`: 232's entire stdout was lost to buffering when it took SIGKILL, so the log held nothing but the weight-loading progress bar and the cause is UNVERIFIED rather than diagnosed. The most likely cause is memory -- another project's job holds 5.2 GB of the 16.3 GB card and a 3B model in float32 needs about 12.4 GB -- but that is inference from the current state, not evidence about 13:11:37, and it is recorded as such. (3) dtype stays float32 even though bfloat16 would halve the footprint, because R10's 3b run was float32 and the centroid comparison R12 turns on is only valid dtype-matched",
+      "found_by": "instrument"
     }
   ]
 }

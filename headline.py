@@ -3678,7 +3678,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 29.702, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 30.495, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -3759,9 +3759,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 94, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 24, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.511, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 95, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 25, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.421, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
