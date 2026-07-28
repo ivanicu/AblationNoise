@@ -235,6 +235,28 @@ def rank_vs_role():
         'n_clear_positive': sum(v > 0 for _, _, v in clear),
         'n_published_among_clearing': sum((x, h) in eight for x, h, _ in clear),
         'published_ranks': sorted(ranks, key=lambda r: r['rank']),
+        # THE DEPTH CONTROL, run because R9 established the floor GROWS with depth (rho +0.51 to
+        # +0.73), so a ranking by RAW |drop| systematically favours deep heads -- and the eight
+        # published heads sit at mean layer 18.1 while the raw top nine sit at 21.0. Ranking each
+        # head against its OWN LAYER's sd removes that. It does not rescue them: the normalised top
+        # nine are DEEPER still (21.8), and the published count among them is unchanged.
+        # THE INVARIANCE IS THE RESULT. Which heads are "top" is normalisation-dependent -- the two
+        # top-nines share only six members. That the published heads are in NEITHER is not.
+        'ranks_by_layer_sd': sorted(
+            [{'head': eight[(x, h)], 'rank': i, 'layer_sd_units': abs(v) / L[x]['sd']}
+             for i, (x, h, v) in enumerate(
+                 sorted(band, key=lambda r: -abs(r[2]) / L[r[0]]['sd']), 1)
+             if (x, h) in eight], key=lambda r: r['rank']),
+        'published_in_top9_by_layer_sd': sum(
+            1 for x, h, _ in sorted(band, key=lambda r: -abs(r[2]) / L[r[0]]['sd'])[:9]
+            if (x, h) in eight),
+        'top9_overlap_between_normalisations': len(
+            {(x, h) for x, h, _ in order[:9]} &
+            {(x, h) for x, h, _ in sorted(band, key=lambda r: -abs(r[2]) / L[r[0]]['sd'])[:9]}),
+        'mean_layer_published': sum(x for x, _ in eight) / len(eight),
+        'mean_layer_top9_raw': sum(x for x, _, _ in order[:9]) / 9,
+        'mean_layer_top9_norm': sum(
+            x for x, _, _ in sorted(band, key=lambda r: -abs(r[2]) / L[r[0]]['sd'])[:9]) / 9,
         'copy_head_rank': next((r['rank'] for r in ranks if r['head'] == 'L22H7'), None),
         # PARTICIPATION RATIO per layer: 1 = one head carries everything, NH = all equal. It
         # separates "a layer with a dominant head" from "a layer whose effect is spread", and the
@@ -1172,6 +1194,18 @@ def main() -> int:
         for r in RV['published_ranks']:
             print(f"        rank {r['rank']:>3}/{RV['n_band_heads']}   {r['head']:<8}"
                   f"{r['drop']:>+9.4f}{'   <- the proven copy head' if r['head']=='L22H7' else ''}")
+        print(f"      DEPTH CONTROL -- the floor grows with depth, so raw |drop| favours deep heads")
+        print(f"        mean layer: published {RV['mean_layer_published']:.1f}  "
+              f"top-9 raw {RV['mean_layer_top9_raw']:.1f}  "
+              f"top-9 normalised by layer sd {RV['mean_layer_top9_norm']:.1f}")
+        print(f"        published among the normalised top nine: "
+              f"{RV['published_in_top9_by_layer_sd']}")
+        print(f"        the two top-nines share {RV['top9_overlap_between_normalisations']} of 9 "
+              f"members -- WHICH heads are top is normalisation-dependent;")
+        print(f"        that the published ones are in NEITHER is not. The invariance is the result.")
+        for r in RV['ranks_by_layer_sd']:
+            print(f"        rank {r['rank']:>3}/{RV['n_band_heads']} by layer-sd   {r['head']:<8}"
+                  f"{r['layer_sd_units']:>6.2f} layer-sd")
         print()
 
     if SL:
@@ -1460,6 +1494,10 @@ def main() -> int:
             ('SET copy circuit z vs null mean',
              SL['sets']['COPY']['z_from_null_mean'] if SL else -1, -3.291, 0.001),
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
+            ('RNK published in normalised top nine',
+             RV['published_in_top9_by_layer_sd'] if RV else -1, 0, 0),
+            ('RNK top-nine overlap between normalisations',
+             RV['top9_overlap_between_normalisations'] if RV else -1, 6, 0),
             ('RNK excess kurtosis of the band', RV['excess_kurtosis'] if RV else -1, 7.43, 0.01),
             ('RNK normal-predicted tail count',
              RV['expected_beyond_2sd_normal'] if RV else -1, 7.64, 0.01),
@@ -1471,9 +1509,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 56, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 50, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 51, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 15, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 14.0, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 13.725, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

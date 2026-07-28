@@ -51,6 +51,27 @@ the evidence supports:
 > `0` of the top nine among them. Whether any individual head is *resolvable* is a question about
 > measurement noise, not about the spread across heads, and it is what R11 was launched to answer.
 
+> ### The depth control — run expecting it to kill the ranking, and it did not
+>
+> [R9](R9_depth_profile/) established the floor **grows with depth**, so a ranking by raw `|drop|`
+> systematically favours deep heads. The eight published heads sit at mean layer `18.1`; the raw top
+> nine at `21.0`. **That confound is real and it is not the explanation.**
+>
+> Rank every head against **its own layer's** `sd` instead, and the normalised top nine are *deeper
+> still* (`21.8`). The published heads move by at most `±21` places out of `168`, and the proven
+> copy head goes from `56`th to `53`rd.
+>
+> ```
+> rank by |drop|/layer-sd     L16H3 15 · L17H0 34 · L22H7 53 · L17H11 96
+>                             L17H7 99 · L18H9 127 · L19H5 134 · L19H0 154
+> published among the normalised top nine    0
+> ```
+>
+> **And the invariance is worth more than either list.** The two top-nines share only `6` of `9`
+> members — *which* heads are at the top depends on the normalisation, which is one more reason not
+> to treat any of them as special. That the published heads are in **neither** top nine does not
+> depend on it.
+
 > ### The symmetric error, refused explicitly
 >
 > Those nine heads are **not** hereby claimed to be the real mechanism. A large ablation effect is
@@ -474,22 +495,22 @@ against, which is a fact about your directory and not about the ledger.
 ```
     PROVENANCE     15      whether the number has a generator at all
     SCOPE           8      which population the claim covers
-    CONTROL         8      what the control arm actually holds fixed
+    CONTROL         9      what the control arm actually holds fixed
     STATISTIC       9      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 24 · instrument 10 · outside reader 7
+    found by:  author reading the object 25 · instrument 10 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 50 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 51 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 50 were findable only by an outside reader** — `14.0%`. That fraction was 27% at n=22 and
+**7 of 51 were findable only by an outside reader** — `13.7%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -502,12 +523,12 @@ joint            by the author   by an instrument   by an outside reader
 PROVENANCE             9                6                    0
 SCOPE                  8                0                    2
 STATISTIC              6                3                    1
-CONTROL                4                1                    4
+CONTROL                5                1                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**An instrument has finally caught a `CONTROL` defect — the first, at n=`50`.** It was the
+**An instrument has finally caught a `CONTROL` defect — the first, at n=`51`.** It was the
 provenance validator, firing on its own during a routine gate run, and what it revealed was a
 false-conviction rule **inside itself**. The `--check` line asserting `0` had been written at n=`37`
 precisely so the build would fail the day this happened; it failed, and the expected count was
@@ -522,12 +543,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`50` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`51` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `15`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`50` a bin of `15` is `30.0%`, which is not domination
+> ledger; at n=`51` a bin of `15` is `29.4%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

@@ -459,6 +459,15 @@
       "defect": "the front page inferred '9 of 168 heads clear the exhaustive floor, SO single-head ablation resolves effects here perfectly well' -- written one step earlier",
       "operation": "THE COUNT ESTABLISHES NOTHING. Beyond 2*sd a normal over 168 numbers gives 7.6 and a Laplace gives 9.9; observed 9. Excess kurtosis is +7.43, so 2*sd is a normal-theory cut on a distribution nothing like normal, and the tail is what such a distribution hands you for free. Leave-one-out (each head judged by a null excluding it) leaves the count at 9, so the circularity check ran and came back clean -- it is the INTERPRETATION that breaks. Every statement about ORDER survives, because a ranking needs no threshold. Predicted as ADVERSARY.md row A4 at MEDIUM severity; actual severity invalidated a front-page inference, so the calibration was under-severe",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D51",
+      "round": "repo",
+      "bin": "CONTROL",
+      "commit": "b50f41b",
+      "defect": "the surviving rank claim -- 'the published heads rank 10..143 of 168' -- was computed on RAW |drop|, while R9 had already established the floor GROWS with depth, and the published heads sit at mean layer 18.1 against the top nine's 21.0",
+      "operation": "CONTROLLED, and the control CONFIRMED rather than killed. Ranking each head against its own layer's sd leaves the normalised top nine DEEPER still (21.8), moves the published heads by at most 21 places of 168, and puts 0 of them in the top nine either way. The stronger form is an INVARIANCE: the two top-nines share only 6 of 9 members, so WHICH heads are top is normalisation-dependent, while the published heads' absence from both is not",
+      "found_by": "author_reading_the_object"
     }
   ]
 }
