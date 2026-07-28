@@ -25,8 +25,59 @@ independently established as the copy head for that task.
 > `make headline` replays the draw from its seed and returns the recorded value with
 > reconstruction error `0`, so the number is now computed rather than stored.
 
-**And "inside the floor" turns out to have two different causes, which the same sentence used to
-cover.** Ablating the *sets* and placing them against a 30-draw set-size null separates them:
+### "Inside the noise floor" was hiding the actual finding, and it took a bound on the *other* noise to see it
+
+The phrase covers two different failures, and this repository spent nine rounds not separating them:
+
+| | |
+|---|---|
+| **not measurable** | the effect is below what the instrument can resolve on `120` items |
+| **not distinctive** | the effect is resolvable, and a *random* head of the same size does the same thing |
+
+They can be told apart, for free, from data already checked in. Every head's drop is a mean over
+the **same** items, so the item-sampling term is present in **every layer** — and a layer whose
+heads all do nearly nothing exhibits close to that term alone. Since a real effect can only *add*
+to the spread, **the quietest layer bounds the item-noise floor from above**. [R10](R10_exhaustive/)
+measured all `28` layers exhaustively, so the bound costs nothing:
+
+```
+band floor (normalised)      0.10879
+p10 of 28 layers  L2         0.00883      selection-robust bound
+strict minimum    L1         0.00474
+
+-> at most 0.66% of the floor's VARIANCE can be item sampling (0.19% on the strict minimum)
+```
+
+**So the floor is component choice, not sample size.** Which makes the next table the result:
+
+```
+head        drop     x item-noise   x floor    measurable   distinctive
+L16H3    -0.4668         11.8         0.96        YES          no
+L17H0    +0.1336          3.4         0.27        YES          no
+L22H7    -0.1317          3.3         0.27        YES          no      <- the proven copy head
+L18H9    +0.0410          1.0         0.08        no           no
+L17H11   +0.0379          1.0         0.08        no           no
+L19H5    +0.0373          0.9         0.08        no           no
+L17H7    -0.0352          0.9         0.07        no           no
+L19H0    +0.0154          0.4         0.03        no           no
+
+3 of 8 are MEASURABLE          0 of 8 are DISTINCTIVE
+```
+
+> **The top three effects are real measurements — `3.3×` to `11.8×` the instrument's own noise —
+> and not one of them is distinguishable from ablating a random head.** The independently proven
+> copy head is `3.3×` above measurement noise and `0.27×` of the floor. It is not that the
+> experiment failed to see it. **The experiment saw it clearly, and what it saw is not special.**
+
+*Scope, because this repository requires it of every claim:* one model (`qwen2.5-1.5b`), one band,
+one task, the original vocabulary, `n=120`, `k=1`, exhaustive over `28×12` heads. The `0.66%` is a
+**bound**, not an estimate — it assumes a head's true effect and its item-sampling deviation are not
+strongly negatively correlated within a layer. The direct test (a disjoint item set, same heads) is
+not run here and is the next thing this repository owes.
+
+**A second, independent split — this one at the SET level.** The measurable/distinctive axis above
+is about one head at a time. Ablating the *sets* and placing them against a 30-draw set-size null
+separates a different pair:
 
 ```
 COPY circuit, 5 heads    −1.428     0.0th percentile of the null   invisible alone, enormous together
@@ -335,16 +386,16 @@ against, which is a fact about your directory and not about the ledger.
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 18 · instrument 8 · outside reader 7
+    found by:  author reading the object 19 · instrument 8 · outside reader 7
                author attacking own detector 2 · author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 37 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 38 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 37 were findable only by an outside reader** — `18.9%`. That fraction was 27% at n=22 and
+**7 of 38 were findable only by an outside reader** — `18.4%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -357,12 +408,12 @@ joint            by the author   by an instrument   by an outside reader
 PROVENANCE             4                7                    0
 CONTROL                4                0                    4
 STATISTIC              3                3                    1
-SCOPE                  3                0                    2
+SCOPE                  4                0                    2
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**The overlap is one bin, and n=37 has not changed it.** Nine detectors now exist and **not one has
+**The overlap is one bin, and n=38 has not changed it.** Nine detectors now exist and **not one has
 ever caught a `CONTROL` or `SCOPE` defect** — those two joints were found only by another mind. That measurement is what
 [`arm_contrast`](detectors/arm_contrast.py) was built from: it is aimed at the joint the instruments
 had never reached, and its first selftest case is the real defect that eight rounds inherited.
@@ -371,12 +422,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`37` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`38` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `11`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`37` a bin of `11` is `29.7%`, which is not domination
+> ledger; at n=`38` a bin of `11` is `28.9%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

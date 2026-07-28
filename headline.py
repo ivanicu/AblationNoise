@@ -158,6 +158,75 @@ def r10():
     return out or None
 
 
+def item_noise_bound():
+    """Is the floor HEAD CHOICE, or is it the finite item sample? And the distinction it forces.
+
+    Every head's drop is a mean over the SAME 120 items, so between-head spread is
+    `var(true head effects) + var(head-specific item-sampling deviations)`. The second term is
+    present in EVERY layer. A layer whose heads all do nearly nothing therefore exhibits close to
+    the item-sampling term alone, and since the first term can only ADD, **the quietest layer's
+    spread is an upper bound on the item-noise floor.** No re-run, no GPU: R10 measured all 28
+    layers exhaustively on one item set.
+
+    THE SELECTION EFFECT IS REAL AND IS HANDLED, NOT IGNORED. Taking the minimum of 28 noisy sd
+    estimates biases it downward, so the p10 layer is reported as the operative bound and the
+    strict minimum beside it. Both are quoted; neither is chosen after the fact.
+
+    THE STRONGEST CONFOUND, STATED: the bound assumes the covariance between a head's true effect
+    and its item-sampling deviation is not strongly negative within a layer. Under strong negative
+    covariance an observed spread could fall BELOW the item-noise term and the bound would be
+    optimistic. The direct measurement -- re-run with a disjoint item set and compare per-head
+    values -- is not done here, so this is a bound, not an estimate, and it is labelled as one.
+
+    WHAT FALLS OUT IS SHARPER THAN THE FLOOR ITSELF. Placing the eight published effects against
+    the item-noise bound rather than against the floor separates two things the phrase "inside the
+    noise floor" had been conflating: NOT MEASURABLE (below the instrument's precision) and NOT
+    DISTINCTIVE (indistinguishable from a random head of the same size). The top three are many
+    times the measurement bound and still inside the floor. **They are real measurements. They are
+    simply not special.**
+    """
+    p = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    pe = r1_prior_effects()
+    if not (p.exists() and pe):
+        return None
+    t = json.load(open(p))
+    bm = abs(t['base_margin'])
+    L = {int(k): v for k, v in t['layers'].items()}
+    lo, hi = 14, 27
+
+    def sd(xs):
+        m = sum(xs) / len(xs)
+        return math.sqrt(sum((x - m) ** 2 for x in xs) / (len(xs) - 1))
+
+    band = [d for k in range(lo, hi + 1) for d in L[k]['per_head'].values()]
+    band_floor = 2 * sd(band)
+    per_layer = sorted((2 * v['sd'] / bm, k) for k, v in L.items())
+    strict, p10 = per_layer[0], per_layer[int(0.10 * len(per_layer))]
+    nb = band_floor / bm
+    return {
+        'model': t['model'], 'n_layers': len(L), 'n_items': t['n_items'],
+        'base_margin': bm, 'band': [lo, hi],
+        'band_floor_raw': band_floor, 'band_floor_normalised': nb,
+        'quietest_layer': strict[1], 'quietest_bound': strict[0],
+        'p10_layer': p10[1], 'p10_bound': p10[0],
+        'bound_pct_of_floor_sd': 100 * p10[0] / nb,
+        'bound_pct_of_floor_variance': 100 * (p10[0] / nb) ** 2,
+        'strict_pct_of_floor_variance': 100 * (strict[0] / nb) ** 2,
+        'effects': [{'head': h, 'drop': e['drop'],
+                     'x_item_noise': e['abs'] / (p10[0] * bm),
+                     'x_floor': e['abs'] / band_floor,
+                     'measurable': e['abs'] / (p10[0] * bm) > 2.0,
+                     'distinctive': e['abs'] > band_floor}
+                    for h, e in sorted(pe['effects'].items(), key=lambda kv: -kv[1]['abs'])],
+        # THE PRE-REGISTERED READING: >2x the bound = resolvable by this instrument; > the floor =
+        # distinguishable from a random head. Two independent predicates, and the whole point is
+        # that they DISAGREE on three of the eight.
+        'n_measurable': sum(e['abs'] / (p10[0] * bm) > 2.0 for e in pe['effects'].values()),
+        'n_distinctive': sum(e['abs'] > band_floor for e in pe['effects'].values()),
+        'n_total': len(pe['effects']),
+    }
+
+
 def defect_ledger():
     """The defect table's own counts, GENERATED -- because every step adds a row and the prose drifts.
 
@@ -827,11 +896,12 @@ def main() -> int:
     BS, CR = r1_behavioural_scale(), cross_round_scale()
     SR, TEN, NINE = r1_set_null_range(), r10(), r9()
     FA, VD, DL = r1_floor_audit(), variance_decomposition(), defect_ledger()
+    IN = item_noise_bound()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -909,6 +979,25 @@ def main() -> int:
               f"{h['min_pct']:.1f}%-{h['max_pct']:.1f}%, and "
               f"{h['n_within_3pp_of_52']} land within 3pp of the retracted 52%")
         print(f"      -> the ESTIMATOR was free, so the held-out claim is WITHDRAWN, not weakened\n")
+
+    if IN:
+        print("ITM is the floor HEAD CHOICE, or the finite item sample? -- and what that separates")
+        print(f"      band floor (normalised)          {IN['band_floor_normalised']:.5f}")
+        print(f"      quietest layer L{IN['quietest_layer']:<3}                {IN['quietest_bound']:.5f}"
+              f"   strict min of {IN['n_layers']}")
+        print(f"      p10 layer     L{IN['p10_layer']:<3}                {IN['p10_bound']:.5f}"
+              f"   selection-robust, and the operative bound")
+        print(f"      -> at MOST {IN['bound_pct_of_floor_variance']:.2f}% of the floor's VARIANCE "
+              f"can be item sampling ({IN['strict_pct_of_floor_variance']:.2f}% on the strict min)")
+        print(f"      the floor is component choice. Which makes the next line the real result:")
+        print(f"      {'head':<9}{'drop':>9}{'x item-noise':>14}{'x floor':>9}   measurable / distinctive")
+        for e in IN['effects']:
+            print(f"      {e['head']:<9}{e['drop']:>+9.4f}{e['x_item_noise']:>14.1f}"
+                  f"{e['x_floor']:>9.2f}   {'YES' if e['measurable'] else 'no ':<4}/ "
+                  f"{'YES' if e['distinctive'] else 'no'}")
+        print(f"      {IN['n_measurable']} of {IN['n_total']} are MEASURABLE; "
+              f"{IN['n_distinctive']} of {IN['n_total']} are DISTINCTIVE")
+        print(f"      -> 'inside the noise floor' was conflating two different failures\n")
 
     if FA:
         print("R1* AUDIT OF THE FLOOR ITSELF -- the reference class had never been checked")
@@ -1143,9 +1232,20 @@ def main() -> int:
             ('R9 models with negative predicted sd',
              NINE['n_negative_predicted_sd'] if NINE else -1, 2, 0),
             ('R9 models with rho > 0', NINE['n_rho_positive'] if NINE else -1, 4, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 37, 0),
+            # THE SHARPEST RESULT IN THE REPOSITORY, asserted so it cannot silently drift:
+            # three of the eight effects are many times the instrument's own noise, and NONE of
+            # the eight is distinguishable from a random head. If either count moves, the front
+            # page's central paragraph is wrong and the build must say so.
+            ('ITM measurable', IN['n_measurable'] if IN else -1, 3, 0),
+            ('ITM distinctive', IN['n_distinctive'] if IN else -1, 0, 0),
+            ('ITM item-noise share of floor variance',
+             IN['bound_pct_of_floor_variance'] if IN else -1, 0.659, 0.001),
+            ('ITM copy head vs item noise',
+             next((e['x_item_noise'] for e in IN['effects'] if e['head'] == 'L22H7'), -1)
+             if IN else -1, 3.33, 0.01),
+            ('LDG defect rows', DL['n'] if DL else -1, 38, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 11, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 18.92, 0.01),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 18.421, 0.001),
             # THE FINDING THE WHOLE DETECTOR SUITE WAS BUILT FROM, asserted so it cannot rot:
             # at n=37 no instrument has yet caught a CONTROL or a SCOPE defect. If a detector
             # ever does, this assertion fails and the front page's claim must be rewritten --

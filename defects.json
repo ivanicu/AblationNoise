@@ -342,6 +342,15 @@
       "defect": "detector 6's own documented invocation -- the example in its docstring -- crashed on relative_to(ROOT) for any relative path argument",
       "operation": "BROKEN AND INVISIBLE. make verify passes no arguments and takes the glob branch, whose paths are already absolute, so the only broken path was the one a human would type. Fixed with .resolve()",
       "found_by": "author_attacking_own_detector"
+    },
+    {
+      "id": "D38",
+      "round": "repo",
+      "bin": "SCOPE",
+      "commit": "fbd3c68",
+      "defect": "'inside the noise floor' was used for nine rounds as one predicate covering two different failures: NOT MEASURABLE (below what the instrument resolves on 120 items) and NOT DISTINCTIVE (resolvable, and a random head of the same size does the same)",
+      "operation": "SEPARATED, for free, from data already checked in. Every head's drop is a mean over the SAME items, so the item-sampling term appears in every layer and the quietest layer bounds it from above; R10 measured all 28. At most 0.66% of the floor's VARIANCE is item sampling. Against that bound 3 of 8 effects are MEASURABLE (11.8x, 3.4x, 3.3x) and 0 of 8 are DISTINCTIVE. The proven copy head is 3.3x above measurement noise and 0.27x of the floor -- the experiment saw it clearly, and what it saw is not special",
+      "found_by": "author_reading_the_object"
     }
   ]
 }
