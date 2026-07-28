@@ -15,6 +15,40 @@
 what a *random* component of the same size does. This repository measures that — and then points
 the measurement at its own author's prior work.**
 
+> # READ THIS FIRST — the task is not what twelve rounds of this repository said it was
+>
+> Every runner picks its query person as *the first single-token name*, and every binding assigns
+> **all eight** names — so the query is **always `Alice`**. The prompt's fact lines are emitted in a
+> fixed order, so Alice's fact is **always line 0**.
+>
+> ```
+> line 0: Alice owns the wand. The wand is in the rust room.     <- the answer, every item
+> line 1: Bob   owns the pill. The pill is in the rust room.
+> ...    six more facts, never queried
+> line 8: Question: Which room should Alice go to find their object?
+>
+> correct answer = rust = the room in LINE 0
+> ```
+>
+> **`copy the room from line 0` scores `100%` without matching a single name.** The *answer* varies
+> — across `400` seeds the four rooms take `23.5%`–`26.2%` — so the labels are balanced. The
+> *structure* is not: **this is a fixed-position retrieval task, and it cannot distinguish
+> position-copying from name-binding, because the two strategies agree on every item it contains.**
+>
+> **What this does not break.** Every comparison *between* heads. All of them face the same task, so
+> the floor, the ranking, the counts, the item-noise and the null's centring are unaffected as
+> statements about this task, and the methodological findings stand entirely.
+>
+> **What it breaks.** The description. `L22H7` was called a *copy head*; on this task it may be
+> copying from **position `0`** rather than resolving a name, and no measurement here can tell those
+> apart. Every claim below about *binding* should be read as a claim about **fixed-position
+> retrieval**.
+>
+> **And the reason it took thirteen rounds:** an elaborate apparatus was built to audit
+> *measurements* — `4` detectors, `62` logged defects, a pre-registration per round — and **none of
+> it was ever pointed at the thing being measured.** The task's own construction was read for the
+> first time in the thirteenth round, and it took twenty lines of `python` with no model loaded.
+
 Then it points the measurement at its own author's prior results. The finding, stated at the size
 the evidence supports:
 
@@ -614,23 +648,23 @@ against, which is a fact about your directory and not about the ledger.
 
 ```
     PROVENANCE     19      whether the number has a generator at all
-    SCOPE           9      which population the claim covers
-    CONTROL        11      what the control arm actually holds fixed
+    SCOPE          10      which population the claim covers
+    CONTROL        12      what the control arm actually holds fixed
     STATISTIC      12      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 32 · instrument 13 · outside reader 7
+    found by:  author reading the object 33 · instrument 13 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 61 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 63 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 61 were findable only by an outside reader** — `11.5%`. That fraction was 27% at n=22 and
+**7 of 63 were findable only by an outside reader** — `11.1%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -641,14 +675,14 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 ```
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE            11                8                    0
-SCOPE                  9                0                    2
+SCOPE                 10                0                    2
 STATISTIC              8                4                    1
 CONTROL                7                1                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**An instrument has finally caught a `CONTROL` defect — the first, at n=`61`.** It was the
+**An instrument has finally caught a `CONTROL` defect — the first, at n=`63`.** It was the
 provenance validator, firing on its own during a routine gate run, and what it revealed was a
 false-conviction rule **inside itself**. The `--check` line asserting `0` had been written at n=`37`
 precisely so the build would fail the day this happened; it failed, and the expected count was
@@ -663,12 +697,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`61` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`63` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `19`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`61` a bin of `19` is `31.1%`, which is not domination
+> ledger; at n=`63` a bin of `19` is `30.2%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

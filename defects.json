@@ -558,6 +558,24 @@
       "defect": "correcting the k=1 null's centring left every OTHER comparison uncentred, and one of them was the front page's OPENING LINE: '0 of those 9 are among the eight published heads'",
       "operation": "THE CORRECTION OBLIGED A RE-RUN AND I HAD NOT DONE IT. Centred everywhere: the k=1 clearing set goes 9 -> 10 and the tenth is L16H3, A PUBLISHED HEAD, so the opening line's '0 of those 9' becomes '1 of those 10'. The k=5 circuit goes 1.45x -> 1.65x, and the centred ratio turns out to be exactly |z|/2 -- so 'x floor' and 'z' were two names for one quantity with one mis-centred, printed side by side. The sham-band comparison is UNCHANGED at 3 of 8 because that null's mean is +0.0040, which is the evidence the rule was applied everywhere rather than where it flattered. Uncentred forms are still emitted so each correction can be read against what it corrects",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D62",
+      "round": "repo",
+      "bin": "SCOPE",
+      "commit": "aeecd7f",
+      "defect": "the task was described as a BINDING task for twelve rounds. Every runner picks the query as the first single-token person and every binding assigns all eight, so the query is always Alice; fact lines follow a fixed order, so Alice's fact is always line 0",
+      "operation": "THE CORRECT ANSWER IS ALWAYS THE ROOM IN THE FIRST SENTENCE. 'Copy the room from line 0' scores 100% without matching a name. The labels are balanced -- the four rooms take 23.5%-26.2% over 400 seeds -- so it is the STRUCTURE that is degenerate, not the answer key. It does not break any comparison BETWEEN heads, since all face the same task; it breaks the DESCRIPTION. L22H7 may be copying from position 0 rather than resolving a name, and no measurement here can distinguish those, because the two strategies agree on every item the task contains",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D63",
+      "round": "repo",
+      "bin": "CONTROL",
+      "commit": "aeecd7f",
+      "defect": "the task audit's own import guard was `except Exception: return None`, and it swallowed a NameError (headline.py had no `import sys`) so the entire section vanished from the output with no error",
+      "operation": "A GUARD THAT TURNS A BUG INTO AN ABSENCE -- the exact pattern this repository keeps finding in other people's checks, hiding one of its own for a run. Narrowed to ImportError and made loud: it now refuses with a message rather than returning None, because reporting nothing looks identical to reporting no problem",
+      "found_by": "author_attacking_own_detector"
     }
   ]
 }

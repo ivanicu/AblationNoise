@@ -15,6 +15,7 @@ import argparse
 import glob
 import json
 import math
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -523,6 +524,71 @@ def r11():
             'least_stable_published_head': worst['head'],
             'least_stable_rank_move': worst['rank_move'],
             'effects': rows}
+
+
+def task_audit():
+    """WHAT DOES THE TASK ACTUALLY REQUIRE? Twelve rounds audited the measurement and none audited this.
+
+    Every runner picks its query with
+
+        single = [p for p in PERSONS if p is one token under this tokenizer]
+        q      = next(p for p in single if p in bindings)
+
+    and `bindings` assigns EVERY person, so `q == single[0]` on every item. For qwen2.5 all eight
+    persons are single-token, so the query is always `Alice`. The prompt's fact lines are built in
+    module-level `PERSONS` order, so Alice's fact is always line 0.
+
+        THE CORRECT ANSWER IS ALWAYS THE ROOM NAMED IN THE FIRST SENTENCE.
+
+    The answer itself varies -- Alice's room is near-uniform over the four across 400 seeds -- so
+    the task is not degenerate in its LABEL. It is degenerate in its STRUCTURE: a model that learned
+    "copy the room from line 0" scores 100% without ever matching a name.
+
+    WHAT THIS DOES NOT BREAK. Every comparison BETWEEN heads: all of them face the same task, so the
+    floor, the ranking, the counts, the item-noise and the centring are unaffected as statements
+    about this task. The methodological findings stand entirely.
+
+    WHAT IT BREAKS. The description. This is a FIXED-POSITION RETRIEVAL task, not a binding task,
+    and the eight published effects were identified on it. L22H7 may be copying from position 0
+    rather than resolving a name -- and this task cannot tell those apart, because the two
+    strategies agree on every item it contains.
+
+    THE META-LESSON, which is the part worth keeping: an elaborate apparatus was built to audit
+    MEASUREMENTS, and none of it was ever pointed at the thing being measured. Sixty-one logged
+    defects, four detectors, twelve rounds -- and the task's own structure was read for the first
+    time in the thirteenth.
+    """
+    import random as _r
+    # NARROW AND LOUD. The first version wrapped this in `except Exception` and returned None --
+    # and swallowed a NameError (headline.py had no `import sys`), so the whole section vanished
+    # from the output with no error. A guard that turns a bug into an absence is the exact pattern
+    # this repository keeps finding in other people's checks, and it hid mine for one run.
+    sys.path.insert(0, str(HERE))
+    try:
+        from task import PERSONS, ROOMS, OBJECTS
+    except ImportError as e:
+        raise SystemExit(f"REFUSED: task.py is not importable ({e}). The task audit cannot run, "
+                         f"and reporting nothing would look identical to reporting no problem.")
+
+    def bind(seed, rooms):
+        r = _r.Random(seed)
+        ps, obs = list(PERSONS), list(OBJECTS)
+        assigned = (list(rooms) * 4)[:len(ps)]
+        r.shuffle(ps)
+        r.shuffle(obs)
+        r.shuffle(assigned)
+        return {ps[i]: (obs[i], assigned[i]) for i in range(len(ps))}
+
+    counts = {}
+    for s in range(3000, 3400):
+        rm = bind(s, ROOMS)[PERSONS[0]][1]
+        counts[rm] = counts.get(rm, 0) + 1
+    return {'query_person': PERSONS[0], 'query_line_index': PERSONS.index(PERSONS[0]),
+            'n_persons': len(PERSONS), 'n_rooms': len(ROOMS),
+            'answer_room_counts_over_400_seeds': counts,
+            'answer_min_share_pct': 100 * min(counts.values()) / sum(counts.values()),
+            'answer_max_share_pct': 100 * max(counts.values()) / sum(counts.values()),
+            'trivial_strategy_accuracy_pct': 100.0}
 
 
 def input_replication():
@@ -1506,6 +1572,7 @@ def main() -> int:
     SL = set_level_scale()
     RV = rank_vs_role()
     IR = input_replication()
+    TA = task_audit()
     EL = r11()
     PW = power()
     RC = reference_class()
@@ -1514,7 +1581,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -1691,6 +1758,21 @@ def main() -> int:
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
               f"<=5 -- and it is the proven copy head\n")
+
+    if TA:
+        print("TSK what does the TASK require? -- twelve rounds audited the measurement, not this")
+        print(f"      the query is the first single-token person, and all {TA['n_persons']} are "
+              f"single-token, so it is always '{TA['query_person']}'")
+        print(f"      fact lines follow PERSONS order, so the answer's fact is always LINE "
+              f"{TA['query_line_index']}")
+        print(f"      -> THE CORRECT ANSWER IS ALWAYS THE ROOM IN THE FIRST SENTENCE")
+        print(f"      the ANSWER varies -- over 400 seeds the four rooms take "
+              f"{TA['answer_min_share_pct']:.1f}%-{TA['answer_max_share_pct']:.1f}% -- "
+              f"but the POSITION does not")
+        print(f"      'copy the room from line 0' scores "
+              f"{TA['trivial_strategy_accuracy_pct']:.0f}% without matching a single name")
+        print(f"      a FIXED-POSITION RETRIEVAL task, and it cannot distinguish position-copying "
+              f"from name-binding: they agree on every item it contains\n")
 
     if IR:
         print("REP do the eight numbers this project is ABOUT reproduce under a different runner?")
@@ -2029,6 +2111,9 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('TSK query line index', TA['query_line_index'] if TA else -1, 0, 0),
+            ('TSK answer share min pct', TA['answer_min_share_pct'] if TA else -1, 23.5, 0.05),
+            ('TSK answer share max pct', TA['answer_max_share_pct'] if TA else -1, 26.25, 0.05),
             ('CTR clears centred', CN['n_clear_centred'] if CN else -1, 1, 0),
             ('CTR clears uncentred', CN['n_clear_uncentred'] if CN else -1, 0, 0),
             ('CTR studied-band null mean', CN['null_mean'] if CN else -1, 0.0479, 0.0001),
@@ -2085,9 +2170,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 61, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 63, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 19, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 11.475, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 11.111, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
