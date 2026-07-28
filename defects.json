@@ -540,6 +540,15 @@
       "defect": "the Bash tool reset the working directory to /home/ivan after a subshell cd, so every subsequent relative-path command in that step targeted a DIFFERENT repository -- a grep for the front page returned '# BroueLean'",
       "operation": "NEAR MISS, and the thing that stopped it was not designed to. The edit script asserted its anchor text was present BEFORE writing, so it aborted on the wrong file instead of clobbering it; /home/ivan/README.md's mtime is still 2026-04-17. An assertion written as a correctness check on the TEXT functioned as a guard on the DIRECTORY. All subsequent file operations in this project now use absolute paths",
       "found_by": "instrument"
+    },
+    {
+      "id": "D60",
+      "round": "repo",
+      "bin": "STATISTIC",
+      "commit": "ac256ca",
+      "defect": "the distinguishability statistic has always been |drop| > 2*sd, which silently places the null at ZERO. The studied band's null has mean +0.0479 = 0.20 sd: ablating a random late-layer head improves the correct-answer margin more often than it hurts, 100 positive vs 68 negative of 168",
+      "operation": "CORRECTED to |drop - mean| > 2*sd, and IT CHANGES THE HEADLINE COUNT: L16H3 goes 0.96x -> 1.06x and CLEARS, so the figure is 1 of 8, not 0 of 8. The proven copy head moves the other way, 0.27x -> 0.37x, and stays far inside. Across 168 band heads the count goes 9 -> 10. The offset was first shown NOT to be an intervention artifact: the sham band is centred (+0.0040, 0.10 sd, 51/45 signs) while the studied band is at 0.20 sd, so it grows with depth alongside the spread and is a fact about the late band rather than about zero-ablation",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

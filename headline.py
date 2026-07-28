@@ -183,6 +183,57 @@ def _spearman(a, b):
     return num / den if den else float('nan')
 
 
+def centred_null():
+    """THE NULL IS NOT CENTRED AT ZERO, and every verdict in this repository assumed it was.
+
+    `distinguishable` has always been `|drop| > 2*sd`. That statistic implicitly places the null at
+    zero. Measured: the studied band's mean drop is **+0.0479**, which is 0.20 sd -- ablating a
+    random late-layer head IMPROVES the correct-answer margin more often than it hurts, 100 of 168.
+    A head that does nothing therefore sits 0.0479 AWAY from the null's centre, and the question
+    "is this head unusual among random heads" is `|drop - mean| > 2*sd`, not `|drop| > 2*sd`.
+
+    IT CHANGES THE HEADLINE COUNT. L16H3 goes from 0.96x (inside) to 1.06x (CLEARS), so the correct
+    figure is 1 of 8, not 0 of 8. The proven copy head moves the other way, 0.27x -> 0.37x, and
+    stays far inside. Seven of eight are unaffected in substance.
+
+    AND THE SHIFT IS NOT AN INTERVENTION ARTIFACT, which had to be checked before the centred
+    statistic could be trusted. If zero-ablating ANY head nudged this readout upward, the +0.0479
+    would be a property of the operation rather than of the band. The sham band (L0-7) is
+    essentially centred -- +0.0040, 0.10 sd, a 51/45 sign split -- while the studied band is at 0.20
+    sd with 100/68. The offset grows with depth alongside the spread; it is a fact about the late
+    band, not about zeroing.
+    """
+    p = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    pe = r1_prior_effects()
+    if not (p.exists() and pe):
+        return None
+    t = json.load(open(p))
+    L = {int(k): v for k, v in t['layers'].items()}
+
+    def stats(lo, hi):
+        v = [x for k in range(lo, hi + 1) for x in L[k]['per_head'].values()]
+        m = sum(v) / len(v)
+        sd = math.sqrt(sum((y - m) ** 2 for y in v) / (len(v) - 1))
+        return {'n': len(v), 'mean': m, 'sd': sd, 'mean_over_sd': m / sd,
+                'n_positive': sum(1 for x in v if x > 0),
+                'n_negative': sum(1 for x in v if x < 0)}
+
+    bands = {'sham_L0_7': stats(0, 7), 'mid_L8_13': stats(8, 13),
+             'studied_L14_27': stats(14, 27), 'all_L0_27': stats(0, 27)}
+    b = bands['studied_L14_27']
+    mu, two_sd = b['mean'], 2 * b['sd']
+    rows = [{'head': h, 'drop': e['drop'],
+             'x_uncentred': e['abs'] / two_sd,
+             'x_centred': abs(e['drop'] - mu) / two_sd}
+            for h, e in sorted(pe['effects'].items(), key=lambda kv: -kv[1]['abs'])]
+    allb = [x for k in range(14, 28) for x in L[k]['per_head'].values()]
+    return {'bands': bands, 'null_mean': mu, 'two_sd': two_sd, 'effects': rows,
+            'n_clear_uncentred': sum(r['x_uncentred'] > 1 for r in rows),
+            'n_clear_centred': sum(r['x_centred'] > 1 for r in rows),
+            'band_heads_clear_uncentred': sum(1 for v in allb if abs(v) > two_sd),
+            'band_heads_clear_centred': sum(1 for v in allb if abs(v - mu) > two_sd)}
+
+
 def reference_class():
     """Does the CHOICE of null decide the verdict? Pre-registered before running: >=4 of 8 clearing
     the sham-band floor would mean the reference class is doing the work. Observed 3. IT DID NOT FIRE.
@@ -1400,11 +1451,12 @@ def main() -> int:
     EL = r11()
     PW = power()
     RC = reference_class()
+    CN = centred_null()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'r11': EL, 'power': PW, 'reference_class': RC,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -1489,6 +1541,23 @@ def main() -> int:
               f"{h['min_pct']:.1f}%-{h['max_pct']:.1f}%, and "
               f"{h['n_within_3pp_of_52']} land within 3pp of the retracted 52%")
         print(f"      -> the ESTIMATOR was free, so the held-out claim is WITHDRAWN, not weakened\n")
+
+    if CN:
+        print("CTR the null is NOT centred at zero, and every verdict here assumed it was")
+        print(f"      {'band':<16}{'n':>5}{'mean drop':>12}{'sd':>10}{'mean/sd':>9}{'pos/neg':>12}")
+        for k, v in CN['bands'].items():
+            print(f"      {k:<16}{v['n']:>5}{v['mean']:>+12.4f}{v['sd']:>10.4f}"
+                  f"{v['mean_over_sd']:>9.2f}{f'{v["n_positive"]}/{v["n_negative"]}':>12}")
+        print(f"      the SHAM band is centred (0.10 sd, near coin-flip signs); the studied band is "
+              f"not -- so the offset is a fact about the LATE BAND, not about zero-ablation")
+        print(f"      {'head':<9}{'drop':>10}{'|d|/2sd':>10}{'|d-mu|/2sd':>13}")
+        for r in CN['effects']:
+            print(f"      {r['head']:<9}{r['drop']:>+10.4f}{r['x_uncentred']:>10.2f}"
+                  f"{r['x_centred']:>13.2f}"
+                  f"{'   CLEARS once centred' if r['x_centred'] > 1 >= r['x_uncentred'] else ''}")
+        print(f"      -> clears UNCENTRED {CN['n_clear_uncentred']} of 8   |   "
+              f"CENTRED {CN['n_clear_centred']} of 8   (168 band heads: "
+              f"{CN['band_heads_clear_uncentred']} -> {CN['band_heads_clear_centred']})\n")
 
     if RC:
         print("REF does the CHOICE of null decide the verdict? (pre-registered: >=4 of 8 would say yes)")
@@ -1901,6 +1970,11 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('CTR clears centred', CN['n_clear_centred'] if CN else -1, 1, 0),
+            ('CTR clears uncentred', CN['n_clear_uncentred'] if CN else -1, 0, 0),
+            ('CTR studied-band null mean', CN['null_mean'] if CN else -1, 0.0479, 0.0001),
+            ('CTR sham-band mean over sd',
+             CN['bands']['sham_L0_7']['mean_over_sd'] if CN else -1, 0.1005, 0.0001),
             ('R12 absolute-world prediction',
              RC['predicted_centroid_absolute_36L'] if RC else -1, 17.388, 0.001),
             ('R12 relative-world prediction',
@@ -1947,9 +2021,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 56, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 59, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 60, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 19, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 11.864, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 11.667, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

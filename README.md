@@ -138,14 +138,33 @@ L19H5    +0.0373    0.0035       10.53          0.08       115      115
 L17H7    -0.0352    0.0082        4.31          0.07       116      116
 L19H0    +0.0154    0.0033        4.64          0.03       143      144
 
-RESOLVABLE at 2σ      8 of 8            DISTINGUISHABLE from a random head      0 of 8
+RESOLVABLE at 2σ      8 of 8            DISTINGUISHABLE from a random head      1 of 8
 ```
+
+> ### CORRECTED — the null is not centred at zero, and every verdict here assumed it was
+>
+> `distinguishable` was `|drop| > 2·sd`, which silently places the null at `0`. **The studied band's
+> mean drop is `+0.0479` — `0.20` sd.** Ablating a random late-layer head *improves* the
+> correct-answer margin more often than it hurts: **`100` positive, `68` negative of `168`.** A head
+> that does nothing therefore sits `0.0479` away from the null's centre, and the question *"is this
+> head unusual among random heads"* is `|drop − mean| > 2·sd`.
+>
+> **It changes the count.** `L16H3` goes `0.96×` → **`1.06×`, clearing**, so the correct figure is
+> **`1` of `8`**, not `0`. The proven copy head moves the other way, `0.27×` → `0.37×`, and stays
+> far inside. Across all `168` band heads the clearing count goes `9` → `10`.
+>
+> **And the offset had to be shown not to be an intervention artifact before the centred statistic
+> could be trusted.** If zero-ablating *any* head nudged this readout upward, `+0.0479` would be a
+> property of the operation, not of the band. The **sham band is centred** — `+0.0040`, `0.10` sd, a
+> `51/45` sign split — while the studied band is at `0.20` sd. The offset grows with depth alongside
+> the spread. **It is a fact about the late band, not about zeroing.**
 
 > ## Every one of the eight is measurable. Not one of them is special.
 >
 > **The measurement was never the problem.** Being *resolvable by the instrument* and being
-> *distinguishable from a random component* are different properties, and only the second failed —
-> for all eight, including the head independently proven to implement the behaviour.
+> *distinguishable from a random component* are different properties, and the second failed for
+> **seven of the eight** — including the head independently proven to implement the behaviour, which
+> sits at `0.37×` of the floor. The eighth, `L16H3`, clears by `6%`.
 
 > ### Which null? The choice moves the floor `6.15×`, and the pre-registered test did not fire
 >
@@ -191,12 +210,14 @@ RESOLVABLE at 2σ      8 of 8            DISTINGUISHABLE from a random head     
 >
 > Both floors are defensible and answer different questions. The front page's verdict is against the
 > band floor — *is this head special among the heads I might have picked instead?* — and it stands
-> at `0` of `8`. The sham comparison answers *is this head in the second half of the network?*, and
+> at `1` of `8` (`0` before the null was re-centred). The sham comparison answers *is this head in
+> the second half of the network?*, and
 > the eight answer it the same way `46%` of the band does.
 
 > ### The positive control for that zero — which this repository required of itself and had never supplied
 >
-> `0 of 8` is a **measured zero**, and this project's own rule is that a measured zero is
+> `7 of 8 inside` is a **measured near-zero** — it was reported as `0 of 8` clearing until the null
+> was re-centred — and this project's own rule is that a measured zero is
 > **inadmissible until the same instrument has returned non-zero**. A null from an instrument that
 > has never produced a positive is silence, not an acquittal. That control was never stated.
 >
@@ -590,21 +611,21 @@ against, which is a fact about your directory and not about the ledger.
     PROVENANCE     19      whether the number has a generator at all
     SCOPE           9      which population the claim covers
     CONTROL        11      what the control arm actually holds fixed
-    STATISTIC      10      what quantity the number is
+    STATISTIC      11      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 30 · instrument 13 · outside reader 7
+    found by:  author reading the object 31 · instrument 13 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 59 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 60 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 59 were findable only by an outside reader** — `11.9%`. That fraction was 27% at n=22 and
+**7 of 60 were findable only by an outside reader** — `11.7%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -616,13 +637,13 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE            11                8                    0
 SCOPE                  9                0                    2
-STATISTIC              6                4                    1
+STATISTIC              7                4                    1
 CONTROL                7                1                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**An instrument has finally caught a `CONTROL` defect — the first, at n=`59`.** It was the
+**An instrument has finally caught a `CONTROL` defect — the first, at n=`60`.** It was the
 provenance validator, firing on its own during a routine gate run, and what it revealed was a
 false-conviction rule **inside itself**. The `--check` line asserting `0` had been written at n=`37`
 precisely so the build would fail the day this happened; it failed, and the expected count was
@@ -637,12 +658,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`59` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`60` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `19`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`59` a bin of `19` is `32.2%`, which is not domination
+> ledger; at n=`60` a bin of `19` is `31.7%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The
