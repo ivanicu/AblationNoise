@@ -742,21 +742,21 @@ against, which is a fact about your directory and not about the ledger.
     PROVENANCE     21      whether the number has a generator at all
     SCOPE          16      which population the claim covers
     CONTROL        13      what the control arm actually holds fixed
-    STATISTIC      13      what quantity the number is
+    STATISTIC      14      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 39 · instrument 17 · outside reader 7
+    found by:  author reading the object 40 · instrument 17 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 74 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 75 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 74 were findable only by an outside reader** — `9.5%`. That fraction was 27% at n=22 and
+**7 of 75 were findable only by an outside reader** — `9.3%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -768,7 +768,7 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE            12                9                    0
 SCOPE                 13                2                    2
-STATISTIC              9                4                    1
+STATISTIC             10                4                    1
 CONTROL               11                2                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
@@ -805,10 +805,10 @@ this page said so at n=`31` — and then nobody measured how uninformative it ha
 n = 22    the verdict fires  12.65% of the time      informative
 n = 31                       66.975%                  already mostly inevitable
 n = 45                      100.0%
-n = 74                      100.0%   (20000 of 20000 random relabelings)
+n = 75                      100.0%   (20000 of 20000 random relabelings)
 ```
 
-> **At n=`74` the verdict carries no information at all.** It was informative at n=`22` and stopped
+> **At n=`75` the verdict carries no information at all.** It was informative at n=`22` and stopped
 > discriminating around n=`45`. It is reported here rather than deleted, because **a pre-registered
 > gate that stops discriminating is a finding about the gate**, and quietly dropping it is how a
 > ledger keeps only the tests that still flatter it.
@@ -827,7 +827,7 @@ unreachable at n=`22`.** `THIRTEEN-ONE-OFFS` needs `≥5`, and even then the `�
 first and masks it. **One reachable outcome is not a test**, and `validate_defects.py` now prints
 the reachable set on every run so the collapse is stated rather than discovered.
 
-**What replaces it is the distribution, and that *is* informative.** Chi-square `23.459` against a
+**What replaces it is the distribution, and that *is* informative.** Chi-square `23.48` against a
 uniform null gives a permutation `p` of `0.0002` — `4` of `20000`.
 
 ```
@@ -852,6 +852,33 @@ again in R8, in the round written to fix R7. The bin set was missing a sixth joi
 > rather than derived from the defects. The taxonomy test caught its own designer, in the design of
 > the test. The two rows stay `UNCLASSIFIED`: moving them into a new bin after seeing them is how
 > `AMBIGUOUS` becomes `TAXONOMY-EXISTS` without any evidence changing.
+
+## Why R1 and R2 disagreed — one scale, and the gap is an order of magnitude
+
+Every lesson of the last twenty rounds was applied to R1's task and **none to R2's**. The one that
+flipped R1's headline count transfers for free: **is R2's null centred at zero?**
+
+**It is not, on any of the five, and all in the same direction.** The null mean is negative
+everywhere, `−0.19` to `−0.63` standard deviations — much further off-centre than R1's band at
+`+0.20`, and in the opposite sense: **ablating random heads *hurts* induction logprob, while on the
+room task it *helped* the margin.** `d_top` is negative too, so centring **shrinks** the distance and
+makes clearing *harder*.
+
+**The count survives anyway — `4` of `5` either way** — because the effects are `6.5×` to `18.7×`
+the floor and the correction moves them by hundredths.
+
+```
+R1's eight, centred exhaustive floor    1.06  0.37  0.18  0.17  0.07  0.02  0.02  0.01
+R2's four valid cells                   1.20  6.50 14.79 18.68
+```
+
+> **The two distributions barely touch.** `R1` max `1.06`; `R2` min `1.20`. The rounds do not
+> disagree about *method* — they disagree about *effect size*, by an order of magnitude. That is
+> what [R5](R5_factorial/)'s `MIXED` over readout, site and mechanism size was circling, and what
+> the dynamic-range rescaling below approached from the other side.
+
+`phi-3.5-mini` is the exception in both: `0.12` here, and refused outright in
+[R10](R10_exhaustive/) for a readout that scores two of four answers on word fragments.
 
 ## Why R1 and R2 disagreed — and it is none of the three factors R5 was built to test
 

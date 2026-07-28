@@ -675,6 +675,15 @@
       "defect": "the detector written to find that damage across 86 commits flagged 58 of them, and its rule -- any run of two or more spaces -- measures TEXT ALIGNMENT, not shell damage",
       "operation": "UNFIT, and the check could not find its own target case. Sampled three flagged commits: all three were aligned tables inside the body. The one odd-backtick flag was a ``` code fence. The single real instance was already amended and so was invisible to it. NO MECHANICAL SIGNATURE EXISTS -- a vanished substitution leaves nothing distinguishable from ordinary prose -- so NO DETECTOR WAS ADDED, and that is the deliverable. A loud unfit check is as dangerous as a silent one when its output is plausible: the only reason 58 damaged commits were not reported is that three of them were opened and read",
       "found_by": "author_attacking_own_detector"
+    },
+    {
+      "id": "D75",
+      "round": "R2",
+      "bin": "STATISTIC",
+      "commit": "3603d43",
+      "defect": "R2's clears_2sd verdicts used |d_top| > 2*sd with the null placed at zero -- the same defect corrected in R1 -- and R2 had never been audited the way R1 has",
+      "operation": "CENTRED, and the verdicts SURVIVE: 4 of 5 either way. Every one of the five nulls is off-centre and all NEGATIVE, from -0.19 to -0.62 sd, further than R1's band at +0.20 and in the opposite sense -- ablating random heads HURTS induction while it HELPED the room-task margin. d_top is negative too, so centring makes clearing harder, and the count holds because the effects are 6.5x to 18.7x the floor. This also yields the sharpest available statement of why R1 and R2 disagreed: on one scale, R1's eight run 1.06 down to 0.01 and R2's valid four run 1.20 up to 18.68 -- the distributions barely touch, and the disagreement is about EFFECT SIZE, not method",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

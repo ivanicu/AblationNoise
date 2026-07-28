@@ -549,6 +549,67 @@ def r11():
             'effects': rows}
 
 
+def r2_centred():
+    """R2 has never been audited the way R1 has -- and the centring correction is the test.
+
+    Every lesson of the last twenty steps was applied to R1's task and none to R2's. The one that
+    flipped R1's headline count is the cheapest to transfer: is R2's null centred at zero?
+
+    IT IS NOT, ON ANY OF THE FIVE, AND ALL IN THE SAME DIRECTION. The null mean is negative
+    everywhere, from -0.19 to -0.62 standard deviations -- much further off-centre than R1's band
+    at +0.20. It makes sense in the opposite direction too: ablating random heads HURTS induction
+    logprob on average, while on the room task ablating random late heads HELPED the margin.
+
+    AND `d_top` IS NEGATIVE TOO, so centring SHRINKS the distance and makes clearing HARDER. The
+    count survives anyway: 4 of 5 either way, because the effects are 6.5x to 18.7x the floor and
+    the correction moves them by hundredths.
+
+    WHICH IS THE SHARPEST AVAILABLE STATEMENT OF WHY R1 AND R2 DISAGREED, and the repository has
+    approached it three times without putting it this way:
+
+        R1's eight, against the centred exhaustive floor:  1.06 0.37 0.18 0.17 0.07 0.02 0.02 0.01
+        R2's four valid cells:                             1.20 6.50 14.79 18.68
+
+    THE TWO DISTRIBUTIONS BARELY TOUCH. The rounds do not disagree about method; they disagree
+    about effect size, by an order of magnitude. phi-3.5-mini is the exception in both -- 0.12 here,
+    and refused outright in R10 for a readout that scores two of four answers on word fragments.
+    """
+    import glob as _g
+    rows = []
+    for f in sorted(_g.glob(str(HERE / 'R2_inversion' / 'results' / '*.json'))):
+        d = json.load(open(f))
+        nl = d.get('null')
+        if not nl:
+            continue
+        mu, sd, dt = nl['mean'], nl['sd'], d['d_top']
+        rows.append({'model': d['model'], 'd_top': dt, 'null_mean': mu, 'floor_2sd': 2 * sd,
+                     'mean_over_sd': mu / sd,
+                     'x_uncentred': abs(dt) / (2 * sd),
+                     'x_centred': abs(dt - mu) / (2 * sd)})
+    if not rows:
+        return None
+    pe = r1_prior_effects()
+    r1x = []
+    p10 = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    if pe and p10.exists():
+        t = json.load(open(p10))
+        L = {int(k): v for k, v in t['layers'].items()}
+        band = [v for x in range(14, 28) for v in L[x]['per_head'].values()]
+        m = sum(band) / len(band)
+        sd = math.sqrt(sum((v - m) ** 2 for v in band) / (len(band) - 1))
+        r1x = sorted((abs(e['drop'] - m) / (2 * sd) for e in pe['effects'].values()), reverse=True)
+    valid = [r for r in rows if r['x_centred'] > 1]
+    return {'rows': rows, 'n': len(rows),
+            'n_clear_uncentred': sum(r['x_uncentred'] > 1 for r in rows),
+            'n_clear_centred': sum(r['x_centred'] > 1 for r in rows),
+            'all_nulls_negative': all(r['null_mean'] < 0 for r in rows),
+            'mean_over_sd_min': min(r['mean_over_sd'] for r in rows),
+            'mean_over_sd_max': max(r['mean_over_sd'] for r in rows),
+            'r2_min_clearing': min(r['x_centred'] for r in valid) if valid else None,
+            'r2_max_clearing': max(r['x_centred'] for r in valid) if valid else None,
+            'r1_x_centred': r1x, 'r1_max': r1x[0] if r1x else None}
+
+
 def taxonomy_power():
     """Does the pre-registered taxonomy VERDICT carry information, or only the row count?
 
@@ -1889,6 +1950,7 @@ def main() -> int:
     TW = r12()
     FD = r15_design()
     TP = taxonomy_power()
+    TC = r2_centred()
     EL = r11()
     PW = power()
     RC = reference_class()
@@ -1897,7 +1959,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -2079,6 +2141,24 @@ def main() -> int:
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
               f"<=5 -- and it is the proven copy head\n")
+
+    if TC:
+        print("R2* the centring correction applied to R2, which had never been audited like R1")
+        print(f"      {'model':<16}{'d_top':>10}{'null mean':>11}{'mu/sd':>8}{'x uncent':>10}{'x centred':>11}")
+        for r in TC['rows']:
+            print(f"      {r['model']:<16}{r['d_top']:>+10.4f}{r['null_mean']:>+11.4f}"
+                  f"{r['mean_over_sd']:>8.2f}{r['x_uncentred']:>10.2f}{r['x_centred']:>11.2f}")
+        print(f"      every null is NEGATIVE ({TC['mean_over_sd_max']:.2f} to "
+              f"{TC['mean_over_sd_min']:.2f} sd) -- ablating random heads HURTS induction, the "
+              f"opposite of the room task where it HELPED")
+        print(f"      d_top is negative too, so centring makes clearing HARDER -- and the count "
+              f"survives anyway: {TC['n_clear_uncentred']} -> {TC['n_clear_centred']} of {TC['n']}")
+        print(f"      WHY R1 AND R2 DISAGREED, stated on one scale at last:")
+        print(f"        R1's eight  " + " ".join(f"{v:.2f}" for v in TC['r1_x_centred']))
+        print(f"        R2's valid  " + " ".join(f"{r['x_centred']:.2f}" for r in TC['rows']
+                                                 if r['x_centred'] > 1))
+        print(f"        R1 max {TC['r1_max']:.2f}   R2 min {TC['r2_min_clearing']:.2f} -- the two "
+              f"distributions barely touch. Not a methods disagreement, an EFFECT SIZE one\n")
 
     if TP:
         print("TAX does the pre-registered taxonomy VERDICT carry information, or only the count?")
@@ -2523,12 +2603,15 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('R2* clears centred', TC['n_clear_centred'] if TC else -1, 4, 0),
+            ('R2* clears uncentred', TC['n_clear_uncentred'] if TC else -1, 4, 0),
+            ('R2* min clearing', TC['r2_min_clearing'] if TC else -1, 1.19996, 0.00001),
             ('TAX taxonomy-exists unreachable from',
              TP['taxonomy_exists_unreachable_from_n'] if TP else -1, 22, 0),
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 23.459, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 23.48, 0.01),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -2603,9 +2686,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 74, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 75, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 21, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.459, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.333, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
