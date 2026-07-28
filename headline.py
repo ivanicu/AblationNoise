@@ -20,10 +20,25 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 
 
+# A REFUSAL IS NOT A CELL, AND THE GATE CRASHED ON ITS FIRST ONE. Task 58 refused phi-3.5-mini
+# correctly -- its tokenizer scores `pine` on the fragment "p" and `frost` on "fro", so the margin
+# is not about the answer -- and wrote a REFUSED artifact into the results directory, exactly as
+# designed. `load()` then handed that artifact to r10(), which asked for `d['layers']` and died.
+# THE REFUSAL MECHANISM, WORKING AS INTENDED, BROKE `make verify` FOR EVERY FUTURE CLONE.
+# Refusals are skipped here rather than in each consumer -- a guard that has to be remembered in
+# eleven places is a guard that will be missing from the twelfth -- and the count is RETURNED, not
+# swallowed, because a silently dropped refusal is a measurement that looks like it never happened.
+REFUSALS: dict[str, list[str]] = {}
+
+
 def load(pattern):
     out = {}
     for f in sorted(glob.glob(str(HERE / pattern))):
         d = json.load(open(f))
+        if str(d.get('verdict', '')).startswith('REFUSED'):
+            REFUSALS.setdefault(pattern, []).append(
+                f"{d.get('model', '?')}: {d.get('verdict')} -- {d.get('why', '')[:110]}")
+            continue
         out[d['model']] = d
     return out
 
@@ -166,6 +181,123 @@ def _spearman(a, b):
     num = sum((i - mx) * (j - my) for i, j in zip(x, y))
     den = math.sqrt(sum((i - mx) ** 2 for i in x) * sum((j - my) ** 2 for j in y))
     return num / den if den else float('nan')
+
+
+def r11():
+    """R11 -- the instrument's own noise, MEASURED, and the ranking's stability across item sets.
+
+    Two exhaustive runs on DISJOINT item sets (seeds 3000..3400 and 3400..3800), with the runner
+    finally storing `per_head_sem = sd_over_items / sqrt(n)` -- a quantity every previous run
+    computed and threw away. Three readings, all fixed in PREREGISTRATION.md before either job left
+    the queue, plus the rank-stability question the depth control could not answer.
+
+    READING 1 REPLACES A WITHDRAWN BOUND AND REVERSES ITS ANSWER. The quiet-layer bound published
+    two steps earlier said 3 of 8 effects were "measurable"; it was withdrawn because a quiet layer
+    is quiet in both terms. Measured directly: **8 of 8 are resolvable at 2 sigma**, from 1.27x
+    (L22H7) to 13.97x (L16H3). The bound was wrong in method AND in answer.
+
+    So the repository's finding reaches its sharpest form, and both halves are now measurements:
+        EVERY one of the eight is RESOLVABLE      8 of 8, |drop| > 2*SEM
+        NOT ONE is DISTINGUISHABLE from a random head   0 of 8, |drop| < the exhaustive floor
+    The measurement was never the problem. Being measurable and being special are different
+    properties, and only the second one failed.
+    """
+    a = HERE / 'R11_instrument_noise' / 'results' / 'r11_itemsA_qwen2.5-1.5b.json'
+    b = HERE / 'R11_instrument_noise' / 'results' / 'r11_itemsB_qwen2.5-1.5b.json'
+    an = HERE / 'R11_instrument_noise' / 'results' / 'r11_analysis.json'
+    pe = r1_prior_effects()
+    if not (a.exists() and b.exists() and an.exists() and pe):
+        return None
+    import re as _re
+    A, B = json.load(open(a)), json.load(open(b))
+    LA = {int(k): v for k, v in A['layers'].items()}
+    LB = {int(k): v for k, v in B['layers'].items()}
+    band = [(x, int(h)) for x in range(14, 28) for h in LA[x]['per_head']]
+    dA = {(x, h): LA[x]['per_head'][str(h)] for x, h in band}
+    dB = {(x, h): LB[x]['per_head'][str(h)] for x, h in band}
+    oA = sorted(band, key=lambda k: -abs(dA[k]))
+    oB = sorted(band, key=lambda k: -abs(dB[k]))
+    rA = {k: i for i, k in enumerate(oA, 1)}
+    rB = {k: i for i, k in enumerate(oB, 1)}
+    eight = {(int(m.group(1)), int(m.group(2))): h
+             for h in pe['effects'] if (m := _re.match(r'L(\d+)H(\d+)', h))}
+    semA = {(x, int(h)): v for x, L in LA.items() for h, v in L['per_head_sem'].items()}
+    rows = [{'head': eight[k], 'drop': dA[k], 'two_sem': 2 * semA[k],
+             'ratio': abs(dA[k]) / (2 * semA[k]),
+             'rank_A': rA[k], 'rank_B': rB[k], 'rank_move': rA[k] - rB[k]}
+            for k in sorted(eight, key=lambda k: rA[k])]
+    n = len(band)
+    mx = sum(rA[k] for k in band) / n
+    my = sum(rB[k] for k in band) / n
+    rho = (sum((rA[k] - mx) * (rB[k] - my) for k in band) /
+           math.sqrt(sum((rA[k] - mx) ** 2 for k in band) *
+                     sum((rB[k] - my) ** 2 for k in band)))
+    an = json.load(open(an))
+    worst = max(rows, key=lambda r: abs(r['rank_move']))
+    # THE NOMINAL COVERAGE OF THE BAND THE AGREEMENT RATE IS COMPARED AGAINST. Emitted rather
+    # than written into the prose as "~95%", because a theoretical constant quoted from memory is
+    # still a number with no generator -- and this one is 95.45, not 95.
+    nominal = 100.0 * math.erf(2 / math.sqrt(2))
+    return {'nominal_coverage_2sigma_pct': nominal, 'n_items_A': A['n_items'], 'n_items_B': B['n_items'], 'n_band_heads': n,
+            'n_resolvable': an['n_measurable'], 'n_defined': an['n_defined'],
+            'agree_within_sem': an['agree_within_sem'], 'n_band_pairs': an['n_band_pairs'],
+            'agree_pct': an['agree_pct'],
+            'floor_A': an['floor_A'], 'floor_B': an['floor_B'],
+            'floor_divergence_pct': an['floor_divergence_pct'],
+            'kill_threshold_pct': an['kill_threshold_pct'], 'verdict': an['verdict'],
+            'rank_spearman_A_vs_B': rho,
+            'top9_overlap_across_item_sets': len(set(oA[:9]) & set(oB[:9])),
+            'published_in_B_top9': sum(1 for k in oB[:9] if k in eight),
+            # THE ONE HEAD THAT MOVES. Every other published head shifts by <=5 places of 168;
+            # the independently proven copy head shifts 40, and reading 2 independently flags it as
+            # the worst SEM-vs-disagreement case in the band. A copy head's contribution depends on
+            # WHICH object is being copied, so item-dependence is what it should look like -- its
+            # instability is evidence FOR item-dependent machinery, not against it.
+            'least_stable_published_head': worst['head'],
+            'least_stable_rank_move': worst['rank_move'],
+            'effects': rows}
+
+
+def input_replication():
+    """Do the eight numbers this whole project is ABOUT reproduce under a different runner?
+
+    Never checked. The eight were lifted from experiment E132b's `drop` field and every round since
+    has ranked, floored and scoped them without once asking whether a second implementation returns
+    the same values. R10 measured ALL 336 heads on the same items in the same vocabulary, so the
+    comparison was free the moment R10 existed.
+
+    They agree to 3.6e-06 -- float32 nondeterminism. Two separately written runners agree on the
+    hook, the item filter, the margin definition and the drop definition, so the quantities this
+    repository compares are commensurable. That is Closure, it had never been done, and it could
+    have failed.
+
+    THE METHODOLOGICAL POINT IS IN THE SAME COMPARISON. E132b asked about 8 heads; R10 asked about
+    336, using the same code path and the same items. The ONLY difference is how many heads were
+    asked about -- and asking about all of them is what produced every finding of the last four
+    steps, including that the eight were not the interesting ones. Cost: one 16-minute job on a
+    consumer GPU for a 1.5B model.
+    """
+    import re as _re
+    pe = r1_prior_effects()
+    p = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    if not (pe and p.exists()):
+        return None
+    t = json.load(open(p))
+    L = {int(k): v for k, v in t['layers'].items()}
+    rows = []
+    for h, e in sorted(pe['effects'].items(), key=lambda kv: -kv[1]['abs']):
+        m = _re.match(r'L(\d+)H(\d+)', h)
+        x, hh = int(m.group(1)), int(m.group(2))
+        r = L[x]['per_head'][str(hh)]
+        rows.append({'head': h, 'e132b': e['drop'], 'r10': r, 'abs_diff': abs(e['drop'] - r)})
+    n_heads_exhaustive = sum(len(v['per_head']) for v in L.values())
+    return {'n': len(rows), 'max_abs_diff': max(r['abs_diff'] for r in rows),
+            'margin_e132b': abs(pe['base_margin']), 'margin_r10': abs(t['base_margin']),
+            'margin_abs_diff': abs(abs(pe['base_margin']) - abs(t['base_margin'])),
+            'n_items': pe['n_items'], 'rows': rows,
+            'n_heads_hypothesis_driven': len(rows),
+            'n_heads_exhaustive': n_heads_exhaustive,
+            'exhaustive_over_hypothesis': n_heads_exhaustive / len(rows)}
 
 
 def rank_vs_role():
@@ -1091,14 +1223,23 @@ def main() -> int:
     IN = item_noise_bound()
     SL = set_level_scale()
     RV = rank_vs_role()
+    IR = input_replication()
+    EL = r11()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'r11': EL,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
+
+    if REFUSALS:
+        print("REFUSED CELLS -- runs that produced an artifact but no measurement:")
+        for pat, rs in sorted(REFUSALS.items()):
+            for r in rs:
+                print(f"      {r}")
+        print("      a refusal is a fact about the model/task pairing, not a missing data point\n")
 
     print("R1  how much of an ablation effect is WHICH component rather than THAT one?")
     for r in sorted(A['rows'], key=lambda r: r['ratio_k1']):
@@ -1173,6 +1314,43 @@ def main() -> int:
               f"{h['min_pct']:.1f}%-{h['max_pct']:.1f}%, and "
               f"{h['n_within_3pp_of_52']} land within 3pp of the retracted 52%")
         print(f"      -> the ESTIMATOR was free, so the held-out claim is WITHDRAWN, not weakened\n")
+
+    if EL:
+        print("R11 the instrument's own noise, MEASURED -- two exhaustive runs, disjoint item sets")
+        print(f"      {'head':<9}{'drop':>9}{'2*SEM':>9}{'ratio':>8}{'rank A':>9}{'rank B':>8}{'move':>7}")
+        for e in EL['effects']:
+            print(f"      {e['head']:<9}{e['drop']:>+9.4f}{e['two_sem']:>9.4f}{e['ratio']:>8.2f}"
+                  f"{e['rank_A']:>9}{e['rank_B']:>8}{e['rank_move']:>+7}")
+        print(f"      1| RESOLVABLE at 2 sigma: {EL['n_resolvable']} of {EL['n_defined']}  "
+              f"-- replaces the WITHDRAWN quiet-layer bound, which said 3 of 8")
+        print(f"      2| run-to-run disagreement inside the SEM band: {EL['agree_within_sem']} of "
+              f"{EL['n_band_pairs']} ({EL['agree_pct']:.1f}%), nominal "
+              f"{EL['nominal_coverage_2sigma_pct']:.2f}% -- the SEM is the whole "
+              f"story, so the denominator above is trustworthy")
+        print(f"      3| KILL: exhaustive floor A {EL['floor_A']:.4f} vs B {EL['floor_B']:.4f} = "
+              f"{EL['floor_divergence_pct']:.1f}% against a {EL['kill_threshold_pct']:.0f}% "
+              f"threshold -> {EL['verdict']}")
+        print(f"      rank stability across disjoint item sets: Spearman "
+              f"{EL['rank_spearman_A_vs_B']:+.4f}, top-9 overlap "
+              f"{EL['top9_overlap_across_item_sets']} of 9, published in B's top nine "
+              f"{EL['published_in_B_top9']}")
+        print(f"      the one exception is {EL['least_stable_published_head']}, moving "
+              f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
+              f"<=5 -- and it is the proven copy head\n")
+
+    if IR:
+        print("REP do the eight numbers this project is ABOUT reproduce under a different runner?")
+        print(f"      margins: E132b {IR['margin_e132b']:.10f}  R10 {IR['margin_r10']:.10f}  "
+              f"diff {IR['margin_abs_diff']:.2e}")
+        print(f"      max |E132b drop - R10 drop| over the {IR['n']}: "
+              f"{IR['max_abs_diff']:.2e}  -- float32 nondeterminism")
+        print(f"      -> two separately written runners agree; the compared quantities are "
+              f"commensurable. Closure, never previously done, and it could have failed")
+        print(f"      AND THE METHOD POINT: E132b asked about {IR['n_heads_hypothesis_driven']} "
+              f"heads, R10 about {IR['n_heads_exhaustive']} -- same code path, same items, "
+              f"{IR['exhaustive_over_hypothesis']:.0f}x the questions")
+        print(f"      asking about all of them is what produced every finding of the last four "
+              f"steps, for one 16-minute job on a consumer GPU\n")
 
     if RV:
         print("RNK of ALL 168 band heads, which clear -- and where do the published ones rank?")
@@ -1494,6 +1672,15 @@ def main() -> int:
             ('SET copy circuit z vs null mean',
              SL['sets']['COPY']['z_from_null_mean'] if SL else -1, -3.291, 0.001),
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
+            ('R11 resolvable at 2 sigma', EL['n_resolvable'] if EL else -1, 8, 0),
+            ('R11 agreement inside the SEM band', EL['agree_within_sem'] if EL else -1, 164, 0),
+            ('R11 floor divergence across item sets',
+             EL['floor_divergence_pct'] if EL else -1, 0.4327, 0.0001),
+            ('R11 rank Spearman A vs B', EL['rank_spearman_A_vs_B'] if EL else -1, 0.9778, 0.0001),
+            ('R11 top-9 overlap across item sets',
+             EL['top9_overlap_across_item_sets'] if EL else -1, 9, 0),
+            ('REP max input replication difference',
+             IR['max_abs_diff'] if IR else -1, 3.608e-06, 1e-8),
             ('RNK published in normalised top nine',
              RV['published_in_top9_by_layer_sd'] if RV else -1, 0, 0),
             ('RNK top-nine overlap between normalisations',
@@ -1509,9 +1696,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 56, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 51, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 15, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 13.725, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 54, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 17, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 12.963, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

@@ -468,6 +468,33 @@
       "defect": "the surviving rank claim -- 'the published heads rank 10..143 of 168' -- was computed on RAW |drop|, while R9 had already established the floor GROWS with depth, and the published heads sit at mean layer 18.1 against the top nine's 21.0",
       "operation": "CONTROLLED, and the control CONFIRMED rather than killed. Ranking each head against its own layer's sd leaves the normalised top nine DEEPER still (21.8), moves the published heads by at most 21 places of 168, and puts 0 of them in the top nine either way. The stronger form is an INVARIANCE: the two top-nines share only 6 of 9 members, so WHICH heads are top is normalisation-dependent, while the published heads' absence from both is not",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D52",
+      "round": "R11",
+      "bin": "STATISTIC",
+      "commit": "d90c2f9",
+      "defect": "the withdrawn quiet-layer item-noise bound reported '3 of 8 measurable'",
+      "operation": "WRONG IN METHOD AND IN ANSWER. Measured directly against per-head SEM on the published item set: 8 of 8 are resolvable at 2 sigma, from 1.27x (L22H7) to 13.97x (L16H3). The bound did not merely rest on a bad assumption -- it also got the number wrong, in the direction that made the instrument look weaker than it is. UNVERIFIED becomes CONFIRMED by a fit instrument, not by promotion of the earlier silence",
+      "found_by": "instrument"
+    },
+    {
+      "id": "D53",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "d90c2f9",
+      "defect": "headline.py's load() globbed every JSON in a results directory and assumed a measurement schema, so the FIRST REFUSAL ARTIFACT crashed the whole gate with a KeyError on 'layers'",
+      "operation": "THE REFUSAL MECHANISM, WORKING EXACTLY AS DESIGNED, BROKE make verify FOR EVERY FUTURE CLONE. phi-3.5-mini refused correctly -- its tokenizer scores 'pine' on the fragment 'p' and 'frost' on 'fro', so the margin is not about the answer -- and the artifact landed in the right directory only because the mkdir path had been fixed an hour earlier. Refusals are now skipped in load() itself rather than in each of eleven consumers, and the count is RETURNED and PRINTED, because a silently dropped refusal is a measurement that looks like it never happened",
+      "found_by": "instrument"
+    },
+    {
+      "id": "D54",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "d90c2f9",
+      "defect": "the eight drop values the entire project is about had never been checked against a second implementation",
+      "operation": "REPRODUCE to 3.6e-06 under R10's exhaustive scan -- same items, same vocabulary, separately written runner. Float32 nondeterminism. Closure that could have failed and had never been run. The same comparison carries the method point: E132b asked about 8 heads and R10 about 336 on the same code path, 42x the questions for one 16-minute job, and asking about all of them is what produced every finding of the last five steps",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

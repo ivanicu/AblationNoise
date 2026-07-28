@@ -1,0 +1,12 @@
+{
+  "n_measurable": 8,
+  "n_defined": 8,
+  "agree_within_sem": 164,
+  "n_band_pairs": 168,
+  "agree_pct": 97.61904761904762,
+  "floor_A": 0.48703709294599146,
+  "floor_B": 0.48914457916797494,
+  "floor_divergence_pct": 0.4327157525591552,
+  "kill_threshold_pct": 20.0,
+  "verdict": "FLOOR-SURVIVES"
+}

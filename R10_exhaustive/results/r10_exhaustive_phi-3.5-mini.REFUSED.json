@@ -1,0 +1,24 @@
+{
+  "model": "phi-3.5-mini",
+  "rooms": [
+    "pine",
+    "gold",
+    "rust",
+    "frost"
+  ],
+  "verdict": "REFUSED-BAD-READOUT",
+  "readout_verdict": "READOUT-WEAK",
+  "why": "ids are distinct but 2 of 4 answers are scored on a FRAGMENT, not the word: {'pine': '\u2581p', 'frost': '\u2581fro'}. A logit on a fragment is shared with every other word starting the same way, so the margin is not about the answer.",
+  "scored_ids": {
+    "pine": 282,
+    "gold": 7684,
+    "rust": 21580,
+    "frost": 14671
+  },
+  "whole_word": {
+    "pine": false,
+    "gold": true,
+    "rust": true,
+    "frost": false
+  }
+}

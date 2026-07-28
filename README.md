@@ -117,65 +117,66 @@ same day, with the commit order as the only proof they came first.
 > `make headline` replays the draw from its seed and returns the recorded value with
 > reconstruction error `0`, so the number is now computed rather than stored.
 
-### "Inside the noise floor" covers two different failures — and the attempt to separate them failed, in a way worth keeping
+### Both halves are now measured, and they say opposite things about the same eight numbers
 
-The phrase hides a distinction this repository spent nine rounds not making:
-
-| | |
-|---|---|
-| **not measurable** | the effect is below what the instrument can resolve on `120` items |
-| **not distinctive** | the effect is resolvable, and a *random* head of the same size does the same thing |
-
-**One of the two is settled and the other is not, and the difference is instructive.**
-
-`distinctive` needs only the exhaustive floor, which [R10](R10_exhaustive/) measured over all
-`28×12` heads with no sampling and no modelling. **`0` of `8`.** Every published effect, including
-the independently proven copy head at `0.27×`, does what a random head of the same size does.
-
-`measurable` needs the instrument's own noise, and the attempt to get it for free **was wrong**:
-
-> ### RETRACTED 2026-07-28, one step after it was published
->
-> The argument was: every head's drop is a mean over the *same* items, so the item-sampling term is
-> present in every layer; a quiet layer therefore exhibits close to that term alone and **bounds**
-> it. Measured: quietest layer `0.00474` against a band floor of `0.10879`, giving *"at most
-> `0.66%` of the floor's variance can be item sampling."*
->
-> **It assumed item noise is roughly constant across layers, and it cannot be.** A head's
-> item-sampling deviation has variance `var_over_items(drop)/n`, and a head that contributes
-> nothing has `drop = 0` on *every* item — so its item-to-item variance is zero too. **A quiet
-> layer has small item noise because it is quiet.**
->
-> Not marginal, and now generated rather than argued: **Spearman between a layer's mean `|drop|`
-> and its spread is `+0.962` over `28` layers.** The quiet layers are quiet in both terms, so they
-> bound the item noise only of equally quiet heads — and the eight effects, at `0.0154` to
-> `0.4668`, are not those.
->
-> The confound written down *before* the run named the wrong thing. It named a covariance; the
-> fatal assumption was cruder and was never written at all. **An uncertainty compared against a
-> differently-paired uncertainty — the first entry on this repository's own overshoot list,
-> committed by the round that lists it.**
->
-> **`measurable` is therefore `UNVERIFIED`, not overturned.** The three large effects may well be
-> resolvable; the check was unfit to say so. `make headline` still prints the column, labelled, so
-> this retraction can be read against the number it retracts.
+`R11` ran the same exhaustive scan twice on **disjoint item sets** and finally stored the quantity
+every earlier run computed and discarded: `per_head_sem = sd_over_items / sqrt(n)`. Three readings,
+all fixed in [its pre-registration](R11_instrument_noise/PREREGISTRATION.md) before either job left
+the queue.
 
 ```
-head        drop     x floor    distinctive        (the "x item-noise" column is UNVERIFIED)
-L16H3    -0.4668       0.96         no
-L17H0    +0.1336       0.27         no
-L22H7    -0.1317       0.27         no      <- the proven copy head
-L18H9    +0.0410       0.08         no
-L17H11   +0.0379       0.08         no
-L19H5    +0.0373       0.08         no
-L17H7    -0.0352       0.07         no
-L19H0    +0.0154       0.03         no
+head        drop     2*SEM    |drop|/2SEM     x floor    rank A   rank B
+L16H3    -0.4668    0.0334       13.97          0.96        10       10
+L17H0    +0.1336    0.0295        4.52          0.27        55       50
+L22H7    -0.1317    0.1040        1.27          0.27        56       96   <- the proven copy head
+L18H9    +0.0410    0.0144        2.85          0.08       109      108
+L17H11   +0.0379    0.0092        4.10          0.08       113      109
+L19H5    +0.0373    0.0035       10.53          0.08       115      115
+L17H7    -0.0352    0.0082        4.31          0.07       116      116
+L19H0    +0.0154    0.0033        4.64          0.03       143      144
+
+RESOLVABLE at 2σ      8 of 8            DISTINGUISHABLE from a random head      0 of 8
 ```
 
-**What is owed, and it is now the only route:** re-run the same heads on a **disjoint item set** and
-store `sd_over_items / sqrt(n)` per head. The runner already computes the per-item drops and
-discards them. That measures the instrument's noise directly instead of inferring it, and it is the
-next thing this repository runs.
+> ## Every one of the eight is measurable. Not one of them is special.
+>
+> **The measurement was never the problem.** Being *resolvable by the instrument* and being
+> *distinguishable from a random component* are different properties, and only the second failed —
+> for all eight, including the head independently proven to implement the behaviour.
+
+**The denominator is trustworthy, and that was checked rather than assumed.** If item sampling were
+*not* the whole story, the SEM would understate the noise and `8 of 8` would be inflated. Across the
+`168` band heads, run-to-run disagreement lands inside the SEM-predicted band **`164` times —
+`97.6%`, against the `95.45%` a 2σ band is built to give.** Nothing unmodelled is left over.
+
+**The pre-registered kill did not fire.** Exhaustive floors on the two disjoint item sets: `0.4870`
+and `0.4891`, a `0.4%` divergence against a `20%` threshold. That is *not* evidence the floor is
+item-set-independent — `n=2`, and [R4's lesson](R4_predictability/) is that two points establish no
+law. It is one comparison that did not fire.
+
+**And the ranking is stable across item sets:** Spearman `+0.9778` over `168` heads, top-nine
+overlap `9 of 9`, `0` published heads in either top nine. That was the last free variable in the
+rank claim and it is now closed.
+
+> ### The exception is the copy head, and it points the other way
+>
+> Every published head moves by `≤5` places between item sets. **`L22H7` moves `40`** — and
+> reading 2 independently flags it as the band's worst SEM-versus-disagreement case. It is the
+> single least item-stable head among the eight, and it is the one with an independently
+> established role.
+>
+> **A copy head's contribution depends on *which* object is being copied, so item-dependence is
+> what it should look like.** Its instability is evidence *for* item-dependent machinery, not
+> against it — which is the opposite of how a large ablation number is usually read. `n=2` item
+> sets and one head: an observation, not a finding.
+
+> ### RETRACTED — the free bound this replaces was wrong in method AND in answer
+>
+> Two steps ago the item-noise floor was inferred from the **quietest layer**, giving *"`3` of `8`
+> measurable"*. It was withdrawn the following step because a quiet layer is quiet in **both**
+> terms — Spearman between a layer's mean `|drop|` and its spread is `+0.962`. Measured directly,
+> the answer is **`8` of `8`**. The bound did not merely rest on a bad assumption; **it also got
+> the number wrong**, and in the direction that made the instrument look weaker than it is.
 
 **A second, independent split — this one at the SET level.** The measurable/distinctive axis above
 is about one head at a time. Ablating the *sets* and placing them against a 30-draw set-size null
@@ -493,24 +494,24 @@ it does not fail, and it does not claim the rows are wrong. There is no reposito
 against, which is a fact about your directory and not about the ledger.
 
 ```
-    PROVENANCE     15      whether the number has a generator at all
+    PROVENANCE     17      whether the number has a generator at all
     SCOPE           8      which population the claim covers
     CONTROL         9      what the control arm actually holds fixed
-    STATISTIC       9      what quantity the number is
+    STATISTIC      10      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 25 · instrument 10 · outside reader 7
+    found by:  author reading the object 26 · instrument 12 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 51 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 54 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 51 were findable only by an outside reader** — `13.7%`. That fraction was 27% at n=22 and
+**7 of 54 were findable only by an outside reader** — `13.0%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -520,15 +521,15 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 
 ```
 joint            by the author   by an instrument   by an outside reader
-PROVENANCE             9                6                    0
+PROVENANCE            10                7                    0
 SCOPE                  8                0                    2
-STATISTIC              6                3                    1
+STATISTIC              6                4                    1
 CONTROL                5                1                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**An instrument has finally caught a `CONTROL` defect — the first, at n=`51`.** It was the
+**An instrument has finally caught a `CONTROL` defect — the first, at n=`54`.** It was the
 provenance validator, firing on its own during a routine gate run, and what it revealed was a
 false-conviction rule **inside itself**. The `--check` line asserting `0` had been written at n=`37`
 precisely so the build would fail the day this happened; it failed, and the expected count was
@@ -543,12 +544,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`51` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
-the pre-registered threshold of ≥8 and now stands at `15`.
+`AMBIGUOUS` by one instance. At n=`54` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+the pre-registered threshold of ≥8 and now stands at `17`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`51` a bin of `15` is `29.4%`, which is not domination
+> ledger; at n=`54` a bin of `17` is `31.5%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The
