@@ -23,6 +23,10 @@ selftest:
 	@$(PY) detectors/arm_contrast.py    --selftest
 	@$(PY) detectors/attack_detectors.py
 
+## verify the ablation hook removes the head it names (needs torch; not part of `verify`)
+hook:
+	@$(PY) detectors/hook_identity.py --model $(MODEL) --tag $(TAG)
+
 ## selftest + headline, and a non-zero exit if any README number is stale.
 ## STANDARD LIBRARY ONLY -- no numpy, no torch, no network. Checked by cloning the repo and
 ## running this with a stock interpreter, because a verification path that needs a scientific

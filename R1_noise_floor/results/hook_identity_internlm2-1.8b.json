@@ -1,0 +1,8 @@
+{
+  "code_version": "d749bebf",
+  "model": "internlm2-1.8b",
+  "layer": 18,
+  "module": "attention.wo",
+  "verdict": "UNRUNNABLE",
+  "why": "the UNABLATED forward is not finite: 3053952 non-finite values in logits. Nothing about the hook can be concluded from this run."
+}
