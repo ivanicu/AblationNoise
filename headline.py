@@ -271,8 +271,15 @@ def reference_class():
 
     band, sham = pool(14, 27), pool(0, 7)
     fb, fs = 2 * sd(band), 2 * sd(sham)
-    rows = [{'head': h, 'drop': e['drop'], 'x_band': e['abs'] / fb, 'x_sham': e['abs'] / fs,
-             'clears_sham': e['abs'] > fs}
+    mus = sum(sham) / len(sham)
+    mub = sum(band) / len(band)
+    # CENTRED ON EACH NULL'S OWN MEAN. The sham null is nearly centred (+0.0040) so these barely
+    # move -- 3 of 8 either way -- which is worth reporting: it shows the centring correction is
+    # not selecting the comparison that flatters, it is applying one rule everywhere.
+    rows = [{'head': h, 'drop': e['drop'],
+             'x_band': abs(e['drop'] - mub) / fb, 'x_sham': abs(e['drop'] - mus) / fs,
+             'x_sham_UNCENTRED': e['abs'] / fs,
+             'clears_sham': abs(e['drop'] - mus) > fs}
             for h, e in sorted(pe['effects'].items(), key=lambda kv: -kv[1]['abs'])]
     return {'band_floor': fb, 'sham_floor': fs, 'ratio': fb / fs,
             'n_band': len(band), 'n_sham': len(sham),
@@ -558,16 +565,24 @@ def rank_vs_role():
         m = sum(xs) / len(xs)
         return math.sqrt(sum((y - m) ** 2 for y in xs) / (len(xs) - 1))
 
-    floor = 2 * sd([v for _, _, v in band])
-    order = sorted(band, key=lambda x: -abs(x[2]))
-    clear = [x for x in order if abs(x[2]) > floor]
+    vals = [v for _, _, v in band]
+    floor = 2 * sd(vals)
+    # CENTRED ON THE NULL'S OWN MEAN (+0.0479). The uncentred form is kept beside it because
+    # correcting the k=1 centring moved this count 9 -> 10 AND put a published head (L16H3) into
+    # the clearing set for the first time -- which contradicts the sentence this section led with.
+    mu_band = sum(vals) / len(vals)
+    order = sorted(band, key=lambda x: -abs(x[2] - mu_band))
+    clear = [x for x in order if abs(x[2] - mu_band) > floor]
+    clear_uncentred = [x for x in band if abs(x[2]) > floor]
     eight = {(int(m.group(1)), int(m.group(2))): h
              for h in pe['effects'] if (m := _re.match(r'L(\d+)H(\d+)', h))}
-    ranks = [{'head': eight[(x, h)], 'rank': i, 'drop': v, 'x_floor': abs(v) / floor}
+    ranks = [{'head': eight[(x, h)], 'rank': i, 'drop': v,
+              'x_floor': abs(v - mu_band) / floor}
              for i, (x, h, v) in enumerate(order, 1) if (x, h) in eight]
     return {
         'n_band_heads': len(band), 'floor_2sd': floor,
         'n_clear': len(clear), 'pct_clear': 100 * len(clear) / len(band),
+        'n_clear_UNCENTRED': len(clear_uncentred),
         # IS THE COUNT ITSELF INFORMATIVE? No. Beyond 2sd a normal gives 4.55% and a Laplace 5.91%;
         # the observed 5.36% sits between them. Nine heads in the tail is what a heavy-tailed
         # distribution of 168 numbers gives for free, and the excess kurtosis is +7.43, so `2*sd`
@@ -585,7 +600,8 @@ def rank_vs_role():
         'n_clear_leave_one_out': sum(
             1 for x, h, v in band
             if abs(v) > 2 * sd([w for a, b, w in band if not (a == x and b == h)])),
-        'clearing_heads': [{'head': f'L{x}H{h}', 'drop': v, 'x_floor': abs(v) / floor,
+        'clearing_heads': [{'head': f'L{x}H{h}', 'drop': v,
+                            'x_floor': abs(v - mu_band) / floor,
                             'direction': 'ablation HELPS' if v > 0 else 'ablation hurts'}
                            for x, h, v in clear],
         'n_clear_positive': sum(v > 0 for _, _, v in clear),
@@ -651,7 +667,13 @@ def set_level_scale():
     sd, mu, mn = n['sd'], n['mean'], n['min']
     for name, v in d['sets'].items():
         out[name] = {'drop': v['drop'], 'pct_in_null': v['pct_in_null'],
-                     'x_floor_2sd': abs(v['drop']) / (2 * sd),
+                     # UNCENTRED, kept only so the correction can be read against what it corrects.
+                     'x_floor_2sd_UNCENTRED': abs(v['drop']) / (2 * sd),
+                     # THE ONE CONVENTION. Centring this null (mean +0.1882) moves COPY from 1.45x
+                     # to 1.65x, and the centred ratio is exactly |z|/2 -- so "x floor" and "z" were
+                     # two names for the same quantity, one of them mis-centred. The page showed
+                     # both side by side until 2026-07-28.
+                     'x_floor_2sd': abs(v['drop'] - mu) / (2 * sd),
                      'z_from_null_mean': (v['drop'] - mu) / sd,
                      'sd_beyond_null_min': (mn - v['drop']) / sd}
     ib = item_noise_bound()
@@ -1691,7 +1713,8 @@ def main() -> int:
         print(f"      {'set':<28}{'drop':>9}{'x floor':>9}{'z vs null mean':>16}{'sd past min':>13}")
         for k, v in sorted(SL['sets'].items(), key=lambda kv: kv[1]['drop']):
             print(f"      {k:<28}{v['drop']:>+9.4f}{v['x_floor_2sd']:>9.2f}"
-                  f"{v['z_from_null_mean']:>+16.2f}{v['sd_beyond_null_min']:>13.2f}")
+                  f"{v['z_from_null_mean']:>+16.2f}{v['sd_beyond_null_min']:>13.2f}"
+                  f"   (uncentred {v['x_floor_2sd_UNCENTRED']:.2f})")
         print(f"      k=5 null sd is {SL['k5_over_k1_sd']:.2f}x the k=1 exhaustive sd -- five heads "
               f"roughly DOUBLES the floor, and the circuit clears the larger one anyway\n")
 
@@ -1964,7 +1987,7 @@ def main() -> int:
              next((e['x_item_noise'] for e in IN['effects'] if e['head'] == 'L22H7'), -1)
              if IN else -1, 3.33, 0.01),
             ('SET copy circuit x floor',
-             SL['sets']['COPY']['x_floor_2sd'] if SL else -1, 1.454, 0.001),
+             SL['sets']['COPY']['x_floor_2sd'] if SL else -1, 1.6453, 0.0001),
             ('SET copy circuit z vs null mean',
              SL['sets']['COPY']['z_from_null_mean'] if SL else -1, -3.291, 0.001),
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
@@ -2015,15 +2038,15 @@ def main() -> int:
              RV['expected_beyond_2sd_normal'] if RV else -1, 7.64, 0.01),
             ('RNK leave-one-out clearing count',
              RV['n_clear_leave_one_out'] if RV else -1, 9, 0),
-            ('RNK heads clearing the exhaustive floor', RV['n_clear'] if RV else -1, 9, 0),
+            ('RNK heads clearing the exhaustive floor', RV['n_clear'] if RV else -1, 10, 0),
             ('RNK published heads among them',
-             RV['n_published_among_clearing'] if RV else -1, 0, 0),
-            ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 56, 0),
+             RV['n_published_among_clearing'] if RV else -1, 1, 0),
+            ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 60, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 61, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 19, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 11.667, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 11.475, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

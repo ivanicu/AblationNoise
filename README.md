@@ -21,19 +21,24 @@ the evidence supports:
 > ## The heads that ablation flags loudest are not the heads anyone identified — and are mostly heads whose removal *helps*
 >
 > `L22H7` was independently established as the copy head for this task. Ablate every one of the
-> `168` heads in the studied band, once each, and it ranks **`56` of `168`**.
+> `168` heads in the studied band, once each, and it ranks **`41` of `168`**.
 >
 > ```
-> 9 of 168 heads clear the exhaustive floor of 0.4870 at k=1, up to 2.54×
-> 0 of those 9 are among the eight published heads
-> 7 of those 9 clear in the HELPING direction — ablating them makes the model MORE correct
+> 10 of 168 heads clear the exhaustive floor of 0.4870 at k=1, up to 2.44×
+>  1 of those 10 is a published head — L16H3, last of the ten, at 1.06×
+>  7 of those 10 clear in the HELPING direction — ablating them makes the model MORE correct
 >
-> the eight published heads rank   10 · 55 · 56 · 109 · 113 · 115 · 116 · 143   of 168
+> the eight published heads rank   10 · 41 · 77 · 79 · 129 · 157 · 158 · 162   of 168
 > ```
 >
 > **Ablation magnitude and mechanistic role are close to unrelated on this task.** The claim is
 > about the **ranking**, which needs no threshold — see the correction below for what the *count*
 > does and does not establish.
+>
+> *Every number in this block moved when the null was re-centred on its own mean of `+0.0479`. The
+> counts read `9` and `0`; the ranks read `10 · 55 · 56 · 109 · 113 · 115 · 116 · 143` and the copy
+> head `56`th. Centring reorders by `|drop − mean|` rather than `|drop|`, which is the question the
+> ranking was always asking. The correction is spelled out below.*
 
 > ### And the count `9` establishes nothing — corrected the step after it was written
 >
@@ -45,13 +50,13 @@ the evidence supports:
 >
 > This is [`ADVERSARY.md`](ADVERSARY.md) row **A4**, and it is the first prediction in that file to
 > resolve. I rated it *"partly lands, medium severity — I do not know whether the count changes."*
-> **The count does not change** (leave-one-out, each head judged by a null excluding it: still `9`).
+> **The count does not change under leave-one-out** (each head judged by a null excluding it: still `9`). *It later moved to `10` for an unrelated reason — the null was not centred at zero — which is a different defect, corrected below.*
 > **The interpretation breaks instead.** My severity estimate was too low, which is the row scoring
 > me rather than the other way round.
 >
 > **What survives is every statement about ORDER**, because a ranking needs no threshold: the eight
-> published heads at `10 · 55 · 56 · 109 · 113 · 115 · 116 · 143`, the proven copy head `56`th, and
-> `0` of the top nine among them. Whether any individual head is *resolvable* is a question about
+> published heads at `10 · 41 · 77 · 79 · 129 · 157 · 158 · 162`, the proven copy head `41`st, and
+> `1` of the top ten among them — `L16H3`, which is the tenth. Whether any individual head is *resolvable* is a question about
 > measurement noise, not about the spread across heads, and it is what R11 was launched to answer.
 
 > ### The depth control — run expecting it to kill the ranking, and it did not
@@ -611,21 +616,21 @@ against, which is a fact about your directory and not about the ledger.
     PROVENANCE     19      whether the number has a generator at all
     SCOPE           9      which population the claim covers
     CONTROL        11      what the control arm actually holds fixed
-    STATISTIC      11      what quantity the number is
+    STATISTIC      12      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 31 · instrument 13 · outside reader 7
+    found by:  author reading the object 32 · instrument 13 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 60 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 61 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 60 were findable only by an outside reader** — `11.7%`. That fraction was 27% at n=22 and
+**7 of 61 were findable only by an outside reader** — `11.5%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -637,13 +642,13 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE            11                8                    0
 SCOPE                  9                0                    2
-STATISTIC              7                4                    1
+STATISTIC              8                4                    1
 CONTROL                7                1                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**An instrument has finally caught a `CONTROL` defect — the first, at n=`60`.** It was the
+**An instrument has finally caught a `CONTROL` defect — the first, at n=`61`.** It was the
 provenance validator, firing on its own during a routine gate run, and what it revealed was a
 false-conviction rule **inside itself**. The `--check` line asserting `0` had been written at n=`37`
 precisely so the build would fail the day this happened; it failed, and the expected count was
@@ -658,12 +663,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`60` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`61` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `19`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`60` a bin of `19` is `31.7%`, which is not domination
+> ledger; at n=`61` a bin of `19` is `31.1%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

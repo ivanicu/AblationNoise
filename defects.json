@@ -549,6 +549,15 @@
       "defect": "the distinguishability statistic has always been |drop| > 2*sd, which silently places the null at ZERO. The studied band's null has mean +0.0479 = 0.20 sd: ablating a random late-layer head improves the correct-answer margin more often than it hurts, 100 positive vs 68 negative of 168",
       "operation": "CORRECTED to |drop - mean| > 2*sd, and IT CHANGES THE HEADLINE COUNT: L16H3 goes 0.96x -> 1.06x and CLEARS, so the figure is 1 of 8, not 0 of 8. The proven copy head moves the other way, 0.27x -> 0.37x, and stays far inside. Across 168 band heads the count goes 9 -> 10. The offset was first shown NOT to be an intervention artifact: the sham band is centred (+0.0040, 0.10 sd, 51/45 signs) while the studied band is at 0.20 sd, so it grows with depth alongside the spread and is a fact about the late band rather than about zero-ablation",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D61",
+      "round": "repo",
+      "bin": "STATISTIC",
+      "commit": "e8a8261",
+      "defect": "correcting the k=1 null's centring left every OTHER comparison uncentred, and one of them was the front page's OPENING LINE: '0 of those 9 are among the eight published heads'",
+      "operation": "THE CORRECTION OBLIGED A RE-RUN AND I HAD NOT DONE IT. Centred everywhere: the k=1 clearing set goes 9 -> 10 and the tenth is L16H3, A PUBLISHED HEAD, so the opening line's '0 of those 9' becomes '1 of those 10'. The k=5 circuit goes 1.45x -> 1.65x, and the centred ratio turns out to be exactly |z|/2 -- so 'x floor' and 'z' were two names for one quantity with one mis-centred, printed side by side. The sham-band comparison is UNCHANGED at 3 of 8 because that null's mean is +0.0040, which is the evidence the rule was applied everywhere rather than where it flattered. Uncentred forms are still emitted so each correction can be read against what it corrects",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

@@ -126,15 +126,15 @@ reading of a clean row is *(1 − that rate)* per number rather than a guarantee
 
 ### A8 · The defect ledger is self-reported — `LANDS`
 
-`60` rows, `31` of them found by the author reading the object, classified by the author, against
+`61` rows, `32` of them found by the author reading the object, classified by the author, against
 bins the author pre-registered. The taxonomy test caught its own designer once; **that is one check, not
 independence.** `7` rows came from an outside reader. The cross-tab used to show that **no
-instrument had ever caught a `CONTROL` or `SCOPE` defect**; at n=`60` an instrument has caught its
+instrument had ever caught a `CONTROL` or `SCOPE` defect**; at n=`61` an instrument has caught its
 first `CONTROL` one — a false-conviction rule inside the provenance validator, which the validator
 surfaced itself. **`SCOPE` is still `0` from instruments against `2` from an outside reader.**
 
 **Prediction:** the adversary says the ledger measures *what the author noticed*, not *what is
-there*, and the `11.7%` outside-reader fraction is a floor on the true rate, not an estimate. Correct.
+there*, and the `11.5%` outside-reader fraction is a floor on the true rate, not an estimate. Correct.
 
 ---
 
