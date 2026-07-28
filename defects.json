@@ -1026,6 +1026,15 @@
       "defect": "D108, D110 and D111 computed the OV circuit as W_E[t].W_O.W_V.W_E[s], omitting the final RMSNorm's learnable per-dimension scale model.norm.weight, which multiplies the unembedding side and IS the basis the logits are read in. That scale spans 2063x, from 0.0043 to 8.875 -- some dimensions are almost entirely suppressed before unembedding -- so it can reorder",
       "operation": "THE RANKING IS ROBUST AND THE COUNTS ARE NOT. Spearman between bases is +0.9839, +0.9952 and +0.9926 on rooms, objects and persons, so the three prior steps are NOT in a materially wrong basis and their conclusions stand. BUT PERFECT-WINS NEARLY DOUBLES -- 16 to 25 on rooms, 6 to 11 on objects, 3 to 7 on persons -- so every ABSOLUTE count reported from that instrument was basis-dependent, AND L17H0 MOVES FROM RANK 3 TO RANK 11. That 3 was what made the three-instrument convergence striking, and the framing rested on it; the registered R19 prediction is unchanged because it is about ABLATION rank, but the annotation now sits beside it. GAUGE ARGUMENT, MADE BEFORE COMPUTING: the 1/||x|| half of RMSNorm is a per-DESTINATION scalar shared across every source, so it cannot reorder anything within a column -- only the learnable g can, which is why only g was applied. The frozen file now stores BOTH bases with scaled as primary. AND THE INFORMATIVE PART: g suppresses some dimensions by a factor of 2000 and the ranking still barely moves, so the OV copying signal is not concentrated in the suppressed directions",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D114",
+      "round": "repo",
+      "bin": "SCOPE",
+      "commit": "6fd6a3e",
+      "defect": "every instrument comparison in this repository -- D108, D110, D111, D113 -- was computed on qwen2.5-1.5b alone, so 'the three instruments are mutually uninformative' was an n=1 claim about a model. The OV circuit costs nothing to compute on a second model and R10/R18 already held that model's ablations; nobody had done it",
+      "operation": "REPLICATED ON qwen2.5-3b, 36 layers, 16 heads per layer, 288 band heads, scaled basis. ALL SIX OV x ablation EDGES SIT WITHIN +-0.07 -- pooled +0.0140 to +0.0658, within-layer -0.0359 to +0.0649 -- against -0.14 to +0.22 on 1.5b, so THE SECOND MODEL IS CLOSER TO ZERO, NOT FURTHER. The null is not a 1.5b idiosyncrasy. AND THE POSITIVE CONTROL IS STRONGER THERE: 45 heads copy all four rooms against 25 on 1.5b, 23 copy all eight objects, 15 copy all eight persons -- the instrument finds plenty of copiers, they are simply not the heads ablation flags. SCOPE IS NARROWER THAN 'TWO MODELS' SOUNDS AND THE PAGE SAYS SO: both are Qwen2.5, same family, same training data, same architecture, NOT independent draws. And the ATTENTION edges cannot be replicated at all because E132's scores exist only for 1.5b, so what replicates is the OV x ablation null while the attention edges remain n=1. Incidentally 3b's final RMSNorm scale spans 232x against 1.5b's 2063x, so the D113 basis correction matters less there",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

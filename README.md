@@ -343,6 +343,38 @@ direct-path `OV` — not "attention" or "ablation" in general.
 **Both gauge checks ran:** signed *and* magnitude correlations for the `OV` edge (`D82`'s lesson), and
 a within-layer control on every edge — which is what caught the `R16` narrowing.
 
+### Replicated on a second model — and the null is *flatter* there
+
+Every instrument comparison above is `qwen2.5-1.5b`. The `OV` circuit costs nothing to compute on a
+second model, and `R10`/`R18` already hold that model's ablations.
+
+```
+qwen2.5-3b, band L18-35, 288 heads, scaled basis
+
+set        n   perfect-wins    max dominance          final RMSNorm g spans 232x
+rooms      4        45             3.067              (against 2063x on 1.5b)
+objects    8        23             4.617
+persons    8        15             3.509
+
+edge                            pooled     within-layer
+OV.rooms   x ablation.I_final   +0.0335       -0.0056
+OV.rooms   x ablation.I_all     +0.0379       -0.0359
+OV.objects x ablation.I_final   +0.0140       +0.0092
+OV.objects x ablation.I_all     +0.0452       -0.0301
+OV.persons x ablation.I_final   +0.0416       +0.0649
+OV.persons x ablation.I_all     +0.0658       +0.0093
+```
+
+**All six edges sit within `±0.07`** — on `1.5b` they ran `−0.14` to `+0.22`, so **the second model is
+*closer* to zero, not further.** And the positive control is *stronger*: `45` heads copy all four
+rooms against `25` on `1.5b`. **The instrument finds plenty of copiers; they are simply not the heads
+ablation flags.**
+
+> **Scope, and it is narrower than "two models" sounds.** Both are `Qwen2.5`, same family, same
+> training data, same architecture — **not independent draws.** And the **attention** edges cannot be
+> replicated at all, because `E132`'s attention scores exist only for `1.5b`. **What replicates is the
+> `OV × ablation` null; the `attention` edges remain `n=1`.**
+
 ### ⚠ The meta-separator, stated once: **there is no ground truth here, and that limits everything above**
 
 Two checks, both cheap, both aimed at the section above rather than at the eight heads.

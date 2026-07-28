@@ -630,6 +630,58 @@ def adversary_scoring():
                                                   'R18']}
 
 
+def ov_3b():
+    """THE SAME INSTRUMENT ON A SECOND MODEL. Every comparison before this was qwen2.5-1.5b alone.
+
+    All six OV x ablation edges on qwen2.5-3b sit within +-0.07 -- CLOSER to zero than 1.5b's -0.14
+    to +0.22, so the null is not a 1.5b idiosyncrasy. And the positive control is STRONGER there:
+    45 heads copy all four rooms against 25 on 1.5b.
+
+    SCOPE IS NARROWER THAN "TWO MODELS" SOUNDS: both are Qwen2.5, same family, same training data,
+    same architecture -- not independent draws. And the ATTENTION edges cannot be replicated at all,
+    because E132's attention scores exist only for 1.5b, so what replicates is the OV x ablation
+    null while the attention edges remain n=1.
+    """
+    f = HERE / 'R16_selection_vs_effect' / 'results' / 'ov_copying_3sets_qwen2.5-3b.json'
+    a = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-3b.json'
+    b = HERE / 'R18_all_positions' / 'results' / 'r18_allpos_qwen2.5-3b.json'
+    if not (f.exists() and a.exists() and b.exists()):
+        return None
+    ov = json.load(open(f))
+    LO, HI, NH = 18, 36, 16
+    band = [(x, h) for x in range(LO, HI) for h in range(NH)]
+    sets = {'rooms': 4, 'objects': 8, 'persons': 8}
+
+    def arm(p_):
+        d = json.load(open(p_))
+        L = {int(k): v for k, v in d['layers'].items()}
+        v = {k: L[k[0]]['per_head'][str(k[1])] for k in band}
+        return v, sum(v.values()) / len(v)
+
+    vf, muf = arm(a)
+    va, mua = arm(b)
+
+    def wl(xs, ys):
+        o = []
+        for L in range(LO, HI):
+            idx = [i for i, k in enumerate(band) if k[0] == L]
+            o.append(_spearman([xs[i] for i in idx], [ys[i] for i in idx]))
+        return sum(o) / len(o)
+
+    edges = {}
+    for nm in sets:
+        o = [ov[f'L{k[0]}H{k[1]}'][nm]['dom'] for k in band]
+        for tag, v, mu in (('I_final', vf, muf), ('I_all', va, mua)):
+            m = [abs(v[k] - mu) for k in band]
+            edges[f'OV.{nm} x ablation.{tag}'] = {'pooled': _spearman(o, m), 'within_layer': wl(o, m)}
+    return {'n_heads': len(band), 'band': [LO, HI - 1], 'sets': sets,
+            'perfect': {nm: sum(1 for k in ov if ov[k][nm]['wins'] == n) for nm, n in sets.items()},
+            'max_dom': {nm: max(ov[k][nm]['dom'] for k in ov) for nm in sets},
+            'edges': edges,
+            'max_abs_edge': max(max(abs(v['pooled']), abs(v['within_layer']))
+                                for v in edges.values())}
+
+
 def instrument_triangle():
     """ALL THREE PAIRWISE RELATIONSHIPS BETWEEN THE THREE INSTRUMENT CLASSES, with a layer control.
 
@@ -3142,6 +3194,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    OV3 = ov_3b()
     TRI = instrument_triangle()
     OVC = ov_copying()
     RSL = resolution_limit()
@@ -3156,7 +3209,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -3393,6 +3446,21 @@ def main() -> int:
             print(f"        Chosen after the fact it would have been called layer-shaped; the rule")
             print(f"        is honoured at a 3% miss rather than renegotiated. Both centroids move")
             print(f"        EARLIER -- the direction replicates, the SHAPE does not resolve at n=2\n")
+
+    if OV3:
+        print("OV3  THE SAME INSTRUMENT ON A SECOND MODEL -- qwen2.5-3b, band "
+              f"L{OV3['band'][0]}-{OV3['band'][1]}, {OV3['n_heads']} heads")
+        print(f"       {'set':<9}{'n':>3}{'perfect':>9}{'max dom':>10}")
+        for nm, n in OV3['sets'].items():
+            print(f"       {nm:<9}{n:>3}{OV3['perfect'][nm]:>9}{OV3['max_dom'][nm]:>10.3f}")
+        print(f"       {'edge':<32}{'pooled':>10}{'within-layer':>14}")
+        for k, v in OV3['edges'].items():
+            print(f"       {k:<32}{v['pooled']:>+10.4f}{v['within_layer']:>+14.4f}")
+        print(f"     ALL SIX EDGES WITHIN +-{OV3['max_abs_edge']:.4f} -- CLOSER to zero than 1.5b's")
+        print(f"     -0.14 to +0.22, so the null is not a 1.5b idiosyncrasy, and the positive")
+        print(f"     control is STRONGER (45 rooms-copiers against 25).")
+        print(f"     SCOPE: both are Qwen2.5, same family, NOT independent draws -- and the")
+        print(f"     ATTENTION edges cannot be replicated at all (E132 exists only for 1.5b)\n")
 
     if TRI:
         print("TRI  ALL THREE EDGES between the three instrument classes, with a LAYER control")
@@ -4278,7 +4346,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 35.938, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 36.421, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -4359,9 +4427,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 113, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 114, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 28, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 7.965, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 7.895, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
