@@ -990,6 +990,15 @@
       "defect": "R19's full 64-base run died with torch.OutOfMemoryError at lm_head, 'Tried to allocate 4.38 GiB'. transformers materialises logits for EVERY position unless logits_to_keep is passed: batch 64 x ~250 tokens x 151936 vocab x 4 bytes is 9.7 GB, while the runner only ever reads logits[:, -1]. AND I CAUSED IT: raising --batch from 32 to 64 was described in a commit as 'a pure engineering parameter that changes no number'. It changed whether the job could run",
       "operation": "AN ENGINEERING PARAMETER THAT MOVES THE FEASIBLE SET IS NOT FREE, and that is the lesson rather than the flag. Fixed with logits_to_keep=1 at all three forward sites, which changes no number because only the final position was ever read, and resubmitted at --batch 32 as well. THE SMOKE TEST COULD NOT HAVE CAUGHT IT: n_base=2 is a single batch of 32, about 2.4 GB, so a smoke test that shrinks the batch does not exercise the memory path at all -- it verified the logic and silently certified nothing about scale. AND THE DIAGNOSIS EXISTS ONLY BECAUSE OF D95: the run was unbuffered, so the traceback survived; 232's buffered predecessor died leaving nothing but a weight-loading progress bar and its cause is still UNVERIFIED",
       "found_by": "instrument"
+    },
+    {
+      "id": "D110",
+      "round": "repo",
+      "bin": "CONTROL",
+      "commit": "95b31e8",
+      "defect": "D108 computed the OV copying circuit on the 4 ROOM tokens only, so its negative on L22H7 left an obvious alternative open: the head might copy OBJECTS or PERSONS instead, which would make the copy-head label wrong in a specific way rather than merely unsupported. And it left my own new hypothesis about L17H0 untested for specificity",
+      "operation": "RUN ON ALL THREE TOKEN SETS, and the confound written first was that scores are NOT comparable across sets because the sets have different embedding norms -- so every head is ranked WITHIN its own set. POSITIVE CONTROL PASSES ON ALL THREE: 16, 6 and 3 heads achieve perfect diagonal wins on rooms, objects and persons, with maximum normalized dominance +2.451, +3.446 and +3.128. The instrument is blind on none of them. L22H7 RANKS 140, 136 AND 149 OF 168 -- bottom quartile on all three. IT IS NOT A MISLABELLED COPIER; its direct OV path copies nothing in this task's vocabulary. AND THE SAME RUN WEAKENS MY OWN HYPOTHESIS FROM ONE STEP EARLIER: L17H0 is rank 3, 12 and 27, high on ALL THREE SETS, so it is a GENERIC direct copier rather than a room-specific mechanism. The registered prediction stands unchanged because it was about RANK under ablation, not about mechanism, but the mechanistic reading it invited is withdrawn. FINALLY L16H3, the largest ablation effect of the eight, ranks 146, 154 and 158 -- the loudest head under ablation is among the WORST direct copiers. THREE INSTRUMENTS NOW GIVE THREE DIFFERENT ANSWERS, which is the two-instrument disagreement of D101 stated with one more instrument and no arbiter still",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

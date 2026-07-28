@@ -320,6 +320,12 @@ hypothesis, not a result.
 > R19's task was built independently of the eight, so it is not the data `L17H0` was surfaced on.
 > **If it fails, the three-instrument convergence was a coincidence over `168` heads and this line is
 > the record that I bet on it.**
+>
+> **⚠ `D110`, one step later: `L17H0`'s OV signature is *generic*, not room-specific.** Run on all
+> three token sets it ranks `3` / `12` / `27` of `168` on rooms / objects / persons — **it copies
+> everything.** The prediction above is unchanged, because it was about **rank under ablation**, not
+> about mechanism. **The mechanistic reading it invited is withdrawn**: a head that copies every
+> token set is a generic copier, not a task-specific circuit.
 
 ### A control that ran, and could not decide
 

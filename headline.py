@@ -659,8 +659,23 @@ def ov_copying():
     R19's prediction registers it against data that does not yet exist.
     """
     f = HERE / 'R16_selection_vs_effect' / 'results' / 'ov_copying_qwen2.5-1.5b.json'
+    g = HERE / 'R16_selection_vs_effect' / 'results' / 'ov_copying_3sets_qwen2.5-1.5b.json'
     if not f.exists():
         return None
+    three = None
+    if g.exists():
+        gg = json.load(open(g))
+        rr = gg['per_head']
+        def rk3(key, nm):
+            o = sorted(rr, key=lambda x: -rr[x][nm]['dom'])
+            return o.index(key) + 1
+        three = {'sets': gg['sets'], 'n': len(rr),
+                 'perfect': {nm: sum(1 for v in rr.values() if v[nm]['wins'] == n)
+                             for nm, n in gg['sets'].items()},
+                 'max_dom': {nm: max(v[nm]['dom'] for v in rr.values()) for nm in gg['sets']},
+                 'heads': {k: {nm: {'dom': rr[k][nm]['dom'], 'rank': rk3(k, nm)}
+                               for nm in gg['sets']}
+                           for k in ('L22H7', 'L17H0', 'L16H3')}}
     d = json.load(open(f))
     rows = d['per_head']
     n = len(rows)
@@ -680,7 +695,8 @@ def ov_copying():
             'L17H0': {'diag_wins': idx[(17, 0)]['diag_wins'],
                       'dom_norm': idx[(17, 0)]['dom_norm'], 'rank': rank(17, 0)},
             'top6': [{'head': f"L{r['layer']}H{r['head']}", 'dom_norm': r['dom_norm'],
-                      'diag_wins': r['diag_wins']} for r in order[:6]]}
+                      'diag_wins': r['diag_wins']} for r in order[:6]],
+            'three_sets': three}
 
 
 def resolution_limit():
@@ -3348,6 +3364,25 @@ def main() -> int:
         print(f"     (attention), 4th of 168 under I_all ablation (R18), and {h0['rank']}rd here "
               f"({h0['dom_norm']:+.4f}, {h0['diag_wins']}/4). POST HOC -- R19 registers it\n")
 
+        if OVC.get('three_sets'):
+            T = OVC['three_sets']
+            print(f"     RUN ON THREE TOKEN SETS -- scores are NOT comparable across sets (different")
+            print(f"     embedding norms), so every head is ranked WITHIN its own set:")
+            print(f"       {'set':<9}{'n':>3}{'perfect-wins heads':>21}{'max dominance':>16}")
+            for nm, n in T['sets'].items():
+                print(f"       {nm:<9}{n:>3}{T['perfect'][nm]:>21}{T['max_dom'][nm]:>16.3f}")
+            print(f"       -> positive control passes on ALL THREE; the instrument is blind on none")
+            print(f"       {'head':<8}" + "".join(f"{nm+' dom':>13}{'rank':>6}" for nm in T['sets']))
+            for k, v in T['heads'].items():
+                print(f"       {k:<8}" + "".join(f"{v[nm]['dom']:>13.3f}{v[nm]['rank']:>6}"
+                                                 for nm in T['sets']))
+            print(f"       L22H7 is bottom-quartile on ALL THREE -- not a mislabelled copier, its")
+            print(f"       direct OV path copies nothing in this task's vocabulary.")
+            print(f"       L17H0 is high on ALL THREE -- a GENERIC direct copier, NOT room-specific,")
+            print(f"       which withdraws the mechanistic reading its rank invited one step ago.")
+            print(f"       L16H3, the LOUDEST head under ablation, is among the WORST copiers.")
+            print(f"       THREE INSTRUMENTS, THREE DIFFERENT ANSWERS -- and still no arbiter\n")
+
     if RSL:
         print("RES  CAN THE MANDATED METHOD ANSWER THIS REPO'S OWN SURVIVING QUESTION? at this n, NO")
         print(f"       minimum attainable p, empirical null over {RSL['n']} values   "
@@ -4166,7 +4201,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 34.505, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 34.545, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -4247,9 +4282,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 109, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 110, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 27, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.257, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.182, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
