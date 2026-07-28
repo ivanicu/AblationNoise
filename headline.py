@@ -630,6 +630,59 @@ def adversary_scoring():
                                                   'R18']}
 
 
+def ov_copying():
+    """A THIRD INSTRUMENT, AND THE FIRST ONE INDEPENDENT OF BOTH ATTENTION AND ABLATION.
+
+    D101 said this repository is a two-instrument disagreement with no arbiter, and D100 said every
+    role claim traces to attention. The model's own WEIGHTS are a third instrument and cost nothing:
+    a copy head's OV circuit should map a room token back to itself.
+
+        M[t,s] = W_E[t] . W_O_h . W_V_kv . W_E[s]  + a per-t bias term, over the 4 room tokens
+        GQA: query head h uses KV head h//6.  tie_word_embeddings=True, so W_U = W_E.
+
+    POSITIVE CONTROL PASSES: 16 of 168 band heads map all 4 rooms to themselves, normalized diagonal
+    dominance up to +2.45. The instrument can find copiers.
+
+    THE TARGET FAILS. L22H7 -- the head E123 named the copy head, and the only head in this
+    repository with any independently claimed role -- scores diag_wins 1/4, which is CHANCE, at
+    normalized dominance -0.4949, RANK 140 OF 168, 17.3rd percentile.
+
+    P6, AND THE DIRECTION MATTERS: this is the DIRECT path only. No layernorm, no MLPs, no
+    composition with other heads. A HIGH score is evidence of direct copying; a LOW score is NOT
+    evidence of no copying, because a head can copy through composition. So L22H7's result is
+    UNVERIFIED for "not a copy head", not OVERTURNED. What it does establish is that the copy-head
+    label has never been supported by the weights, and nobody had looked.
+
+    AND THREE INSTRUMENTS CONVERGE ON A DIFFERENT HEAD. L17H0 is in the published eight (attention),
+    ranks 4th of 168 under I_all ablation (R18), and is 3rd of 168 here (+2.4383, diag_wins 4/4).
+    That conjunction is POST HOC -- the top-6 was read after computing -- so it is a hypothesis, and
+    R19's prediction registers it against data that does not yet exist.
+    """
+    f = HERE / 'R16_selection_vs_effect' / 'results' / 'ov_copying_qwen2.5-1.5b.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    rows = d['per_head']
+    n = len(rows)
+    c = sorted(r['dom_norm'] for r in rows)
+    idx = {(r['layer'], r['head']): r for r in rows}
+    order = sorted(rows, key=lambda r: -r['dom_norm'])
+    from collections import Counter
+    def rank(L, h):
+        return next(i for i, r in enumerate(order, 1) if (r['layer'], r['head']) == (L, h))
+    k = idx[(22, 7)]
+    return {'n_heads': n, 'rooms': d['rooms'],
+            'dom_min': c[0], 'dom_median': c[n // 2], 'dom_max': c[-1],
+            'diag_wins_hist': dict(sorted(Counter(r['diag_wins'] for r in rows).items())),
+            'n_perfect': sum(1 for r in rows if r['diag_wins'] == 4),
+            'L22H7': {'diag_wins': k['diag_wins'], 'dom_norm': k['dom_norm'],
+                      'rank': rank(22, 7), 'percentile': 100 * (1 - (rank(22, 7) - 1) / n)},
+            'L17H0': {'diag_wins': idx[(17, 0)]['diag_wins'],
+                      'dom_norm': idx[(17, 0)]['dom_norm'], 'rank': rank(17, 0)},
+            'top6': [{'head': f"L{r['layer']}H{r['head']}", 'dom_norm': r['dom_norm'],
+                      'diag_wins': r['diag_wins']} for r in order[:6]]}
+
+
 def resolution_limit():
     """CAN THE MANDATED METHOD ANSWER THIS REPOSITORY'S OWN SURVIVING QUESTION? At this n, no.
 
@@ -2984,6 +3037,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    OVC = ov_copying()
     RSL = resolution_limit()
     WOC = wo_conditioning()
     FTR = floor_transport()
@@ -2996,7 +3050,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -3212,6 +3266,27 @@ def main() -> int:
               f"{' '.join(AS['rounds_uncovered_before_this_step'])} -- now extended, A9-A13")
         print("      and its A1 row carried the composition error R16 fixed 4 rounds ago as D80,")
         print("      which had landed on the prior-effects note ONLY\n")
+
+    if OVC:
+        print("OV   A THIRD INSTRUMENT -- the weights. Independent of BOTH attention and ablation.")
+        print(f"     M[t,s] = W_E[t] . W_O_h . W_V_kv . W_E[s] over the {len(OVC['rooms'])} room "
+              f"tokens, {OVC['n_heads']} band heads, DIRECT PATH ONLY")
+        print(f"     normalized diagonal dominance: min {OVC['dom_min']:+.3f}  median "
+              f"{OVC['dom_median']:+.3f}  max {OVC['dom_max']:+.3f}")
+        print(f"     diag_wins (of 4): {OVC['diag_wins_hist']}   -> POSITIVE CONTROL PASSES, "
+              f"{OVC['n_perfect']} heads map all 4 rooms to themselves")
+        k = OVC['L22H7']
+        print(f"     L22H7 -- the named copy head -- diag_wins {k['diag_wins']}/4 (CHANCE), "
+              f"dominance {k['dom_norm']:+.4f}, RANK {k['rank']} of {OVC['n_heads']}, "
+              f"{k['percentile']:.1f}th percentile")
+        print("     P6: a HIGH score is evidence of direct copying; a LOW score is NOT evidence of")
+        print("     no copying, because a head can copy through composition. UNVERIFIED, not")
+        print("     OVERTURNED -- but the label has never been supported by the weights.")
+        print(f"     top-6: " + "  ".join(f"{r['head']} {r['dom_norm']:+.2f}" for r in OVC['top6']))
+        h0 = OVC['L17H0']
+        print(f"     THREE INSTRUMENTS CONVERGE ON A DIFFERENT HEAD: L17H0 is in the published eight")
+        print(f"     (attention), 4th of 168 under I_all ablation (R18), and {h0['rank']}rd here "
+              f"({h0['dom_norm']:+.4f}, {h0['diag_wins']}/4). POST HOC -- R19 registers it\n")
 
     if RSL:
         print("RES  CAN THE MANDATED METHOD ANSWER THIS REPO'S OWN SURVIVING QUESTION? at this n, NO")
@@ -4031,7 +4106,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 36.495, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 36.444, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -4112,9 +4187,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 107, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 108, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 27, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.411, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.333, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

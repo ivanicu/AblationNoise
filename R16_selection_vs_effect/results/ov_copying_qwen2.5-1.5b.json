@@ -1,0 +1,1200 @@
+{
+ "model": "qwen2.5-1.5b",
+ "producer": "a third instrument: the OV circuit, from the weights",
+ "method": "M[t,s] = W_E[t] . W_O_h . W_V_kv . W_E[s] + W_E[t].W_O_h.b_v, over the 4 room tokens. GQA: query head h uses KV head h//6. tie_word_embeddings=True so W_U = W_E. DIRECT PATH ONLY -- no layernorm, no MLPs, no composition with other heads.",
+ "rooms": [
+  "pine",
+  "gold",
+  "rust",
+  "frost"
+ ],
+ "room_ids": [
+  33597,
+  6623,
+  23071,
+  44734
+ ],
+ "band": [
+  14,
+  27
+ ],
+ "n_heads": 168,
+ "per_head": [
+  {
+   "layer": 14,
+   "head": 0,
+   "diag_wins": 0,
+   "dominance": -0.0026121754199266434,
+   "dom_norm": -0.09951256960630417
+  },
+  {
+   "layer": 14,
+   "head": 1,
+   "diag_wins": 1,
+   "dominance": 0.0032973233610391617,
+   "dom_norm": 0.12868452072143555
+  },
+  {
+   "layer": 14,
+   "head": 2,
+   "diag_wins": 0,
+   "dominance": -0.011448672972619534,
+   "dom_norm": -0.4766360819339752
+  },
+  {
+   "layer": 14,
+   "head": 3,
+   "diag_wins": 1,
+   "dominance": 0.0014912988990545273,
+   "dom_norm": 0.07198560982942581
+  },
+  {
+   "layer": 14,
+   "head": 4,
+   "diag_wins": 1,
+   "dominance": 0.006142552010715008,
+   "dom_norm": 0.1393475979566574
+  },
+  {
+   "layer": 14,
+   "head": 5,
+   "diag_wins": 1,
+   "dominance": 0.0007143886759877205,
+   "dom_norm": 0.02340245246887207
+  },
+  {
+   "layer": 14,
+   "head": 6,
+   "diag_wins": 2,
+   "dominance": 0.014365793205797672,
+   "dom_norm": 1.2937488555908203
+  },
+  {
+   "layer": 14,
+   "head": 7,
+   "diag_wins": 1,
+   "dominance": 0.009390939027071,
+   "dom_norm": 0.5826172232627869
+  },
+  {
+   "layer": 14,
+   "head": 8,
+   "diag_wins": 4,
+   "dominance": 0.029327845200896263,
+   "dom_norm": 0.8553532958030701
+  },
+  {
+   "layer": 14,
+   "head": 9,
+   "diag_wins": 0,
+   "dominance": -0.04551023244857788,
+   "dom_norm": -0.8982813954353333
+  },
+  {
+   "layer": 14,
+   "head": 10,
+   "diag_wins": 0,
+   "dominance": -0.01377014722675085,
+   "dom_norm": -0.8135343194007874
+  },
+  {
+   "layer": 14,
+   "head": 11,
+   "diag_wins": 1,
+   "dominance": -0.001738421618938446,
+   "dom_norm": -0.08443707972764969
+  },
+  {
+   "layer": 15,
+   "head": 0,
+   "diag_wins": 4,
+   "dominance": 0.05202079564332962,
+   "dom_norm": 1.567664384841919
+  },
+  {
+   "layer": 15,
+   "head": 1,
+   "diag_wins": 4,
+   "dominance": 0.04644719511270523,
+   "dom_norm": 2.420017957687378
+  },
+  {
+   "layer": 15,
+   "head": 2,
+   "diag_wins": 3,
+   "dominance": 0.02527526393532753,
+   "dom_norm": 1.1179834604263306
+  },
+  {
+   "layer": 15,
+   "head": 3,
+   "diag_wins": 0,
+   "dominance": -0.06802693754434586,
+   "dom_norm": -1.622565507888794
+  },
+  {
+   "layer": 15,
+   "head": 4,
+   "diag_wins": 3,
+   "dominance": 0.02945411019027233,
+   "dom_norm": 0.7740214467048645
+  },
+  {
+   "layer": 15,
+   "head": 5,
+   "diag_wins": 0,
+   "dominance": -0.058792345225811005,
+   "dom_norm": -2.7618720531463623
+  },
+  {
+   "layer": 15,
+   "head": 6,
+   "diag_wins": 4,
+   "dominance": 0.02599814161658287,
+   "dom_norm": 1.9660327434539795
+  },
+  {
+   "layer": 15,
+   "head": 7,
+   "diag_wins": 0,
+   "dominance": -0.056267283856868744,
+   "dom_norm": -2.704298496246338
+  },
+  {
+   "layer": 15,
+   "head": 8,
+   "diag_wins": 3,
+   "dominance": 0.009201429784297943,
+   "dom_norm": 0.3569926619529724
+  },
+  {
+   "layer": 15,
+   "head": 9,
+   "diag_wins": 2,
+   "dominance": 0.028676312416791916,
+   "dom_norm": 0.9105095267295837
+  },
+  {
+   "layer": 15,
+   "head": 10,
+   "diag_wins": 2,
+   "dominance": 0.01366244163364172,
+   "dom_norm": 1.545980453491211
+  },
+  {
+   "layer": 15,
+   "head": 11,
+   "diag_wins": 3,
+   "dominance": 0.033169832080602646,
+   "dom_norm": 1.7367823123931885
+  },
+  {
+   "layer": 16,
+   "head": 0,
+   "diag_wins": 2,
+   "dominance": 0.01643134467303753,
+   "dom_norm": 0.6167188882827759
+  },
+  {
+   "layer": 16,
+   "head": 1,
+   "diag_wins": 0,
+   "dominance": -0.03437380492687225,
+   "dom_norm": -1.8932366371154785
+  },
+  {
+   "layer": 16,
+   "head": 2,
+   "diag_wins": 2,
+   "dominance": 0.01906488835811615,
+   "dom_norm": 0.4416651129722595
+  },
+  {
+   "layer": 16,
+   "head": 3,
+   "diag_wins": 0,
+   "dominance": -0.04220634698867798,
+   "dom_norm": -0.8149638772010803
+  },
+  {
+   "layer": 16,
+   "head": 4,
+   "diag_wins": 2,
+   "dominance": 0.02021675743162632,
+   "dom_norm": 0.7216982245445251
+  },
+  {
+   "layer": 16,
+   "head": 5,
+   "diag_wins": 2,
+   "dominance": 0.02019047923386097,
+   "dom_norm": 0.6137543320655823
+  },
+  {
+   "layer": 16,
+   "head": 6,
+   "diag_wins": 0,
+   "dominance": -0.06639618426561356,
+   "dom_norm": -2.882378578186035
+  },
+  {
+   "layer": 16,
+   "head": 7,
+   "diag_wins": 4,
+   "dominance": 0.02380325272679329,
+   "dom_norm": 1.3292189836502075
+  },
+  {
+   "layer": 16,
+   "head": 8,
+   "diag_wins": 4,
+   "dominance": 0.04384778439998627,
+   "dom_norm": 2.1339123249053955
+  },
+  {
+   "layer": 16,
+   "head": 9,
+   "diag_wins": 1,
+   "dominance": 0.01392170786857605,
+   "dom_norm": 0.8774417042732239
+  },
+  {
+   "layer": 16,
+   "head": 10,
+   "diag_wins": 0,
+   "dominance": -0.016217725351452827,
+   "dom_norm": -1.3205374479293823
+  },
+  {
+   "layer": 16,
+   "head": 11,
+   "diag_wins": 3,
+   "dominance": 0.02466622181236744,
+   "dom_norm": 1.5267337560653687
+  },
+  {
+   "layer": 17,
+   "head": 0,
+   "diag_wins": 4,
+   "dominance": 0.028824100270867348,
+   "dom_norm": 2.4382681846618652
+  },
+  {
+   "layer": 17,
+   "head": 1,
+   "diag_wins": 0,
+   "dominance": 0.000710200984030962,
+   "dom_norm": 0.06501618772745132
+  },
+  {
+   "layer": 17,
+   "head": 2,
+   "diag_wins": 4,
+   "dominance": 0.028943313285708427,
+   "dom_norm": 2.44069766998291
+  },
+  {
+   "layer": 17,
+   "head": 3,
+   "diag_wins": 0,
+   "dominance": -0.06583859026432037,
+   "dom_norm": -1.5984245538711548
+  },
+  {
+   "layer": 17,
+   "head": 4,
+   "diag_wins": 4,
+   "dominance": 0.02930925413966179,
+   "dom_norm": 2.1070568561553955
+  },
+  {
+   "layer": 17,
+   "head": 5,
+   "diag_wins": 1,
+   "dominance": -0.0032831933349370956,
+   "dom_norm": -0.4640359580516815
+  },
+  {
+   "layer": 17,
+   "head": 6,
+   "diag_wins": 1,
+   "dominance": 0.005745048634707928,
+   "dom_norm": 0.2851109206676483
+  },
+  {
+   "layer": 17,
+   "head": 7,
+   "diag_wins": 1,
+   "dominance": -0.0025666174478828907,
+   "dom_norm": -0.20434781908988953
+  },
+  {
+   "layer": 17,
+   "head": 8,
+   "diag_wins": 2,
+   "dominance": 0.020510610193014145,
+   "dom_norm": 1.3687663078308105
+  },
+  {
+   "layer": 17,
+   "head": 9,
+   "diag_wins": 0,
+   "dominance": -0.003061194671317935,
+   "dom_norm": -0.45132017135620117
+  },
+  {
+   "layer": 17,
+   "head": 10,
+   "diag_wins": 0,
+   "dominance": -0.02546096220612526,
+   "dom_norm": -1.7893211841583252
+  },
+  {
+   "layer": 17,
+   "head": 11,
+   "diag_wins": 0,
+   "dominance": -0.013280653394758701,
+   "dom_norm": -1.0885720252990723
+  },
+  {
+   "layer": 18,
+   "head": 0,
+   "diag_wins": 3,
+   "dominance": 0.02505655772984028,
+   "dom_norm": 1.6729657649993896
+  },
+  {
+   "layer": 18,
+   "head": 1,
+   "diag_wins": 0,
+   "dominance": -0.029019970446825027,
+   "dom_norm": -1.3965121507644653
+  },
+  {
+   "layer": 18,
+   "head": 2,
+   "diag_wins": 4,
+   "dominance": 0.030328944325447083,
+   "dom_norm": 2.3706777095794678
+  },
+  {
+   "layer": 18,
+   "head": 3,
+   "diag_wins": 3,
+   "dominance": 0.02102326788008213,
+   "dom_norm": 0.9213799834251404
+  },
+  {
+   "layer": 18,
+   "head": 4,
+   "diag_wins": 1,
+   "dominance": -0.0009488410432823002,
+   "dom_norm": -0.1048746258020401
+  },
+  {
+   "layer": 18,
+   "head": 5,
+   "diag_wins": 0,
+   "dominance": -0.030544230714440346,
+   "dom_norm": -1.881823182106018
+  },
+  {
+   "layer": 18,
+   "head": 6,
+   "diag_wins": 0,
+   "dominance": -0.007783675566315651,
+   "dom_norm": -0.2690534293651581
+  },
+  {
+   "layer": 18,
+   "head": 7,
+   "diag_wins": 2,
+   "dominance": 0.015226493589580059,
+   "dom_norm": 0.9697026610374451
+  },
+  {
+   "layer": 18,
+   "head": 8,
+   "diag_wins": 1,
+   "dominance": 0.007095940411090851,
+   "dom_norm": 0.3299660384654999
+  },
+  {
+   "layer": 18,
+   "head": 9,
+   "diag_wins": 1,
+   "dominance": -0.0019650226458907127,
+   "dom_norm": -0.1598585993051529
+  },
+  {
+   "layer": 18,
+   "head": 10,
+   "diag_wins": 0,
+   "dominance": -0.05840286239981651,
+   "dom_norm": -0.8625420928001404
+  },
+  {
+   "layer": 18,
+   "head": 11,
+   "diag_wins": 2,
+   "dominance": 0.014156505465507507,
+   "dom_norm": 0.6911800503730774
+  },
+  {
+   "layer": 19,
+   "head": 0,
+   "diag_wins": 1,
+   "dominance": -0.004549678415060043,
+   "dom_norm": -0.2212003916501999
+  },
+  {
+   "layer": 19,
+   "head": 1,
+   "diag_wins": 1,
+   "dominance": 0.005180720239877701,
+   "dom_norm": 0.2709729075431824
+  },
+  {
+   "layer": 19,
+   "head": 2,
+   "diag_wins": 1,
+   "dominance": -0.0022957215551286936,
+   "dom_norm": -0.135670006275177
+  },
+  {
+   "layer": 19,
+   "head": 3,
+   "diag_wins": 1,
+   "dominance": 0.0017065380234271288,
+   "dom_norm": 0.1564493626356125
+  },
+  {
+   "layer": 19,
+   "head": 4,
+   "diag_wins": 1,
+   "dominance": -0.008812214247882366,
+   "dom_norm": -0.5227155089378357
+  },
+  {
+   "layer": 19,
+   "head": 5,
+   "diag_wins": 1,
+   "dominance": 0.0001595616340637207,
+   "dom_norm": 0.010263263247907162
+  },
+  {
+   "layer": 19,
+   "head": 6,
+   "diag_wins": 0,
+   "dominance": -0.06377273797988892,
+   "dom_norm": -1.1444957256317139
+  },
+  {
+   "layer": 19,
+   "head": 7,
+   "diag_wins": 1,
+   "dominance": 0.013578172773122787,
+   "dom_norm": 0.3936633765697479
+  },
+  {
+   "layer": 19,
+   "head": 8,
+   "diag_wins": 3,
+   "dominance": 0.03605178743600845,
+   "dom_norm": 2.0097854137420654
+  },
+  {
+   "layer": 19,
+   "head": 9,
+   "diag_wins": 1,
+   "dominance": 0.02146175503730774,
+   "dom_norm": 0.8034852147102356
+  },
+  {
+   "layer": 19,
+   "head": 10,
+   "diag_wins": 3,
+   "dominance": 0.01282423920929432,
+   "dom_norm": 1.0389572381973267
+  },
+  {
+   "layer": 19,
+   "head": 11,
+   "diag_wins": 3,
+   "dominance": 0.03515108674764633,
+   "dom_norm": 1.603574514389038
+  },
+  {
+   "layer": 20,
+   "head": 0,
+   "diag_wins": 3,
+   "dominance": 0.028547627851366997,
+   "dom_norm": 1.871633529663086
+  },
+  {
+   "layer": 20,
+   "head": 1,
+   "diag_wins": 0,
+   "dominance": -0.010578185319900513,
+   "dom_norm": -0.5621967315673828
+  },
+  {
+   "layer": 20,
+   "head": 2,
+   "diag_wins": 1,
+   "dominance": -0.010442523285746574,
+   "dom_norm": -0.677149772644043
+  },
+  {
+   "layer": 20,
+   "head": 3,
+   "diag_wins": 2,
+   "dominance": 0.008599737659096718,
+   "dom_norm": 0.27991366386413574
+  },
+  {
+   "layer": 20,
+   "head": 4,
+   "diag_wins": 0,
+   "dominance": -0.03377976268529892,
+   "dom_norm": -1.4459192752838135
+  },
+  {
+   "layer": 20,
+   "head": 5,
+   "diag_wins": 1,
+   "dominance": 0.032716695219278336,
+   "dom_norm": 1.2988321781158447
+  },
+  {
+   "layer": 20,
+   "head": 6,
+   "diag_wins": 4,
+   "dominance": 0.028799526393413544,
+   "dom_norm": 1.414340853691101
+  },
+  {
+   "layer": 20,
+   "head": 7,
+   "diag_wins": 0,
+   "dominance": -0.13123205304145813,
+   "dom_norm": -1.2226784229278564
+  },
+  {
+   "layer": 20,
+   "head": 8,
+   "diag_wins": 4,
+   "dominance": 0.05811512470245361,
+   "dom_norm": 2.4514529705047607
+  },
+  {
+   "layer": 20,
+   "head": 9,
+   "diag_wins": 4,
+   "dominance": 0.068235844373703,
+   "dom_norm": 2.1031386852264404
+  },
+  {
+   "layer": 20,
+   "head": 10,
+   "diag_wins": 2,
+   "dominance": 0.02667119912803173,
+   "dom_norm": 1.553548812866211
+  },
+  {
+   "layer": 20,
+   "head": 11,
+   "diag_wins": 4,
+   "dominance": 0.08022475987672806,
+   "dom_norm": 2.251648187637329
+  },
+  {
+   "layer": 21,
+   "head": 0,
+   "diag_wins": 3,
+   "dominance": 0.07232099026441574,
+   "dom_norm": 1.0576934814453125
+  },
+  {
+   "layer": 21,
+   "head": 1,
+   "diag_wins": 1,
+   "dominance": -0.05438288301229477,
+   "dom_norm": -0.46355974674224854
+  },
+  {
+   "layer": 21,
+   "head": 2,
+   "diag_wins": 1,
+   "dominance": 0.012741714715957642,
+   "dom_norm": 0.11849421262741089
+  },
+  {
+   "layer": 21,
+   "head": 3,
+   "diag_wins": 1,
+   "dominance": 0.061115995049476624,
+   "dom_norm": 0.6672643423080444
+  },
+  {
+   "layer": 21,
+   "head": 4,
+   "diag_wins": 1,
+   "dominance": 0.0509478822350502,
+   "dom_norm": 0.7865411043167114
+  },
+  {
+   "layer": 21,
+   "head": 5,
+   "diag_wins": 2,
+   "dominance": 0.06677648425102234,
+   "dom_norm": 1.4409849643707275
+  },
+  {
+   "layer": 21,
+   "head": 6,
+   "diag_wins": 3,
+   "dominance": 0.0227456446737051,
+   "dom_norm": 0.5714243054389954
+  },
+  {
+   "layer": 21,
+   "head": 7,
+   "diag_wins": 4,
+   "dominance": 0.04815977066755295,
+   "dom_norm": 2.1457810401916504
+  },
+  {
+   "layer": 21,
+   "head": 8,
+   "diag_wins": 2,
+   "dominance": 0.010943392291665077,
+   "dom_norm": 0.7156962752342224
+  },
+  {
+   "layer": 21,
+   "head": 9,
+   "diag_wins": 0,
+   "dominance": -0.02996373362839222,
+   "dom_norm": -1.1804145574569702
+  },
+  {
+   "layer": 21,
+   "head": 10,
+   "diag_wins": 1,
+   "dominance": 0.009861744940280914,
+   "dom_norm": 0.18679159879684448
+  },
+  {
+   "layer": 21,
+   "head": 11,
+   "diag_wins": 1,
+   "dominance": -0.021162116900086403,
+   "dom_norm": -1.3009933233261108
+  },
+  {
+   "layer": 22,
+   "head": 0,
+   "diag_wins": 2,
+   "dominance": 0.06763941049575806,
+   "dom_norm": 0.9801470041275024
+  },
+  {
+   "layer": 22,
+   "head": 1,
+   "diag_wins": 2,
+   "dominance": 0.029769757762551308,
+   "dom_norm": 1.218571424484253
+  },
+  {
+   "layer": 22,
+   "head": 2,
+   "diag_wins": 1,
+   "dominance": -0.0009791795164346695,
+   "dom_norm": -0.017757514491677284
+  },
+  {
+   "layer": 22,
+   "head": 3,
+   "diag_wins": 1,
+   "dominance": 0.05091609060764313,
+   "dom_norm": 1.288307785987854
+  },
+  {
+   "layer": 22,
+   "head": 4,
+   "diag_wins": 2,
+   "dominance": 0.08563418686389923,
+   "dom_norm": 1.8474490642547607
+  },
+  {
+   "layer": 22,
+   "head": 5,
+   "diag_wins": 0,
+   "dominance": -0.13004186749458313,
+   "dom_norm": -1.688100814819336
+  },
+  {
+   "layer": 22,
+   "head": 6,
+   "diag_wins": 1,
+   "dominance": -0.0030924195889383554,
+   "dom_norm": -0.20446114242076874
+  },
+  {
+   "layer": 22,
+   "head": 7,
+   "diag_wins": 1,
+   "dominance": -0.00648851552978158,
+   "dom_norm": -0.49494409561157227
+  },
+  {
+   "layer": 22,
+   "head": 8,
+   "diag_wins": 3,
+   "dominance": 0.03020605444908142,
+   "dom_norm": 2.218979835510254
+  },
+  {
+   "layer": 22,
+   "head": 9,
+   "diag_wins": 1,
+   "dominance": -0.020879661664366722,
+   "dom_norm": -0.6641700863838196
+  },
+  {
+   "layer": 22,
+   "head": 10,
+   "diag_wins": 1,
+   "dominance": -0.004132662434130907,
+   "dom_norm": -0.34558767080307007
+  },
+  {
+   "layer": 22,
+   "head": 11,
+   "diag_wins": 0,
+   "dominance": -0.015278076753020287,
+   "dom_norm": -1.2627280950546265
+  },
+  {
+   "layer": 23,
+   "head": 0,
+   "diag_wins": 1,
+   "dominance": 0.004121549427509308,
+   "dom_norm": 0.040949780493974686
+  },
+  {
+   "layer": 23,
+   "head": 1,
+   "diag_wins": 1,
+   "dominance": -0.024702951312065125,
+   "dom_norm": -0.15523958206176758
+  },
+  {
+   "layer": 23,
+   "head": 2,
+   "diag_wins": 1,
+   "dominance": -0.017106056213378906,
+   "dom_norm": -0.1170310527086258
+  },
+  {
+   "layer": 23,
+   "head": 3,
+   "diag_wins": 1,
+   "dominance": -0.010131850838661194,
+   "dom_norm": -0.06036580353975296
+  },
+  {
+   "layer": 23,
+   "head": 4,
+   "diag_wins": 1,
+   "dominance": 0.00021414458751678467,
+   "dom_norm": 0.001572054228745401
+  },
+  {
+   "layer": 23,
+   "head": 5,
+   "diag_wins": 1,
+   "dominance": 0.003845132887363434,
+   "dom_norm": 0.02725636586546898
+  },
+  {
+   "layer": 23,
+   "head": 6,
+   "diag_wins": 1,
+   "dominance": 0.01214243471622467,
+   "dom_norm": 0.1628779172897339
+  },
+  {
+   "layer": 23,
+   "head": 7,
+   "diag_wins": 1,
+   "dominance": -0.03646675497293472,
+   "dom_norm": -0.27288734912872314
+  },
+  {
+   "layer": 23,
+   "head": 8,
+   "diag_wins": 1,
+   "dominance": 0.011243216693401337,
+   "dom_norm": 0.20935480296611786
+  },
+  {
+   "layer": 23,
+   "head": 9,
+   "diag_wins": 1,
+   "dominance": 0.029323430731892586,
+   "dom_norm": 0.505576491355896
+  },
+  {
+   "layer": 23,
+   "head": 10,
+   "diag_wins": 1,
+   "dominance": 0.003777257399633527,
+   "dom_norm": 0.19220587611198425
+  },
+  {
+   "layer": 23,
+   "head": 11,
+   "diag_wins": 3,
+   "dominance": 0.05118256062269211,
+   "dom_norm": 1.7016788721084595
+  },
+  {
+   "layer": 24,
+   "head": 0,
+   "diag_wins": 1,
+   "dominance": 0.012336872518062592,
+   "dom_norm": 0.11640207469463348
+  },
+  {
+   "layer": 24,
+   "head": 1,
+   "diag_wins": 1,
+   "dominance": 0.01825961470603943,
+   "dom_norm": 0.09543269872665405
+  },
+  {
+   "layer": 24,
+   "head": 2,
+   "diag_wins": 1,
+   "dominance": -0.01732739806175232,
+   "dom_norm": -0.09236222505569458
+  },
+  {
+   "layer": 24,
+   "head": 3,
+   "diag_wins": 1,
+   "dominance": 0.024208486080169678,
+   "dom_norm": 0.1129884123802185
+  },
+  {
+   "layer": 24,
+   "head": 4,
+   "diag_wins": 1,
+   "dominance": 0.04256264865398407,
+   "dom_norm": 0.22139449417591095
+  },
+  {
+   "layer": 24,
+   "head": 5,
+   "diag_wins": 1,
+   "dominance": 0.04562908411026001,
+   "dom_norm": 0.25909310579299927
+  },
+  {
+   "layer": 24,
+   "head": 6,
+   "diag_wins": 1,
+   "dominance": -0.00636899471282959,
+   "dom_norm": -0.11822451651096344
+  },
+  {
+   "layer": 24,
+   "head": 7,
+   "diag_wins": 1,
+   "dominance": 0.0019863368943333626,
+   "dom_norm": 0.08828885108232498
+  },
+  {
+   "layer": 24,
+   "head": 8,
+   "diag_wins": 2,
+   "dominance": 0.04617772251367569,
+   "dom_norm": 0.5572711825370789
+  },
+  {
+   "layer": 24,
+   "head": 9,
+   "diag_wins": 1,
+   "dominance": 0.0027476437389850616,
+   "dom_norm": 0.05310951545834541
+  },
+  {
+   "layer": 24,
+   "head": 10,
+   "diag_wins": 0,
+   "dominance": -0.042053401470184326,
+   "dom_norm": -0.9241729378700256
+  },
+  {
+   "layer": 24,
+   "head": 11,
+   "diag_wins": 1,
+   "dominance": -0.0014427155256271362,
+   "dom_norm": -0.05116475373506546
+  },
+  {
+   "layer": 25,
+   "head": 0,
+   "diag_wins": 1,
+   "dominance": 0.006785636767745018,
+   "dom_norm": 0.17648185789585114
+  },
+  {
+   "layer": 25,
+   "head": 1,
+   "diag_wins": 4,
+   "dominance": 0.07165208458900452,
+   "dom_norm": 1.6134796142578125
+  },
+  {
+   "layer": 25,
+   "head": 2,
+   "diag_wins": 2,
+   "dominance": 0.008901145309209824,
+   "dom_norm": 0.3622690737247467
+  },
+  {
+   "layer": 25,
+   "head": 3,
+   "diag_wins": 1,
+   "dominance": -0.07311783730983734,
+   "dom_norm": -0.9455018043518066
+  },
+  {
+   "layer": 25,
+   "head": 4,
+   "diag_wins": 2,
+   "dominance": 6.117671728134155e-05,
+   "dom_norm": 0.0013040179619565606
+  },
+  {
+   "layer": 25,
+   "head": 5,
+   "diag_wins": 2,
+   "dominance": 0.0069876257330179214,
+   "dom_norm": 0.23410139977931976
+  },
+  {
+   "layer": 25,
+   "head": 6,
+   "diag_wins": 1,
+   "dominance": 0.01213151216506958,
+   "dom_norm": 0.07428179681301117
+  },
+  {
+   "layer": 25,
+   "head": 7,
+   "diag_wins": 1,
+   "dominance": -0.0017428845167160034,
+   "dom_norm": -0.016377829015254974
+  },
+  {
+   "layer": 25,
+   "head": 8,
+   "diag_wins": 1,
+   "dominance": 0.001458287239074707,
+   "dom_norm": 0.007748509291559458
+  },
+  {
+   "layer": 25,
+   "head": 9,
+   "diag_wins": 1,
+   "dominance": 0.0002467408776283264,
+   "dom_norm": 0.001834060880355537
+  },
+  {
+   "layer": 25,
+   "head": 10,
+   "diag_wins": 1,
+   "dominance": 0.004286259412765503,
+   "dom_norm": 0.030691202729940414
+  },
+  {
+   "layer": 25,
+   "head": 11,
+   "diag_wins": 1,
+   "dominance": -0.0009496957063674927,
+   "dom_norm": -0.004878473002463579
+  },
+  {
+   "layer": 26,
+   "head": 0,
+   "diag_wins": 1,
+   "dominance": 0.026589930057525635,
+   "dom_norm": 0.07638249546289444
+  },
+  {
+   "layer": 26,
+   "head": 1,
+   "diag_wins": 1,
+   "dominance": 0.03739181160926819,
+   "dom_norm": 0.13957051932811737
+  },
+  {
+   "layer": 26,
+   "head": 2,
+   "diag_wins": 1,
+   "dominance": 0.030243530869483948,
+   "dom_norm": 0.13820946216583252
+  },
+  {
+   "layer": 26,
+   "head": 3,
+   "diag_wins": 1,
+   "dominance": 0.023953571915626526,
+   "dom_norm": 0.10880619287490845
+  },
+  {
+   "layer": 26,
+   "head": 4,
+   "diag_wins": 1,
+   "dominance": 0.038603007793426514,
+   "dom_norm": 0.13069316744804382
+  },
+  {
+   "layer": 26,
+   "head": 5,
+   "diag_wins": 1,
+   "dominance": -0.00747343897819519,
+   "dom_norm": -0.027335157617926598
+  },
+  {
+   "layer": 26,
+   "head": 6,
+   "diag_wins": 1,
+   "dominance": 0.042877499014139175,
+   "dom_norm": 0.4400594234466553
+  },
+  {
+   "layer": 26,
+   "head": 7,
+   "diag_wins": 1,
+   "dominance": 0.012311160564422607,
+   "dom_norm": 0.03498407080769539
+  },
+  {
+   "layer": 26,
+   "head": 8,
+   "diag_wins": 1,
+   "dominance": -0.0108652263879776,
+   "dom_norm": -0.05556154251098633
+  },
+  {
+   "layer": 26,
+   "head": 9,
+   "diag_wins": 1,
+   "dominance": 0.04077194631099701,
+   "dom_norm": 0.591602087020874
+  },
+  {
+   "layer": 26,
+   "head": 10,
+   "diag_wins": 1,
+   "dominance": 0.012205004692077637,
+   "dom_norm": 0.032892681658267975
+  },
+  {
+   "layer": 26,
+   "head": 11,
+   "diag_wins": 1,
+   "dominance": 0.042308516800403595,
+   "dom_norm": 0.38422948122024536
+  },
+  {
+   "layer": 27,
+   "head": 0,
+   "diag_wins": 1,
+   "dominance": 0.020206332206726074,
+   "dom_norm": 0.07554178684949875
+  },
+  {
+   "layer": 27,
+   "head": 1,
+   "diag_wins": 1,
+   "dominance": 0.02667383849620819,
+   "dom_norm": 0.11462590843439102
+  },
+  {
+   "layer": 27,
+   "head": 2,
+   "diag_wins": 1,
+   "dominance": 0.011667132377624512,
+   "dom_norm": 0.033043164759874344
+  },
+  {
+   "layer": 27,
+   "head": 3,
+   "diag_wins": 1,
+   "dominance": 0.02036280930042267,
+   "dom_norm": 0.0831744596362114
+  },
+  {
+   "layer": 27,
+   "head": 4,
+   "diag_wins": 1,
+   "dominance": 0.0027578771114349365,
+   "dom_norm": 0.008807335048913956
+  },
+  {
+   "layer": 27,
+   "head": 5,
+   "diag_wins": 1,
+   "dominance": 0.01903986930847168,
+   "dom_norm": 0.06320957094430923
+  },
+  {
+   "layer": 27,
+   "head": 6,
+   "diag_wins": 1,
+   "dominance": -0.015670523047447205,
+   "dom_norm": -0.08221478760242462
+  },
+  {
+   "layer": 27,
+   "head": 7,
+   "diag_wins": 1,
+   "dominance": 0.0023792386054992676,
+   "dom_norm": 0.014581047929823399
+  },
+  {
+   "layer": 27,
+   "head": 8,
+   "diag_wins": 1,
+   "dominance": -0.020001471042633057,
+   "dom_norm": -0.15275759994983673
+  },
+  {
+   "layer": 27,
+   "head": 9,
+   "diag_wins": 2,
+   "dominance": 0.20844322443008423,
+   "dom_norm": 1.068375587463379
+  },
+  {
+   "layer": 27,
+   "head": 10,
+   "diag_wins": 1,
+   "dominance": -0.0749502182006836,
+   "dom_norm": -0.1706216186285019
+  },
+  {
+   "layer": 27,
+   "head": 11,
+   "diag_wins": 1,
+   "dominance": 0.026823416352272034,
+   "dom_norm": 0.1786624640226364
+  }
+ ]
+}

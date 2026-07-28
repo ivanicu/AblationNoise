@@ -301,6 +301,26 @@ is worth more than any individual verdict.
 > concentrated in `H-position`.** If I turn out to be wrong on either of the first two, that is the
 > more valuable outcome, and this table is what makes the difference legible.
 
+### A prediction on a head, registered before the data — `L17H0`
+
+A third instrument arrived after the predictions above: the **OV circuit**, read from the weights and
+independent of both attention and ablation. It puts `L17H0` **3rd of `168`** on direct room-token
+copying (`+2.4383`, all `4` rooms map to themselves), while `L22H7` — the named copy head — sits at
+**rank `140`**, `1/4`, which is chance.
+
+**`L17H0` is now flagged by three instrument classes:** attention put it in the published eight,
+`I_all` ablation ranked it `4th` of `168` in [R18](../R18_all_positions/), and the OV circuit ranks
+it `3rd`. **That conjunction is post hoc** — the top-6 was read after computing — so it is a
+hypothesis, not a result.
+
+> **Registered now, against data that does not exist:** `L17H0` will rank in the **top `10` of `168`
+> by `|centred tau^all|`** on R19's crossed task, under the `signed_margin_drop` metric.
+>
+> **This is one pre-specified head and one threshold, so it needs no multiplicity correction** — and
+> R19's task was built independently of the eight, so it is not the data `L17H0` was surfaced on.
+> **If it fails, the three-instrument convergence was a coincidence over `168` heads and this line is
+> the record that I bet on it.**
+
 ### A control that ran, and could not decide
 
 The crossed design should behave like the old task where they overlap. Compared against
