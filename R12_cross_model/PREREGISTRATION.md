@@ -44,6 +44,33 @@ nothing.
 > `≈ 20.5` when `0.6440 × 35 = 22.54`. The *windows* were right — they split the two predictions —
 > but the number written beside `RELATIVE` was the midpoint wearing the prediction's label.
 
+
+## Addendum — 2026-07-28, still before the run produced a file
+
+The statistic these thresholds were derived from **was corrected after they were committed**. Every
+null in this repository turned out not to be centred at zero, and `clears the sham floor` became
+`|drop − sham mean| > 2 · sham sd`. The sham null's mean is `+0.003977`, so the profile barely
+moves — but "barely" is not "not at all", and a pre-registration must be shown to survive a
+statistic change rather than quietly re-derived under the new one.
+
+```
+                     centroid   depth frac   ABSOLUTE(36L)   RELATIVE(36L)   midpoint
+uncentred (committed)  17.3878      0.6440          17.39           22.54       19.96
+centred (current rule) 17.2347      0.6383          17.23           22.34       19.79
+```
+
+**The windows are NOT changed, and that is the conservative choice rather than the convenient one.**
+Under the corrected statistic the two predictions are `17.23` and `22.34`; they still sit on
+opposite sides of the committed edges (`< 19.5` and `> 20.5`), and the new midpoint `19.79` is still
+inside the declared ambiguous band. **The same windows separate the same worlds.** Moving them would
+buy nothing and would be indistinguishable, after the fact, from moving the goalposts.
+
+The peak is unchanged: `L16, L17` at `83%` under both rules.
+
+`make headline` now emits both forms (`clearing_centroid_layer` and
+`clearing_centroid_layer_UNCENTRED`), and `--check` asserts both, so this addendum cannot drift from
+the thing it describes.
+
 ## The kill
 
 > **If `qwen2.5-3b`'s clearing-rate profile has no interior peak — monotone to the final layer, or

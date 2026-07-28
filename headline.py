@@ -290,8 +290,21 @@ def reference_class():
             # written one step before this measured it. Clearing rate rises with depth (Spearman
             # +0.645 over 28 layers) but NOT monotonically: it peaks at 83% in L16-L17 and falls
             # back to 8-17% by L25/L27, so L25 clears LESS often than L11. A hump, not a half.
-            'clearing_rate_by_layer': {x: sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
-                                       / len(L[x]['per_head']) for x in sorted(L)},
+            # CENTRED on the sham null's own mean (+0.003977), per the rule applied everywhere on
+            # 2026-07-28. The uncentred form is kept beside it because R12's committed thresholds
+            # were derived from it, and a pre-registration must be shown to survive a statistic
+            # change rather than quietly re-derived under the new one.
+            'clearing_rate_by_layer': {x: sum(1 for v in L[x]['per_head'].values()
+                                              if abs(v - mus) > fs) / len(L[x]['per_head'])
+                                       for x in sorted(L)},
+            'clearing_rate_by_layer_UNCENTRED': {
+                x: sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                / len(L[x]['per_head']) for x in sorted(L)},
+            'clearing_centroid_layer_UNCENTRED': (
+                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                    / len(L[x]['per_head']) for x in sorted(L)) /
+                sum(sum(1 for v in L[y]['per_head'].values() if abs(v) > fs)
+                    / len(L[y]['per_head']) for y in sorted(L))),
             # PERCENT AS WELL AS FRACTION, because the prose quotes percentages and 0.5833 does
             # not back "58%". A unit mismatch between generator and page is the same defect class
             # as a hand-computed 2*sd: the number is right and nothing can check it.
@@ -307,9 +320,9 @@ def reference_class():
             # 20.5 is the MIDPOINT between the two worlds' predictions and is the right window edge;
             # the annotation calling it the relative prediction was wrong.
             'clearing_centroid_layer': (
-                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v - mus) > fs)
                     / len(L[x]['per_head']) for x in sorted(L)) /
-                sum(sum(1 for v in L[y]['per_head'].values() if abs(v) > fs)
+                sum(sum(1 for v in L[y]['per_head'].values() if abs(v - mus) > fs)
                     / len(L[y]['per_head']) for y in sorted(L))),
             'n_layers': len(L),
             'peak_layers': [x for x in sorted(L)
@@ -333,23 +346,46 @@ def reference_class():
             # DEPTH FRACTION. At 28 layers those coincide; at 36 they are ~5 layers apart, which is
             # why the second model separates worlds the first cannot.
             'clearing_centroid_depth_fraction': (
-                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v - mus) > fs)
                     / len(L[x]['per_head']) for x in sorted(L)) /
-                sum(sum(1 for v in L[y]['per_head'].values() if abs(v) > fs)
+                sum(sum(1 for v in L[y]['per_head'].values() if abs(v - mus) > fs)
                     / len(L[y]['per_head']) for y in sorted(L)) / (len(L) - 1)),
             # R12'S PRE-REGISTERED WINDOW EDGES, emitted so they are checked constants rather than
             # prose a later edit could move. They are half a layer either side of the midpoint
             # between the two worlds' predictions (17.39 and 22.54).
             'r12_window_absolute_max': 19.5, 'r12_window_relative_min': 20.5,
-            'predicted_centroid_absolute_36L': (
+            # THE MIDPOINTS, both forms. The window edges sit half a layer either side of the
+            # midpoint, so a reader can check that the committed edges still straddle it after the
+            # statistic changed -- which is the whole content of R12's addendum.
+            'clearing_centroid_depth_fraction_UNCENTRED': (
                 sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
                     / len(L[x]['per_head']) for x in sorted(L)) /
                 sum(sum(1 for v in L[y]['per_head'].values() if abs(v) > fs)
+                    / len(L[y]['per_head']) for y in sorted(L)) / (len(L) - 1)),
+            'r12_midpoint_uncentred': (
+                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                    / len(L[x]['per_head']) for x in sorted(L)) /
+                sum(sum(1 for v in L[y]['per_head'].values() if abs(v) > fs)
+                    / len(L[y]['per_head']) for y in sorted(L))) * (1 + 35 / (len(L) - 1)) / 2,
+            'r12_relative_prediction_uncentred': (
+                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                    / len(L[x]['per_head']) for x in sorted(L)) /
+                sum(sum(1 for v in L[y]['per_head'].values() if abs(v) > fs)
+                    / len(L[y]['per_head']) for y in sorted(L))) * 35 / (len(L) - 1),
+            'r12_midpoint_centred': (
+                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v - mus) > fs)
+                    / len(L[x]['per_head']) for x in sorted(L)) /
+                sum(sum(1 for v in L[y]['per_head'].values() if abs(v - mus) > fs)
+                    / len(L[y]['per_head']) for y in sorted(L))) * (1 + 35 / (len(L) - 1)) / 2,
+            'predicted_centroid_absolute_36L': (
+                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v - mus) > fs)
+                    / len(L[x]['per_head']) for x in sorted(L)) /
+                sum(sum(1 for v in L[y]['per_head'].values() if abs(v - mus) > fs)
                     / len(L[y]['per_head']) for y in sorted(L))),
             'predicted_centroid_relative_36L': (
-                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v - mus) > fs)
                     / len(L[x]['per_head']) for x in sorted(L)) /
-                sum(sum(1 for v in L[y]['per_head'].values() if abs(v) > fs)
+                sum(sum(1 for v in L[y]['per_head'].values() if abs(v - mus) > fs)
                     / len(L[y]['per_head']) for y in sorted(L)) / (len(L) - 1) * 35),
             'pct_band_clearing_sham': 100 * sum(1 for v in band if abs(v) > fs) / len(band),
             'rows': rows}
@@ -1998,10 +2034,15 @@ def main() -> int:
             ('CTR studied-band null mean', CN['null_mean'] if CN else -1, 0.0479, 0.0001),
             ('CTR sham-band mean over sd',
              CN['bands']['sham_L0_7']['mean_over_sd'] if CN else -1, 0.1005, 0.0001),
-            ('R12 absolute-world prediction',
-             RC['predicted_centroid_absolute_36L'] if RC else -1, 17.388, 0.001),
-            ('R12 relative-world prediction',
-             RC['predicted_centroid_relative_36L'] if RC else -1, 22.540, 0.001),
+            # BOTH FORMS ASSERTED. The uncentred pair is what R12's thresholds were committed
+            # from; the centred pair is what the corrected statistic gives. Asserting only the
+            # current one would let the addendum drift from the history it describes.
+            ('R12 absolute prediction, centred',
+             RC['predicted_centroid_absolute_36L'] if RC else -1, 17.2347, 0.0001),
+            ('R12 relative prediction, centred',
+             RC['predicted_centroid_relative_36L'] if RC else -1, 22.3413, 0.0001),
+            ('R12 centroid, uncentred as committed',
+             RC['clearing_centroid_layer_UNCENTRED'] if RC else -1, 17.3878, 0.0001),
             ('R12 ambiguous window lower edge',
              RC['r12_window_absolute_max'] if RC else -1, 19.5, 0.0),
             ('R12 ambiguous window upper edge',
