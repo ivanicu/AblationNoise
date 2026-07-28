@@ -1,0 +1,319 @@
+#!/usr/bin/env python3
+"""R7 — AT A FIXED PERTURBATION SIZE, DOES THE DIRECTION CHANGE READABILITY?
+
+Pre-registration: PREREGISTRATION.md, committed at the parent commit of this file. Nothing in it is
+changed here.
+
+For item i and head h, x is the head's final-position o_proj input slice, mu its mean over items,
+and d = ||x - mu|| the distance mean-ablation actually moves. Three arms write a point exactly d
+away from x and differ only in direction; a fourth is the unmatched anchor.
+
+    mean      x <- mu                      toward the item-average   ON-distribution   ||disp|| = d
+    shrink    x <- x*(1 - d/||x||)         toward the origin         zeroing direction ||disp|| = d
+    randdir   x <- x + d*u, ||u|| = 1      unrelated to the data     off-distribution  ||disp|| = d
+    zero      x <- 0                       the anchor, NOT matched                     ||disp|| = ||x||
+
+THE MATCHING IS MEASURED, NOT ASSERTED. Every arm accumulates its realized mean ||displacement||
+and CHECK 1 requires the three matched arms to agree within 1%. This repository has now recorded
+four separate cases of a property that was true in the prose and false in the object; a matching
+that the design depends on is not going to be the fifth.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import random
+import sys
+from pathlib import Path
+
+import numpy as np
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from task import PERSONS, OBJECTS  # noqa: E402
+
+torch.set_num_threads(20)
+
+K = 1
+N_DRAWS = 30
+N_ITEMS = 120
+SEEDS = list(range(3000, 3400))
+DRAW_SEED = 20260727        # identical to R1 and R6: the same 30 band head sets
+RANDDIR_SEED = 20260729     # the unit vectors for the randdir arm; reported in the result file
+ARMS = ('zero', 'mean', 'shrink', 'randdir')
+MATCHED = ('mean', 'shrink', 'randdir')
+
+
+def bindings(seed, rooms):
+    r = random.Random(seed)
+    ps, obs = list(PERSONS), list(OBJECTS)
+    assigned = (list(rooms) * 4)[:len(ps)]
+    r.shuffle(ps); r.shuffle(obs); r.shuffle(assigned)
+    return {ps[i]: (obs[i], assigned[i]) for i in range(len(ps))}
+
+
+def prompt(query, b):
+    lines = [f"{p} owns the {b[p][0]}. The {b[p][0]} is in the {b[p][1]} room." for p in PERSONS]
+    return '\n'.join(lines + [f"Question: Which room should {query} go to find their object?",
+                              "Answer: The"])
+
+
+def resolve_o_proj(layer):
+    for an in ('self_attn', 'attention', 'attn', 'self_attention'):
+        att = getattr(layer, an, None)
+        if att is None:
+            continue
+        for pn in ('o_proj', 'wo', 'out_proj', 'dense', 'proj'):
+            proj = getattr(att, pn, None)
+            if proj is not None:
+                return f'{an}.{pn}', proj
+    return None, None
+
+
+@torch.no_grad()
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--model', required=True)
+    ap.add_argument('--tag', required=True)
+    ap.add_argument('--rooms', nargs='*', default=['stone', 'iron', 'glass', 'water'])
+    ap.add_argument('--dtype', default='float32', choices=['float32', 'bfloat16'])
+    ap.add_argument('--out', default=str(HERE / 'results' / 'r7_norm_matched'))
+    args = ap.parse_args()
+    rooms = args.rooms
+
+    tok = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
+    m = AutoModelForCausalLM.from_pretrained(
+        args.model, trust_remote_code=True, torch_dtype=getattr(torch, args.dtype),
+        device_map='cuda' if torch.cuda.is_available() else 'cpu',
+        attn_implementation='eager').eval()
+    m.config.use_cache = False
+    NL, NH = m.config.num_hidden_layers, m.config.num_attention_heads
+    HD = m.config.hidden_size // NH
+    lo, hi = NL // 2, NL - 1
+    sham_lo, sham_hi = 0, max(1, NL // 4)
+    PC_LAYER = lo + (hi - lo) // 2
+    dev = next(m.parameters()).device
+
+    from detectors.readout_tokens import check_readout
+    rep = check_readout(tok, rooms)
+    print(f"  readout detector: {rep.verdict}")
+    if not rep.ok():
+        raise SystemExit(f"REFUSED: {args.tag} readout is {rep.verdict}. {rep.why}")
+    rid, pl = rep.scored_ids, rep.shared_prefix_len
+    single = [p for p in PERSONS if len(tok.encode(' ' + p, add_special_tokens=False)) == 1 + pl]
+    if not single:
+        raise SystemExit(f"REFUSED: {args.tag} has no single-token person name.")
+
+    state = {'op': 'idle', 'arm': 'zero', 'item': 0, 'disp2': 0.0, 'ndisp': 0, 'overshoot': 0}
+    active: dict[int, set[int]] = {}
+    cap: dict[int, list[torch.Tensor]] = {L: [] for L in range(NL)}
+    MU: dict[int, torch.Tensor] = {}        # (NH, HD) per layer
+    D: dict[int, torch.Tensor] = {}         # (n_items, NH) per layer: ||x - mu||
+    XN: dict[int, torch.Tensor] = {}        # (n_items, NH) per layer: ||x||
+    U: dict[int, torch.Tensor] = {}         # (n_items, NH, HD) per layer: unit vectors
+
+    def mk(L):
+        def pre(mod, a):
+            if state['op'] == 'capture':
+                cap[L].append(a[0][0, -1].detach().float().cpu().clone())
+                return a
+            if state['op'] != 'ablate' or L not in active:
+                return a
+            x = a[0].clone()
+            i, arm = state['item'], state['arm']
+            for h in active[L]:
+                sl = slice(h * HD, (h + 1) * HD)
+                cur = x[0, -1, sl].float()
+                if arm == 'zero':
+                    new = torch.zeros_like(cur)
+                elif arm == 'mean':
+                    new = MU[L][h].to(cur.device)
+                elif arm == 'shrink':
+                    # Move TOWARD THE ORIGIN by exactly d. Scaling x by (1 - d/||x||) is the point
+                    # on the segment from x to 0 at distance d, which is the zeroing direction
+                    # truncated to the on-distribution arm's step length.
+                    #
+                    # EDGE CASE THAT WOULD CHANGE WHAT THIS ARM MEANS: if d > ||x||, the step
+                    # passes THROUGH the origin and out the other side, and 'toward the origin'
+                    # becomes 'past the origin, sign flipped'. The displacement norm is still
+                    # exactly d, so CHECK 1 would pass and the arm would be mislabelled rather
+                    # than broken -- the quiet failure. Counted and reported; on the measured
+                    # data d/||x|| is 0.14-0.27, so the count is expected to be zero and a
+                    # non-zero one is a fact about the model, not a bug to be clipped away.
+                    ratio = (D[L][i, h] / XN[L][i, h]).item()
+                    if ratio > 1.0:
+                        state['overshoot'] += 1
+                    new = cur * (1.0 - ratio)
+                else:
+                    new = cur + D[L][i, h].item() * U[L][i, h].to(cur.device)
+                state['disp2'] += float((new - cur).pow(2).sum())
+                state['ndisp'] += 1
+                x[0, -1, sl] = new.to(x.dtype)
+            return (x,) + a[1:]
+        return pre
+
+    name0, _ = resolve_o_proj(m.model.layers[0])
+    if name0 is None:
+        raise SystemExit(f"REFUSED: cannot find the attention output projection on {args.tag}.")
+    for L in range(NL):
+        nm, proj = resolve_o_proj(m.model.layers[L])
+        if nm != name0:
+            raise SystemExit(f"REFUSED: layer {L} exposes {nm}, layer 0 exposes {name0}.")
+        proj.register_forward_pre_hook(mk(L))
+    print(f"  hooked {NL}/{NL} layers at .{name0}")
+
+    items, base = [], []
+    for s in SEEDS:
+        b = bindings(s, rooms)
+        q = next((p for p in single if p in b), None)
+        if q is None:
+            continue
+        enc = {k: v.to(m.device) for k, v in tok(prompt(q, b), return_tensors='pt').items()}
+        cor = b[q][1]
+        active.clear()
+        lg = m(**enc, use_cache=False).logits[0, -1]
+        if max(rooms, key=lambda r: lg[rid[r]].item()) != cor:
+            continue
+        base.append(lg[rid[cor]].item() - max(lg[rid[r]].item() for r in rooms if r != cor))
+        items.append((enc, cor))
+        if len(items) >= N_ITEMS:
+            break
+    n = len(items)
+    if n < 30:
+        raise SystemExit(f"REFUSED: {args.tag} answered only {n}/{len(SEEDS)} seeds correctly.")
+    bm = float(np.mean(base))
+    print(f"  n items {n} | baseline margin {bm:.4f} | band L{lo}-{hi} | PC layer {PC_LAYER}")
+
+    state['op'] = 'capture'
+    for L in cap:
+        cap[L].clear()
+    for enc, _ in items:
+        m(**enc, use_cache=False)
+    state['op'] = 'idle'
+
+    g = torch.Generator().manual_seed(RANDDIR_SEED)
+    for L in range(NL):
+        X = torch.stack(cap[L]).view(n, NH, HD)          # (n, NH, HD)
+        MU[L] = X.mean(0).to(dev)                        # (NH, HD)
+        D[L] = (X - X.mean(0, keepdim=True)).norm(dim=2).to(dev)
+        XN[L] = X.norm(dim=2).clamp_min(1e-9).to(dev)
+        u = torch.randn(n, NH, HD, generator=g)
+        U[L] = (u / u.norm(dim=2, keepdim=True)).to(dev)
+    print(f"  captured {NL} layers x {n} items | randdir seed {RANDDIR_SEED}")
+
+    rng = random.Random(DRAW_SEED)
+    band_pool = [(L, h) for L in range(lo, hi + 1) for h in range(NH)]
+    sham_pool = [(L, h) for L in range(sham_lo, sham_hi + 1) for h in range(NH)]
+    band_draws = [rng.sample(band_pool, K) for _ in range(N_DRAWS)]
+    sham_draws = [rng.sample(sham_pool, min(K, len(sham_pool))) for _ in range(N_DRAWS)]
+    pc_heads = [(PC_LAYER, h) for h in range(NH)]
+
+    def sweep(heads, arm):
+        state['op'], state['arm'] = 'ablate', arm
+        state['disp2'], state['ndisp'], state['overshoot'] = 0.0, 0, 0
+        active.clear()
+        for (L, h) in heads:
+            active.setdefault(L, set()).add(h)
+        d = []
+        for i, (enc, cor) in enumerate(items):
+            state['item'] = i
+            lg = m(**enc, use_cache=False).logits[0, -1]
+            d.append(base[i] - (lg[rid[cor]].item()
+                                - max(lg[rid[r]].item() for r in rooms if r != cor)))
+        active.clear()
+        state['op'] = 'idle'
+        rms = (state['disp2'] / max(1, state['ndisp'])) ** 0.5
+        return float(np.mean(d)), rms, state['overshoot']
+
+    arms = {}
+    for arm in ARMS:
+        bv, bd, ov = [], [], 0
+        for dr in band_draws:
+            v, r, o = sweep(dr, arm)
+            bv.append(v); bd.append(r); ov += o
+        sv = np.array([sweep(dr, arm)[0] for dr in sham_draws])
+        pcv, _, _ = sweep(pc_heads, arm)
+        bv = np.array(bv)
+        sd = float(bv.std(ddof=1))
+        arms[arm] = {
+            'band_sd': sd, 'band_mean': float(bv.mean()),
+            'band_floor': float(sd / abs(bm)),
+            'sham_sd': float(sv.std(ddof=1)),
+            'sham_floor': float(sv.std(ddof=1) / abs(bm)),
+            'ratio_k1': float((sd / abs(bm)) / (sv.std(ddof=1) / abs(bm)))
+            if sv.std(ddof=1) else float('nan'),
+            'positive_control': pcv,
+            'readability': float(abs(pcv) / sd) if sd else float('nan'),
+            'pc_clears_own_floor': bool(abs(pcv) > sd),
+            # The realized displacement, RMS over every head-write this arm performed on the band
+            # draws. Reported per arm so CHECK 1 is a measurement and not a claim about the code.
+            'realized_disp_rms': float(np.mean(bd)),
+            'n_overshoot_past_origin': ov,
+        }
+        a = arms[arm]
+        print(f"  {arm:<9} band sd {sd:.5f}  floor {a['band_floor']:.5f}  "
+              f"PC {pcv:+.4f} = {abs(pcv)/sd:5.2f} band-sd "
+              f"{'ok' if a['pc_clears_own_floor'] else 'DEAD'}  "
+              f"|disp| {a['realized_disp_rms']:.4f}"
+              + (f"  OVERSHOOT {a['n_overshoot_past_origin']}"
+                 if a['n_overshoot_past_origin'] else ""))
+
+    # ── CHECK 1: the matching is real ────────────────────────────────────────────────────────
+    dsp = [arms[a]['realized_disp_rms'] for a in MATCHED]
+    spread = (max(dsp) - min(dsp)) / (sum(dsp) / len(dsp))
+    c1 = bool(spread <= 0.01)
+    print(f"\n  CHECK 1 matched arms' realized |disp|: " +
+          '  '.join(f"{a} {arms[a]['realized_disp_rms']:.4f}" for a in MATCHED) +
+          f"  spread {100*spread:.2f}% -> {'MATCHED' if c1 else '*** NOT MATCHED ***'}")
+    print(f"          (unmatched anchor: zero {arms['zero']['realized_disp_rms']:.4f}, "
+          f"{arms['zero']['realized_disp_rms']/max(dsp):.1f}x the matched step)")
+
+    # ── CHECK 2: the zero arm reproduces R1 ──────────────────────────────────────────────────
+    r1p = HERE.parent / 'R1_noise_floor' / 'results' / f'r1v3_atlas_{args.tag}.json'
+    repro = {'available': r1p.exists()}
+    if r1p.exists():
+        c = json.load(open(r1p))['cells']
+        r1r = c['band_k1']['floor'] / c['sham_k1']['floor']
+        rd = abs(arms['zero']['ratio_k1'] - r1r) / r1r
+        repro.update({'r1_ratio_k1': r1r, 'r7_zero_ratio_k1': arms['zero']['ratio_k1'],
+                      'rel_diff': rd, 'reproduces': bool(rd <= 0.10)})
+        print(f"  CHECK 2 zero arm vs R1: {r1r:.2f}x vs {arms['zero']['ratio_k1']:.2f}x "
+              f"({100*rd:.1f}% apart) -> "
+              f"{'REPRODUCES' if repro['reproduces'] else '*** DOES NOT REPRODUCE ***'}")
+
+    dead = [a for a in ARMS if not arms[a]['pc_clears_own_floor']]
+    print(f"  CHECK 3 every arm has a live positive control: "
+          f"{'PASS' if not dead else 'FAIL on ' + ', '.join(dead)}")
+
+    rr = {a: arms[a]['readability'] / arms['mean']['readability'] for a in ('shrink', 'randdir')}
+    print(f"\n  readability |PC|/band sd: " +
+          '  '.join(f"{a} {arms[a]['readability']:.2f}" for a in ARMS))
+    print(f"  rr vs mean: " + '  '.join(f"{k} {v:.2f}x" for k, v in rr.items()))
+
+    # The two inclusion properties R6 conflated, reported separately with which one failed.
+    inc_ratio = bool(arms['zero']['ratio_k1'] > 1.5)
+    inc_pc = bool(arms['zero']['pc_clears_own_floor'])
+    res = {'model': args.tag, 'n_items': n, 'n_draws': N_DRAWS, 'k': K, 'dtype': args.dtype,
+           'band': [lo, hi], 'sham_band': [sham_lo, sham_hi], 'pc_layer': PC_LAYER,
+           'rooms': rooms, 'draw_seed': DRAW_SEED, 'randdir_seed': RANDDIR_SEED,
+           'base_margin': bm, 'arms': arms, 'rr': rr,
+           'check1_matched': c1, 'check1_spread': spread,
+           'check2_zero_reproduces_r1': repro,
+           'check3_dead_arms': dead,
+           'include': bool(inc_ratio and inc_pc),
+           'include_fail': [] if inc_ratio and inc_pc else
+                           ([] if inc_ratio else ['zero_ratio_k1<=1.5']) +
+                           ([] if inc_pc else ['zero_pc_below_own_floor']),
+           'round_valid': bool(c1 and not dead and repro.get('reproduces', False))}
+    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+    out = f"{args.out}_{args.tag}.json"
+    json.dump(res, open(out, 'w'), indent=2, default=float)
+    print(f"\n  round_valid {res['round_valid']} | include {res['include']} "
+          f"{res['include_fail']}\n  -> {out}")
+    return 0 if res['round_valid'] else 2
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
