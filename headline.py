@@ -630,6 +630,100 @@ def adversary_scoring():
                                                   'R18']}
 
 
+def r18():
+    """R18 -- is `final`-only a proxy for a head? NO, on all four pre-registered components.
+
+    THE CORRECTED POSITIVE CONTROL PASSES EXACTLY. R18's original gate -- "the mean effect must rise"
+    -- was withdrawn as D88 before this run landed: I_all strictly contains I_final in what it
+    REMOVES, but the EFFECT need not grow, because cancellation and backup paths can shrink or flip
+    it. The structural replacement: at the LAST layer the two interventions differ only in positions
+    no later layer can read, so eta_h must be ~0. Observed max|eta| at L27 = 0.00000, to every digit
+    stored, against a between-head sd of 0.17827. Saturation 0.29% against a 50% refusal.
+
+    H-SUPPORT FAILS 4 OF 4:
+        Spearman(tau_final, tau_all)   +0.6230   needs >= 0.9
+        published-head verdicts agree     6/8    needs 8/8
+        layer-centroid shift            0.1717   needs <= 0.03
+        top-10 overlap                   4/10    needs >= 8/10
+
+    SO `final`-ONLY IS NOT A PROXY FOR A HEAD. Every head-level number in this repository is about
+    I_final(L,h), the final-query head-output knockout.
+
+    R18's OWN looser rank rule reads differently and BOTH are reported: it pre-registered transfers
+    at >=0.7 and does-not at <=0.3, so +0.6230 lands in between and its instruction is to claim
+    neither -- the kill does not fire. Picking the convenient threshold is what pre-registration
+    exists to prevent.
+
+    L17H0 IS THE RESULT. Under the intervention used throughout this repository it is 0.18x the
+    floor at rank 77 of 168 -- one of the seven the audit called unremarkable. Under the total head
+    knockout it is 1.40x the floor and the 4TH LARGEST EFFECT OF 168. L17H7 runs the other way,
+    0.17x -> 0.00x, rank 79 -> 163. The eight do not move together; the intervention re-sorts them.
+    The `x floor` column is NOT comparable across arms because the floor itself doubles.
+
+    AND THE |eta| PROFILE IS NOT MONOTONE IN DEPTH, which confirms D88's retraction empirically:
+    0.4541 at L0, 0.1707 by L6, 0.4718 at L18, 0.0000 at L27. The retraction was made on Ivan's
+    argument alone; the data now agrees with it.
+    """
+    a = HERE / 'R18_all_positions' / 'results' / 'r18_allpos_qwen2.5-1.5b.json'
+    b = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    pe = r1_prior_effects()
+    if not (a.exists() and b.exists() and pe):
+        return None
+    A, B = json.load(open(a)), json.load(open(b))
+    LA = {int(k): v for k, v in A['layers'].items()}
+    LB = {int(k): v for k, v in B['layers'].items()}
+    NL, NH = len(LA), len(LA[0]['per_head'])
+
+    def centroid(L):
+        slo, shi = B['sham_band']
+        sham = [v for x in range(slo, shi + 1) for v in L[x]['per_head'].values()]
+        mus = sum(sham) / len(sham)
+        fs = 2 * math.sqrt(sum((v - mus) ** 2 for v in sham) / (len(sham) - 1))
+        rate = {x: sum(1 for v in L[x]['per_head'].values() if abs(v - mus) > fs) / NH
+                for x in range(NL)}
+        tot = sum(rate.values())
+        return sum(x * q for x, q in rate.items()) / tot
+
+    band = [(x, h) for x in range(14, 28) for h in range(NH)]
+    va = [LA[x]['per_head'][str(h)] for x, h in band]
+    vb = [LB[x]['per_head'][str(h)] for x, h in band]
+    mua, mub = sum(va) / len(va), sum(vb) / len(vb)
+    ca = [abs(v - mua) for v in va]
+    cb = [abs(v - mub) for v in vb]
+    fa = 2 * math.sqrt(sum((v - mua) ** 2 for v in va) / (len(va) - 1))
+    fb = 2 * math.sqrt(sum((v - mub) ** 2 for v in vb) / (len(vb) - 1))
+    oa = sorted(range(len(band)), key=lambda i: -ca[i])
+    ob = sorted(range(len(band)), key=lambda i: -cb[i])
+    eight = sorted((int(k[1:k.index('H')]), int(k[k.index('H') + 1:])) for k in pe['effects'])
+    eight = [k for k in eight if 14 <= k[0] < 28]
+    cF, cA = centroid(LB), centroid(LA)
+    eta_last = [LA[NL - 1]['per_head'][str(h)] - LB[NL - 1]['per_head'][str(h)] for h in range(NH)]
+    sd_all = math.sqrt(sum((v - mub) ** 2 for v in vb) / (len(vb) - 1))
+    return {
+        'pc_last_layer_max_abs_eta': max(map(abs, eta_last)), 'pc_between_head_sd': sd_all,
+        'pc_passes': max(map(abs, eta_last)) < sd_all, 'flip_rate': A.get('flip_rate'),
+        'spearman': _spearman(ca, cb), 'spearman_needs': 0.9,
+        'published_agree': sum(1 for k in eight
+                               if (ca[band.index(k)] > fa) == (cb[band.index(k)] > fb)),
+        'centroid_final': cF, 'centroid_all': cA,
+        'depth_frac_final': cF / (NL - 1), 'depth_frac_all': cA / (NL - 1),
+        'centroid_shift_layers': cA - cF, 'centroid_shift_norm': abs(cA - cF) / (NL - 1),
+        'top10_overlap': len(set(oa[:10]) & set(ob[:10])),
+        'floor_final': fb, 'floor_all': fa, 'floor_ratio': fa / fb,
+        'h_support_components_failed': sum([
+            _spearman(ca, cb) < 0.9,
+            sum(1 for k in eight if (ca[band.index(k)] > fa) == (cb[band.index(k)] > fb)) < 8,
+            abs(cA - cF) / (NL - 1) > 0.03,
+            len(set(oa[:10]) & set(ob[:10])) < 8]),
+        'eight': [{'head': f'L{x}H{h}',
+                   'final': cb[band.index((x, h))], 'final_xfloor': cb[band.index((x, h))] / fb,
+                   'final_rank': ob.index(band.index((x, h))) + 1,
+                   'all': ca[band.index((x, h))], 'all_xfloor': ca[band.index((x, h))] / fa,
+                   'all_rank': oa.index(band.index((x, h))) + 1} for x, h in eight],
+        'eta_by_layer': [sum(abs(LA[x]['per_head'][str(h)] - LB[x]['per_head'][str(h)])
+                             for h in range(NH)) / NH for x in range(NL)]}
+
+
 def r17():
     """R17 -- IS THE HEADLINE AN ARTIFACT OF MEASURING WHERE THE FLOOR IS LARGEST?
 
@@ -2415,6 +2509,7 @@ def main() -> int:
     DS = depth_sensitivity()
     R15 = r15()
     R17 = r17()
+    R18 = r18()
     AS = adversary_scoring()
     EL = r11()
     PW = power()
@@ -2424,7 +2519,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -2640,6 +2735,41 @@ def main() -> int:
               f"{' '.join(AS['rounds_uncovered_before_this_step'])} -- now extended, A9-A13")
         print("      and its A1 row carried the composition error R16 fixed 4 rounds ago as D80,")
         print("      which had landed on the prior-effects note ONLY\n")
+
+    if R18:
+        print("R18 is `final`-only a proxy for a head?  NO -- H-support fails 4 of 4")
+        print(f"      CORRECTED positive control (the original was withdrawn as D88): at the LAST")
+        print(f"      layer the two interventions differ only where nothing downstream reads, so")
+        print(f"      eta must be ~0.  max|eta| at the last layer = "
+              f"{R18['pc_last_layer_max_abs_eta']:.5f}  vs between-head sd "
+              f"{R18['pc_between_head_sd']:.5f} -> {'PASS' if R18['pc_passes'] else 'FAIL'}")
+        print(f"      saturation {100 * R18['flip_rate']:.2f}% sign flips (refusal was >50%)")
+        print(f"      {'component':<34}{'observed':>10}{'required':>12}")
+        print(f"      {'Spearman(tau_final, tau_all)':<34}{R18['spearman']:>+10.4f}{'>= 0.9':>12}")
+        print(f"      {'published-head verdicts agree':<34}{R18['published_agree']:>8}/8{'8/8':>12}")
+        print(f"      {'layer-centroid shift':<34}{R18['centroid_shift_norm']:>10.4f}{'<= 0.03':>12}")
+        print(f"      {'top-10 overlap':<34}{R18['top10_overlap']:>8}/10{'>= 8/10':>12}")
+        print(f"      -> {R18['h_support_components_failed']} of 4 FAIL. `final`-only is NOT a "
+              f"proxy; every head number here is about I_final(L,h)")
+        print(f"      R18's OWN looser rule (>=0.7 / <=0.3) puts {R18['spearman']:+.4f} IN BETWEEN "
+              f"-> claim neither, kill does not fire. Both reported.")
+        print(f"      {'head':<9}{'final |c|':>10}{'xfloor':>8}{'rank':>6}   {'ALL |c|':>9}"
+              f"{'xfloor':>8}{'rank':>6}")
+        for e in R18['eight']:
+            print(f"      {e['head']:<9}{e['final']:>10.4f}{e['final_xfloor']:>8.2f}"
+                  f"{e['final_rank']:>6}   {e['all']:>9.4f}{e['all_xfloor']:>8.2f}"
+                  f"{e['all_rank']:>6}")
+        print(f"      L17H0 is the result: 0.18x the floor at rank 77 under the intervention this")
+        print(f"      repo has used throughout, and the 4TH LARGEST OF 168 under the total knockout")
+        print(f"      floor {R18['floor_final']:.4f} -> {R18['floor_all']:.4f} "
+              f"({R18['floor_ratio']:.2f}x), so `x floor` is NOT comparable across arms -- read ranks")
+        print(f"      centroid {R18['centroid_final']:.3f} ({R18['depth_frac_final']:.4f} "
+              f"of depth) -> {R18['centroid_all']:.3f} ({R18['depth_frac_all']:.4f}) "
+              f"({R18['centroid_shift_layers']:+.3f} layers). NOT a verdict on R12: that needs the")
+        print(f"      same shift on qwen2.5-3b to separate a fraction-shift from a layer-shift")
+        print(f"      and the |eta| profile is NOT monotone in depth, which confirms D88's")
+        print(f"      retraction empirically: "
+              f"{' '.join(f'{R18['eta_by_layer'][x]:.3f}' for x in (0, 6, 18, 27))} at L0/L6/L18/L27\n")
 
     if R17:
         print("R17 is the headline an ARTIFACT of measuring where the FLOOR IS LARGEST?")
