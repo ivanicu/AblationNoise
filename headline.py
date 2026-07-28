@@ -4,7 +4,9 @@
     make headline      print them
     make verify        print them and exit non-zero if any README number has drifted
 
-No GPU, no model download, no network, under two seconds. The point is not convenience. Twice in
+No GPU, no model download, no network. Tens of seconds, dominated by the permutation
+nulls -- the 'under two seconds' this line used to claim stopped being true around round 11 and
+nobody re-measured it, which is the exact failure mode filed here about other people's numbers. The point is not convenience. Twice in
 this project a number reached a README from a commit message and could not be regenerated
 afterwards (R4's fold errors, R5's floor-widening range). A claim whose generator does not exist is
 indistinguishable from a claim that was never true, so every headline number now has one.
@@ -16,6 +18,7 @@ import glob
 import json
 import math
 import sys
+from operator import mul as _mul
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -1008,6 +1011,220 @@ def resolution_limit():
             'two_sd_count': sum(1 for z in v.values() if abs(z - mu) > 2 * sd),
             'excess_kurtosis': sum((z - mu) ** 4 for z in v.values()) / n / sd ** 4 - 3,
             'smallest_ps': [{'head': f'L{k[0]}H{k[1]}', 'p': q} for q, k in ps[:8]]}
+
+
+def _jacobi_eig(A):
+    """Eigenvalues of a small symmetric matrix, stdlib only.
+
+    `make headline` is stdlib-only by design -- a handle that needs a scientific stack is a handle a
+    stranger cannot pull. K is 4 here, so cyclic Jacobi converges in a handful of sweeps and the
+    tolerance is checked rather than assumed.
+    """
+    n = len(A)
+    M = [row[:] for row in A]
+    for _ in range(100):
+        off = math.sqrt(sum(M[i][j] ** 2 for i in range(n) for j in range(n) if i != j))
+        if off < 1e-12:
+            break
+        for pi in range(n - 1):
+            for q in range(pi + 1, n):
+                if abs(M[pi][q]) < 1e-15:
+                    continue
+                th = 0.5 * math.atan2(2 * M[pi][q], M[q][q] - M[pi][pi])
+                c, sn = math.cos(th), math.sin(th)
+                for k in range(n):
+                    a, b = M[pi][k], M[q][k]
+                    M[pi][k], M[q][k] = c * a - sn * b, sn * a + c * b
+                for k in range(n):
+                    a, b = M[k][pi], M[k][q]
+                    M[k][pi], M[k][q] = c * a - sn * b, sn * a + c * b
+    return sorted((M[i][i] for i in range(n)), reverse=True)
+
+
+def _corr(x, y):
+    n = len(x)
+    mx, my = sum(x) / n, sum(y) / n
+    sx = math.sqrt(sum((z - mx) ** 2 for z in x))
+    sy = math.sqrt(sum((z - my) ** 2 for z in y))
+    if sx == 0 or sy == 0:
+        return 0.0
+    return sum((x[i] - mx) * (y[i] - my) for i in range(n)) / (sx * sy)
+
+
+def condition_shape_rank():
+    """IS THE REFERENCE DISTRIBUTION SCALAR-UP-TO-SCALE? The headline's own deflationary rival.
+
+    Registered in R11_instrument_noise/SHAPE_RANK_PREREGISTRATION.md and committed BEFORE this code
+    existed, so git ordering rather than my word establishes that 0.90 preceded the numbers.
+
+    THE CLAIM UNDER ATTACK is this repository's headline -- ablation baselines are conditional
+    distributions, not scalar properties of models. Twenty rounds are stacked on it and none of them
+    tested it. The rival: each condition's per-head vector could be THE SAME SHAPE times a
+    per-condition scale, in which case the conditional apparatus collapses to one nuisance number.
+
+    Four frozen columns on one common head index, varying exactly the axes the critique named --
+    item sample, task specificity, intervention support. Columns are standardised first, so the test
+    is about SHAPE and is blind to scale by construction; the scales are printed beside it because
+    the whole question is whether they are the only thing that differs.
+
+    THE CONFOUND, WRITTEN BEFORE THE RUN: measurement error attenuates every correlation, so a low
+    corr(final, all) is what BOTH worlds predict. Its control is already in the matrix -- the A/B
+    item replicate differs from 1 only by item sampling and is therefore the ceiling.
+
+    A SECOND CONFOUND, IN THE UNWELCOME DIRECTION: final/itemsA and all/itemsA share the same 120
+    items, so their measurement errors are CORRELATED and their raw correlation is INFLATED. The
+    cross-item pair final/itemsB vs all/itemsA has independent item noise and is the honest one.
+    Both are reported; if they disagree, the shared-item number is the biased one.
+
+    THE BOUND IS ONE-SIDED ON PURPOSE. Only the `final` scope has a replicate, so disattenuation
+    with r_yy = 1 gives a LOWER bound: high is decisive, low is UNVERIFIED rather than rejected.
+    R19 supplies the missing r_yy by splitting its 64 bases in half.
+    """
+    import random as _r
+    F = [('final/itemsA', 'R10_exhaustive/results/r10_exhaustive_qwen2.5-1.5b.json'),
+         ('final/itemsB', 'R11_instrument_noise/results/r11_itemsB_qwen2.5-1.5b.json'),
+         ('final/shuffled', 'R15_shuffled_scan/results/r15_shuffled_qwen2.5-1.5b.json'),
+         ('all/itemsA', 'R18_all_positions/results/r18_allpos_qwen2.5-1.5b.json')]
+    cols, meta = {}, {}
+    for name, rel in F:
+        f_ = HERE / rel
+        if not f_.exists():
+            return None
+        d = json.load(open(f_))
+        L = {int(k): v for k, v in d['layers'].items()}
+        NL, NH = len(L), len(L[0]['per_head'])
+        cols[name] = [L[x]['per_head'][str(h)] for x in range(NL) for h in range(NH)]
+        meta[name] = {'draw_seed': d.get('draw_seed'), 'n_items': d.get('n_items'),
+                      'n_layers': NL, 'n_heads': NH}
+    keys = [k for k, _ in F]
+    NL, NH = meta[keys[0]]['n_layers'], meta[keys[0]]['n_heads']
+    # THE ITEM-SHARING CHECK IS MEASURED, NOT ASSUMED. Whether all/itemsA really shares itemsA's
+    # draw decides which of the two correlations below is the biased one, so it is read off the
+    # files rather than inferred from their names.
+    shares = (meta['all/itemsA']['draw_seed'] == meta['final/itemsA']['draw_seed']
+              and meta['all/itemsA']['n_items'] == meta['final/itemsA']['n_items'])
+
+    def analyse(idx, label):
+        X = {k: [cols[k][i] for i in idx] for k in keys}
+        n = len(idx)
+        scale = {}
+        for k in keys:
+            mu = sum(X[k]) / n
+            sd = math.sqrt(sum((z - mu) ** 2 for z in X[k]) / (n - 1))
+            scale[k] = {'mean': mu, 'sd': sd, 'floor_2sd': 2 * sd}
+        C = [[_corr(X[a], X[b]) for b in keys] for a in keys]
+        ev = _jacobi_eig(C)
+        K = len(keys)
+        lam1 = ev[0] / K
+        rng = _r.Random(20260728)
+        N = 20000
+        # PERMUTING A COLUMN CANNOT CHANGE ITS MEAN OR ITS SD, so standardising once and taking dot
+        # products is the same statistic at a fraction of the cost. The handle is a path a stranger
+        # has to be willing to walk; a gate that takes minutes is a gate that gets skipped.
+        zs = {}
+        for k in keys:
+            mu = sum(X[k]) / n
+            sd = math.sqrt(sum((z - mu) ** 2 for z in X[k]))
+            zs[k] = [(z - mu) / sd for z in X[k]] if sd else [0.0] * n
+        null, pn = [], []
+        # EVERY COLUMN GETS ITS OWN PERMUTATION. The first version of this loop shuffled only column
+        # 0 and justified it in a comment -- "under the null the columns are independent, so holding
+        # one still changes nothing". THAT IS FALSE, and the invariance check against the previous
+        # implementation caught it: columns 1..3 stay mutually correlated at 0.81 / 0.77 / 0.61, so
+        # the null retained three-way structure and lambda1's 97.5th percentile came out at 0.6294
+        # instead of 0.3275 -- a null nearly twice as permissive, which would have made a real
+        # effect look ordinary. The null must destroy ALL cross-column dependence, not one column's.
+        idxs = [list(range(n)) for _ in keys]
+        for _ in range(N):
+            for ix in idxs:
+                rng.shuffle(ix)
+            P = [[zs[k][i] for i in idxs[j]] for j, k in enumerate(keys)]
+            M = [[1.0] * K for _ in range(K)]
+            for i in range(K):
+                for j in range(i + 1, K):
+                    M[i][j] = M[j][i] = sum(map(_mul, P[i], P[j]))
+            null.append(_jacobi_eig(M)[0] / K)
+            pn.append(abs(M[0][3]))
+        null.sort()
+        r_rel = C[0][1]                      # final/itemsA vs final/itemsB -- the reliability ceiling
+        pairs = {}
+        for i, a in enumerate(keys):
+            for j, b in enumerate(keys):
+                if j <= i:
+                    continue
+                r = C[i][j]
+                lo = r / math.sqrt(r_rel) if r_rel > 0 else float('nan')
+                pairs[a + ' vs ' + b] = {
+                    'r': r, 'disatt_lower': lo,
+                    'above_null_975': r > 0,   # placeholder replaced below by the per-pair null
+                }
+        # PER-PAIR NULL, not the matrix-level one. A pair's correlation and the matrix's leading
+        # eigenvalue have different nulls, and using the second for the first is the kind of
+        # substitution this repository keeps catching in its own past rows. Collected from the same
+        # draws above -- the shuffled column is column 0, so M[0][3] is exactly the pair statistic.
+        pn.sort()
+        for kk in pairs:
+            pairs[kk]['above_null_975'] = abs(pairs[kk]['r']) > pn[int(0.975 * N)]
+        return {'label': label, 'n_heads': n, 'scale': scale, 'corr': C,
+                'scale_ratio_all_over_final':
+                    scale['all/itemsA']['floor_2sd'] / scale['final/itemsA']['floor_2sd'],
+                'lambda1_over_K': lam1, 'lambda2_over_K': ev[1] / K,
+                'null_median': null[N // 2], 'null_975': null[int(0.975 * N)],
+                'p_lambda1': (1 + sum(1 for z in null if z >= lam1)) / (1 + N),
+                'reliability_final_AB': r_rel, 'pair_null_975': pn[int(0.975 * N)],
+                'pairs': pairs}
+
+    allidx = list(range(NL * NH))
+    band = [x * NH + h for x in range(14, NL) for h in range(NH)]
+    res = {'keys': keys, 'meta': meta, 'shares_items_final_all': shares,
+           'all_heads': analyse(allidx, 'all %d heads' % (NL * NH)),
+           'band': analyse(band, 'band L14-%d, %d heads' % (NL - 1, len(band)))}
+
+    # POSITIVE CONTROLS. A statistic that has never returned a known value is not an instrument, and
+    # both directions are checked -- a test that only detects rank 1 cannot be trusted to report the
+    # absence of it.
+    rc = _r.Random(4242)
+    n0, K = NL * NH, len(keys)
+    u = [rc.gauss(0, 1) for _ in range(n0)]
+    r1 = [[a * u[i] + 0.1 * rc.gauss(0, 1) for i in range(n0)] for a in (1.0, -2.0, 0.5, 3.0)]
+    ind = [[rc.gauss(0, 1) for _ in range(n0)] for _ in range(K)]
+    res['positive_control'] = {
+        'synthetic_rank1_lambda1_over_K': _jacobi_eig(
+            [[_corr(r1[i], r1[j]) for j in range(K)] for i in range(K)])[0] / K,
+        'independent_noise_lambda1_over_K': _jacobi_eig(
+            [[_corr(ind[i], ind[j]) for j in range(K)] for i in range(K)])[0] / K,
+        'independent_expected': 1.0 / K}
+
+    # THE REGISTERED VERDICT, applied exactly as written down before the numbers existed.
+    b = res['band']
+    key_pair = 'final/itemsB vs all/itemsA' if shares else 'final/itemsA vs all/itemsA'
+    pr = b['pairs'][key_pair]
+    if pr['disatt_lower'] >= 0.90:
+        v = 'CONFIRMED shape-sharing -- the headline must narrow'
+    elif not pr['above_null_975']:
+        v = 'REJECTED -- shape is not shared'
+    else:
+        v = 'UNVERIFIED -- between the thresholds, and r_yy for the all scope is unmeasured'
+    res['decisive_pair'] = key_pair
+    res['verdict'] = v
+
+    # WHAT THE DEFLATIONARY WORLD NOW REQUIRES. UNVERIFIED is not the end of a test, it is a
+    # constraint: the only free parameter left is the all-scope reliability r_yy, which is unmeasured
+    # here, so solve for the value World S would need. Computed rather than done by hand -- this
+    # repository has caught six hand-rounded numbers already.
+    r_xy, r_xx = pr['r'], b['reliability_final_AB']
+    res['deflationary_requirement'] = {
+        'r_xy_band': r_xy, 'r_xx_final_measured': r_xx,
+        # r_xy <= sqrt(r_xx * r_yy) for any pair of measurements, so the data itself floors r_yy
+        'r_yy_lower_bound_implied': r_xy ** 2 / r_xx,
+        # the plain-language number: how much of the per-head variation the two
+        # intervention supports actually share, before any disattenuation
+        'shared_variance': r_xy ** 2, 'unshared_variance': 1 - r_xy ** 2,
+        'r_yy_needed_for_true_corr_0.90': (r_xy / 0.90) ** 2 / r_xx,
+        'r_yy_needed_for_true_corr_0.95': (r_xy / 0.95) ** 2 / r_xx,
+        'r_yy_needed_for_true_corr_1.00': (r_xy / 1.00) ** 2 / r_xx,
+        'measured_by': 'R19 split-half over 64 base instances, both scopes'}
+    return res
 
 
 def wo_conditioning():
@@ -3349,6 +3566,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    CSR = condition_shape_rank()
     WAC = window_arm_control()
     BND = band_boundary()
     OVP = ov_permutation_null()
@@ -3367,7 +3585,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -3604,6 +3822,54 @@ def main() -> int:
             print(f"        Chosen after the fact it would have been called layer-shaped; the rule")
             print(f"        is honoured at a 3% miss rather than renegotiated. Both centroids move")
             print(f"        EARLIER -- the direction replicates, the SHAPE does not resolve at n=2\n")
+
+    if CSR:
+        print('CSR  IS THE REFERENCE DISTRIBUTION SCALAR-UP-TO-SCALE? the headline attacked')
+        print('     registered in R11_instrument_noise/SHAPE_RANK_PREREGISTRATION.md, committed'
+              ' before this code')
+        pc = CSR['positive_control']
+        print('     positive control  synthetic rank-1 %.4f   independent noise %.4f'
+              ' (expected %.4f)'
+              % (pc['synthetic_rank1_lambda1_over_K'],
+                 pc['independent_noise_lambda1_over_K'], pc['independent_expected']))
+        for w in ('all_heads', 'band'):
+            a = CSR[w]
+            print('     %s' % a['label'])
+            print('       scale differs wildly:  ' + '  '.join(
+                '%s 2sd=%.4f' % (k.split('/')[1][:5] + '/' + k.split('/')[0][:3],
+                                 a['scale'][k]['floor_2sd']) for k in CSR['keys']))
+            print('       lambda1/K %.4f   null median %.4f  97.5th %.4f   p %.5f'
+                  % (a['lambda1_over_K'], a['null_median'], a['null_975'], a['p_lambda1']))
+            print('       SCALE ratio all/final = %.4fx while SHAPE corr = %.4f -- the two'
+                  % (a['scale_ratio_all_over_final'], a['corr'][1][3]))
+            print('       conditions are neither the same object nor independent ones')
+            print('       reliability ceiling corr(final/A, final/B) = %.4f'
+                  % a['reliability_final_AB'])
+            for kk, vv in a['pairs'].items():
+                print('         %-34s r %+.4f   disatt lower bound %+.4f' %
+                      (kk, vv['r'], vv['disatt_lower']))
+        print('     items shared between final and all arms: %s' %
+              CSR['shares_items_final_all'])
+        print('     decisive pair (band): %s' % CSR['decisive_pair'])
+        print('     VERDICT: %s' % CSR['verdict'])
+        dr = CSR['deflationary_requirement']
+        print('     the two supports SHARE %.1f%% of the per-head variation and DO NOT share'
+              ' %.1f%%' % (100 * dr['shared_variance'], 100 * dr['unshared_variance']))
+        print('     UNVERIFIED IS A CONSTRAINT, NOT AN ENDING. The only free parameter left is'
+              ' the')
+        print('     unmeasured all-scope reliability r_yy. Solving for what World S would need:')
+        print('       the data itself floors it at        r_yy >= %.4f'
+              % dr['r_yy_lower_bound_implied'])
+        print('       true shape-sharing of 0.90 needs    r_yy <= %.4f'
+              % dr['r_yy_needed_for_true_corr_0.90'])
+        print('       measured reliability of the FINAL scope, for comparison   %.4f'
+              % dr['r_xx_final_measured'])
+        print('     So the deflationary world survives only inside r_yy in [%.4f, %.4f] -- the'
+              % (dr['r_yy_lower_bound_implied'], dr['r_yy_needed_for_true_corr_0.90']))
+        print('     all-scope measurement would have to be FAR noisier than the final-scope one'
+              ' despite')
+        print('     carrying 2.0x the spread. %s.' % dr['measured_by'])
+        print()
 
     if WAC:
         print('WAC  arm_contrast ON MY OWN TABLE: the window row changed the window AND n')

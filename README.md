@@ -143,6 +143,40 @@ B  I_final @ SHUFFLED       12      6            5            13    0.82      0.
 > **Using the local scale fixes almost everything** — `C` lands at `12` against `14`, `B` at `13`
 > against `12`.
 
+### But the ranking does not fully survive either — the headline's own rival, measured
+
+If a local **scale** were the *only* thing that changed, the reference distribution would be a scalar
+property in the wrong units, and this repository's framing would be an over-claim. That rival has a
+name — **scalar-up-to-scale** — and it was registered with its kill threshold in
+[`SHAPE_RANK_PREREGISTRATION.md`](R11_instrument_noise/SHAPE_RANK_PREREGISTRATION.md), **committed
+alone, before the code that computes the statistic existed.**
+
+```
+qwen2.5-1.5b, band L14-27, four frozen conditions on one 168-head index
+
+  positive controls   synthetic rank-1 0.9891      four independent noise columns 0.3013
+  lambda1 / K         0.8477                       permutation null 97.5th 0.3270
+  reliability ceiling corr(final/itemsA, final/itemsB)                    0.9942
+  intervention        corr(final/itemsB, all/itemsA)                      0.7715
+  task                corr(final/itemsB, final/shuffled)                  0.8123
+```
+
+> **The two intervention supports share `0.5951` of the per-head variation and do not share `0.4049`** —
+> against a measured reliability ceiling of `0.9942`, so **item noise cannot be the explanation.**
+> Scale moves `2.0051×`; shape moves too, and by more than measurement error allows.
+>
+> **Verdict: `UNVERIFIED`, by the rule as written.** `0.7737` disattenuated is below the registered
+> `0.90` and above the null, and the `all`-scope reliability `r_yy` has never been measured — so the
+> rival is **not** killed. What the test does instead is **pin it to one number**: scalar-up-to-scale
+> survives only if `r_yy` lands in `[0.5986, 0.7390]`, i.e. only if the all-position measurement is
+> dramatically noisier than the final-query one (`0.9942`) despite carrying twice the spread.
+> **[`R19`](R19_crossed_position_support/) measures `r_yy` directly by splitting its `64` base
+> instances in half — registered before that data exists.**
+>
+> Across all `336` heads rather than the band, the same pair falls to `0.5061` and `lambda1/K` to
+> `0.7381`. **The degree of conditionality is itself conditional**, which is the finding this section
+> exists to state and the reason no single number belongs on the front page.
+
 **And the confound written before the test is refuted in the useful direction.** `mu` and `floor` are
 not independent, so a "centre-driven" verdict could have been a spread effect wearing a location
 mask. Here it is the reverse: **the centre moves by almost exactly the same factor as the scale**
