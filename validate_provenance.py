@@ -80,19 +80,29 @@ def main() -> int:
             v = 'UNVERIFIED'
         ts_r = last_commit_ts(rel_r) if rel_r else None
         ts_f = last_commit_ts(str(p.relative_to(HERE)))
-        older = bool(ts_r and ts_f and ts_r > ts_f)
+        # THREE-VALUED, AND THE FIRST VERSION WAS NOT -- caught the same hour it was written.
+        # `bool(ts_r and ts_f and ts_r > ts_f)` returns False both when the runner is NOT newer
+        # and when either timestamp is MISSING (an uncommitted file). Those are different facts,
+        # and collapsing them let the IMPOSSIBLE branch fire on a result that simply had not been
+        # committed yet. Absent evidence read as positive evidence: the third instance today.
+        older = None if (ts_r is None or ts_f is None) else (ts_r > ts_f)
         rows.append({'result': str(p.relative_to(HERE)), 'runner': rel_r, 'verdict': v,
                      'stamp': stamp, 'current': cur, 'runner_committed_after_result': older})
 
     n = len(rows)
     c = {k: sum(r['verdict'] == k for r in rows) for k in ('CONFIRMED', 'STALE', 'UNVERIFIED')}
-    older = [r for r in rows if r['verdict'] == 'UNVERIFIED' and r['runner_committed_after_result']]
+    older = [r for r in rows if r['verdict'] == 'UNVERIFIED'
+             and r['runner_committed_after_result'] is True]
+    unknown_ts = [r for r in rows if r['runner_committed_after_result'] is None]
     # A stamp that matches nothing AND a result newer than every edit of its runner means the
     # stamp cannot have come from that runner. That is the only case worth failing the build on.
+    # IMPOSSIBLE requires KNOWING the runner has not moved. `is False` -- not `not ...` -- so an
+    # uncommitted file, whose timestamps are unknown, cannot be convicted.
     impossible = [r for r in rows if r['verdict'] == 'STALE'
-                  and not r['runner_committed_after_result']]
+                  and r['runner_committed_after_result'] is False]
 
     out = {'n': n, 'counts': c, 'n_unverified_and_older_by_git': len(older),
+           'n_timestamps_unknown': len(unknown_ts),
            'impossible': [r['result'] for r in impossible], 'rows': rows}
     if args.json:
         print(json.dumps(out, indent=2))
@@ -107,6 +117,9 @@ def main() -> int:
             print(f"    {r['result']}")
         print(f"  that is weaker evidence than a stamp and it is not a verdict about the numbers "
               f"-- it says the code moved, not that the result is wrong.")
+    if unknown_ts:
+        print(f"  {len(unknown_ts)} file(s) have no git timestamp on one side (uncommitted): the "
+              f"timestamp fallback is UNKNOWN there, not 'not older'.")
     for r in impossible:
         print(f"  IMPOSSIBLE {r['result']}: carries stamp {r['stamp']} but its runner has not "
               f"been edited since -- the stamp cannot have come from that runner")
