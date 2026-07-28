@@ -1,4 +1,4 @@
-<!-- unbacked-ok: 2.62 24 41.3 41.26 38 16 27.58 17.2 35 -- the fresh-clone verification's wall
+<!-- unbacked-ok: 2.62 24 41.3 41.26 38 16 3.11 3.14 27.58 17.2 35 -- the fresh-clone verification's wall
  time and peak memory, at two dates. 2.62 s / 24 MB was measured 2026-07-28 before the
  randomization tests existed; 41.26 s / 38 MB is the same handle after them, a 16x growth
  (D106). A runtime cannot be emitted by the thing being timed without circularity, so these
@@ -82,7 +82,8 @@ git clone https://github.com/ivanicu/AblationNoise.git && cd AblationNoise && ma
 > recomputes, no detector fires. **It is not evidence for any causal claim.**
 
 **Every number in this repository is recomputed by that command** — no GPU, no model download, no
-network, no dependencies, `41.3 s` on a stock `python3` with `numpy` confirmed absent. It was run
+network, no dependencies, `41.3 s` on a stock `python3` with `numpy` confirmed absent. **Verified to
+run on `3.11` and `3.14`** — see `D112`, which is why that sentence now names versions. It was run
 from a fresh clone of this remote on 2026-07-28, not asserted.
 
 > **⚠ `D106`: that number was `2.6 s` for many steps and the page kept saying so while the handle

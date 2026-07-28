@@ -1008,6 +1008,15 @@
       "defect": "the repository had measured ONE of the three pairwise relationships between its instrument classes -- attention x ablation, R16's -0.1885 and -0.3952 -- and never the other two. So 'no arbiter' rested on a single edge of a triangle",
       "operation": "THE TRIANGLE IS CLOSED AND EVERY EDGE IS NULL-TO-NEGATIVE. OV x ablation runs -0.14 to +0.22 pooled and about zero within layer, with the small pooled positive partly a layer artifact -- the within-layer means are -0.03 to -0.14 while ablation magnitude itself tracks layer at -0.24 and -0.33. attention x OV runs -0.0726 to -0.2430 pooled, and room_att x OV(rooms) survives the within-layer control at -0.1788: ATTENTION TO THE ROOM TOKEN ANTI-CORRELATES WITH THE OV CIRCUIT'S ABILITY TO COPY THE ROOM TOKEN. So the three ways this literature identifies a copy head -- it attends to the thing, ablating it hurts, its OV maps the thing to itself -- are mutually uninformative or mildly opposed on this task. THE CORRECT SCOPE, WHICH IS NARROWER THAN IT LOOKS: three instruments disagreeing does NOT mean all three are wrong. A head can attend to X, not copy X directly, and still matter causally through composition, so disagreement is EXPECTED if the mechanism is compositional. What follows is only that on this task these three operationalizations do not identify the same heads, and therefore none of them ALONE licenses the phrase 'the copy head'. Each is also a specific operationalization -- E132's final-position attention, zero-ablation at final or all positions, direct-path OV -- not attention or ablation in general. Both gauge checks ran: signed AND magnitude correlations for the OV edge, per D82, and a within-layer control for every edge",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D112",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "0a7991b",
+      "defect": "headline.py contained two f-strings with nested same-type quotes, which is PEP 701 and requires Python 3.12 or newer. The front page advertises clone-and-verify on 'a stock python3' and never named a version. On Python 3.11 the file does not PARSE -- a cloner gets a SyntaxError before a single number is computed. AND make verify COULD NEVER HAVE CAUGHT IT, because the gate runs on the system interpreter, 3.14, which is the one thing that can parse them. The check and the checked shared the only assumption that mattered",
+      "operation": "FOUND BY ACCIDENT, WHICH IS WORTH RECORDING: headline.py was imported from a 3.11 virtualenv for an unrelated computation and refused to parse. Both sites rewritten without nested quotes -- one to a concatenation, one to percent formatting -- and the file now parses AND RUNS END TO END under 3.11.15 and 3.14.4, exit 0 on both. Every .py in the repository was then checked for the same pattern: 0 further failures. The front page's promise now names the two verified versions instead of saying 'a stock python3', because a claim about portability that was never tested on a second interpreter is not a portability claim",
+      "found_by": "instrument"
     }
   ]
 }
