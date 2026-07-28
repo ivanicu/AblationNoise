@@ -92,10 +92,13 @@ def generator_numbers(cmds=None) -> set:
     Runs the generators rather than reading a cached list: a cached list is a description of the
     generators, and this file exists because descriptions drift from objects.
     """
-    cmds = cmds or [
-        [sys.executable, str(ROOT / 'headline.py'), '--json'],
-        [sys.executable, str(ROOT / 'R4_predictability' / 'run.py')],
-    ]
+    # headline.py --json embeds R4's whole result file, so R4's numbers are covered without
+    # re-running its analysis. That matters for more than speed: headline.py imports nothing
+    # outside the standard library, while R4's run.py needs numpy. Keeping the reference set
+    # dependency-free is what lets `make verify` run for a stranger with a stock python -- and a
+    # verification step that needs a scientific stack to check a claim about verification is a
+    # joke at this repository's own expense.
+    cmds = cmds or [[sys.executable, str(ROOT / 'headline.py'), '--json']]
     out = []
     for c in cmds:
         try:

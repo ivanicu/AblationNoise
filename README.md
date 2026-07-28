@@ -14,10 +14,15 @@ committed **before** the run, and **four of the five completed rounds killed the
 author preferred** — including one whose own verdict was later withdrawn by the round after it.
 
 ```bash
-make headline   # every number below, recomputed from the checked-in results. No GPU, ~2s
-make verify     # the same, and exit non-zero if any README number has drifted from its data
-make selftest   # each detector replays the real incident that produced it
+make verify     # the whole gate: 4 detector selftests, 11 recomputed numbers, 6 READMEs checked
+make headline   # just the numbers, recomputed from the checked-in results
 ```
+
+**No GPU, no model download, no network, and no dependencies** — `make verify` runs on a stock
+Python 3 interpreter with nothing installed, in about two seconds. That is deliberate: a repository
+whose subject is *whether you can check a claim* has no business requiring a scientific stack before
+you can check its own. (Reproducing a *round* needs `torch` and `transformers`; verifying the
+**claims** needs neither, and the two paths are separate targets.)
 
 `make verify` exists because this repository has twice caught **itself** shipping a number that
 could not be regenerated — R4's fold errors and R5's floor-widening range, both quoted from commit

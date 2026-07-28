@@ -21,7 +21,15 @@ selftest:
 	@$(PY) detectors/control_fitness.py --selftest
 	@$(PY) detectors/prose_numbers.py   --selftest
 
-## selftest + headline, and a non-zero exit if any README number is stale
+## selftest + headline, and a non-zero exit if any README number is stale.
+## STANDARD LIBRARY ONLY -- no numpy, no torch, no network. Checked by cloning the repo and
+## running this with a stock interpreter, because a verification path that needs a scientific
+## stack is not a path a reader will take.
 verify: selftest
 	@$(PY) headline.py --check
 	@$(PY) detectors/prose_numbers.py
+
+## R4's re-analysis of R1's results. Needs numpy; regenerates R4_predictability/results/.
+## Everything above reads the checked-in output of this, so `verify` does not depend on it.
+r4:
+	@$(PY) R4_predictability/run.py --check
