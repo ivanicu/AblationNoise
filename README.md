@@ -118,6 +118,18 @@ differently** — the comparison is real, and it happens entirely in a regime wh
 never changes. That is the fourth scope (*regime*) this repository requires of every claim and had
 never answered for its own headline.
 
+**No independent reviewer has seen any of this.** Every claim is `[unchallenged]` — which is not the
+word *clean*, and [`ADVERSARY.md`](ADVERSARY.md) says why: a reviewer drawn from the same weights as
+the author can only attack what the author already anticipated. That file predicts, in rank order
+and **before** the fact, what a hostile clean-context reader will find, so that when one runs its
+findings score the author's model of his own blind spots. Two of its eight rows argue that this
+front page overstates its own result.
+
+**Writing the predictions found four defects on its own**, all in the detectors: the checker covered
+`11` of `27` markdown files; one `>` inside an exemption comment silently disabled the whole
+exemption; an exemption written in scientific notation exempted nothing; and the gate's own
+false-pass rate had grown `41%` in a single session purely from the repository getting bigger.
+
 Everything here runs on one consumer GPU. Every round is pre-registered with a kill condition
 committed **before** the run. **Six of the seven completed rounds killed, withdrew or failed to
 reach the hypothesis their author preferred** — one had its verdict withdrawn by the round after it,
