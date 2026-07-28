@@ -684,6 +684,24 @@
       "defect": "R2's clears_2sd verdicts used |d_top| > 2*sd with the null placed at zero -- the same defect corrected in R1 -- and R2 had never been audited the way R1 has",
       "operation": "CENTRED, and the verdicts SURVIVE: 4 of 5 either way. Every one of the five nulls is off-centre and all NEGATIVE, from -0.19 to -0.62 sd, further than R1's band at +0.20 and in the opposite sense -- ablating random heads HURTS induction while it HELPED the room-task margin. d_top is negative too, so centring makes clearing harder, and the count holds because the effects are 6.5x to 18.7x the floor. This also yields the sharpest available statement of why R1 and R2 disagreed: on one scale, R1's eight run 1.06 down to 0.01 and R2's valid four run 1.20 up to 18.68 -- the distributions barely touch, and the disagreement is about EFFECT SIZE, not method",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D76",
+      "round": "R2",
+      "bin": "SCOPE",
+      "commit": "b2bb63d",
+      "defect": "R2's task has the same fixed-offset degeneracy R13 found in R1's, and it had never been audited. Sequences are core+core with T=64 CONSTANT, so the answer at position T+i always sits exactly T positions back -- a head attending at a constant distance solves it with no content matching",
+      "operation": "THE TASK CANNOT DISTINGUISH positional copying from prefix-matching, because the two agree on every sequence it contains. Ids are uniform random over 39000 so there is no LEXICAL shortcut, but the POSITIONAL one is complete. Does not break any comparison between the top-k and random-k heads -- they face the same task, so the floor, the 4-of-5 count and the effect sizes stand. Breaks calling them prefix-matching or induction heads as a claim about CONTENT. Repair is R14's shape: vary T per sequence",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D77",
+      "round": "R2",
+      "bin": "SCOPE",
+      "commit": "b2bb63d",
+      "defect": "the head-SELECTION criterion is defined by the degenerate feature: induction_scores measures attention from position i to position i-T+1, a fixed offset, and its own docstring calls that a 'prefix-matching score'",
+      "operation": "THE NAME ASSERTS CONTENT MATCHING; THE COMPUTATION MEASURES DISTANCE. A label carried where a derivation was needed, inside the function that chooses which heads the entire round is about -- so selection and readout are degenerate in the same direction, and a constant-distance head would score maximally on both",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

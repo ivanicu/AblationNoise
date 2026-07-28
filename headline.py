@@ -549,6 +549,53 @@ def r11():
             'effects': rows}
 
 
+def r2_task_audit():
+    """R2's task has R1's degeneracy, and its head-selection criterion is defined BY the degeneracy.
+
+    R13 audited the room task and found it fixed-position. That lesson had never been transferred.
+    R2's sequences are `core + core` with `len(core) = T = 64` fixed on every sequence, and the
+    readout is the mean log-probability of the true next token across the second copy.
+
+        At position T+i the correct next token is core[i+1], which sits at absolute position i+1.
+        The distance back is (T+i) - (i+1) + 1 = T. THE ANSWER IS ALWAYS EXACTLY T POSITIONS BACK.
+
+    A head that attends at a constant distance solves the task perfectly, with no content matching.
+    The tokens are uniform random ids from a 39000-wide range, so there is no lexical shortcut --
+    but there is a POSITIONAL one, and the task cannot distinguish it from prefix-matching because
+    the two agree on every sequence it contains.
+
+    AND THE SELECTION CRITERION IS THE SAME QUANTITY. `induction_scores` scores attention from
+    position i to position i-T+1 -- a FIXED OFFSET -- and its own docstring calls that a
+    "prefix-matching score". The name asserts content matching; the computation measures distance.
+    A label carried where a derivation was needed, in the runner that selects the heads.
+
+    WHAT THIS DOES NOT BREAK: every comparison between the top-k heads and random-k heads. They face
+    the same task, so R2's floor, its 4-of-5 clearing count and its effect sizes are unaffected.
+
+    WHAT IT BREAKS: calling them prefix-matching or induction heads as a claim about CONTENT. On
+    this task that is not established, and the repair is the same shape as R14's -- vary T per
+    sequence, so a constant-distance head fails and a content-matching head does not.
+    """
+    p = HERE / 'R2_inversion' / 'run.py'
+    if not p.exists():
+        return None
+    src = p.read_text()
+    import re as _re
+    mT = _re.search(r'^T = (\d+)', src, _re.M)
+    mN = _re.search(r'^N_SEQ = (\d+)', src, _re.M)
+    mK = _re.search(r'^K = (\d+)', src, _re.M)
+    lo_hi = _re.search(r'lo, hi = (\d+), min\(tok\.vocab_size - (\d+), (\d+)\)', src)
+    return {'T': int(mT.group(1)) if mT else None,
+            'n_seq': int(mN.group(1)) if mN else None,
+            'k': int(mK.group(1)) if mK else None,
+            'vocab_lo': int(lo_hi.group(1)) if lo_hi else None,
+            'vocab_hi': int(lo_hi.group(3)) if lo_hi else None,
+            'period_is_constant': bool(mT),
+            'offset_to_answer': int(mT.group(1)) if mT else None,
+            'selection_uses_fixed_offset': 'idx - T + 1' in src,
+            'selection_called_prefix_matching': 'prefix-matching score' in src}
+
+
 def r2_centred():
     """R2 has never been audited the way R1 has -- and the centring correction is the test.
 
@@ -1951,6 +1998,7 @@ def main() -> int:
     FD = r15_design()
     TP = taxonomy_power()
     TC = r2_centred()
+    TA2 = r2_task_audit()
     EL = r11()
     PW = power()
     RC = reference_class()
@@ -1959,7 +2007,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -2141,6 +2189,19 @@ def main() -> int:
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
               f"<=5 -- and it is the proven copy head\n")
+
+    if TA2:
+        print("R2T what does R2's task require? -- R13's audit, transferred at last")
+        print(f"      sequences are `core + core` with len(core) = T = {TA2['T']}, CONSTANT on all "
+              f"{TA2['n_seq']} sequences; ids uniform in [{TA2['vocab_lo']}, {TA2['vocab_hi']})")
+        print(f"      at position T+i the answer sits at i+1, so it is ALWAYS EXACTLY "
+              f"{TA2['offset_to_answer']} POSITIONS BACK")
+        print(f"      -> a head attending at a CONSTANT DISTANCE solves it with no content matching,"
+              f" and the task cannot tell that from prefix-matching")
+        print(f"      and the SELECTION criterion is the same quantity: attention from i to i-T+1, "
+              f"a fixed offset ({TA2['selection_uses_fixed_offset']}), whose own docstring calls it "
+              f"a 'prefix-matching score' ({TA2['selection_called_prefix_matching']})")
+        print(f"      the NAME asserts content matching; the COMPUTATION measures distance\n")
 
     if TC:
         print("R2* the centring correction applied to R2, which had never been audited like R1")
@@ -2603,6 +2664,7 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('R2T fixed offset', TA2['offset_to_answer'] if TA2 else -1, 64, 0),
             ('R2* clears centred', TC['n_clear_centred'] if TC else -1, 4, 0),
             ('R2* clears uncentred', TC['n_clear_uncentred'] if TC else -1, 4, 0),
             ('R2* min clearing', TC['r2_min_clearing'] if TC else -1, 1.19996, 0.00001),
@@ -2611,7 +2673,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 23.48, 0.01),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 24.221, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -2686,9 +2748,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 75, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 77, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 21, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.333, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.091, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
