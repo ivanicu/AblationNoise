@@ -99,6 +99,14 @@ def main():
     ap.add_argument('--sizes', nargs='*', type=int, default=None,
                     help='restrict the set-size sweep; ratio_k1 needs only k=1')
     ap.add_argument('--max-gpu', default='', help="e.g. 13GiB -- spill the rest to CPU")
+    # A DISJOINT ITEM SET, WHICH IS THE POINT OF THIS FLAG. The item-noise bound published on
+    # 2026-07-28 was withdrawn the next step: it inferred the instrument's noise from the quietest
+    # LAYER, and a quiet layer is quiet in BOTH terms (Spearman +0.962 between a layer's effect
+    # scale and its spread), so it bounded only the noise of equally quiet heads. The direct
+    # measurement is this: the SAME heads on a DIFFERENT item set. --seed-offset shifts the seed
+    # window; 400 makes it disjoint from the default 3000..3400 by construction.
+    ap.add_argument('--seed-offset', type=int, default=0,
+                    help='shift the item-seed window; 400 gives an item set disjoint from default')
     args = ap.parse_args()
     rooms = args.rooms if args.rooms else list(ROOMS)
     sizes = args.sizes if args.sizes else SET_SIZES
@@ -240,7 +248,8 @@ def main():
     base: list[float] = []
     drops: dict[str, list[float]] = {k: [] for k in conds}
     n = 0
-    for s in SEEDS:
+    seeds = [x + args.seed_offset for x in SEEDS]
+    for s in seeds:
         b = bindings(s, rooms)
         q = next((p for p in single if p in b), None)
         if q is None:
@@ -273,14 +282,14 @@ def main():
     if n < MIN_ITEMS:
         Path('results').mkdir(exist_ok=True)
         out = f"{args.out}_{args.tag}.REFUSED.json"
-        json.dump({'model': args.tag, 'n_items': n, 'n_seeds_tried': len(SEEDS),
+        json.dump({'model': args.tag, 'n_items': n, 'n_seeds_tried': len(seeds),
                    'verdict': 'REFUSED-INSUFFICIENT-ITEMS',
                    'why': (f'only {n} of {len(SEEDS)} seeds produced an item this model answers '
                            f'correctly (need {MIN_ITEMS}); no floor can be estimated. This is a '
                            f'statement about the model/task pairing, not about the floor.')},
                   open(out, 'w'), indent=2)
         raise SystemExit(
-            f"REFUSED: {args.tag} answered only {n}/{len(SEEDS)} seeds correctly (need "
+            f"REFUSED: {args.tag} answered only {n}/{len(seeds)} seeds correctly (need "
             f"{MIN_ITEMS}). No verdict written to the atlas; see {out}.")
 
     bm = float(np.mean(base))
@@ -291,7 +300,14 @@ def main():
                      'mean': float(v.mean()), 'sd': float(v.std(ddof=1)),
                      'floor': float(v.std(ddof=1) / abs(bm)),
                      'min': float(v.min()), 'max': float(v.max()),
-                     'per_head': {h: float(np.mean(drops[f'L{L:02d}H{h:02d}'])) for h in range(NH)}}
+                     'per_head': {h: float(np.mean(drops[f'L{L:02d}H{h:02d}'])) for h in range(NH)},
+                     # THE INSTRUMENT'S OWN NOISE, PER HEAD, which every previous run computed and
+                     # threw away: sd across items / sqrt(n). Without it, "the effect is below what
+                     # the instrument can resolve" has no denominator, and the attempt to infer one
+                     # from the quietest layer was withdrawn on 2026-07-28.
+                     'per_head_sem': {h: float(np.std(drops[f'L{L:02d}H{h:02d}'], ddof=1) /
+                                               np.sqrt(len(drops[f'L{L:02d}H{h:02d}'])))
+                                      for h in range(NH)}}
     sds = np.array([layers[L]['sd'] for L in range(NL)])
     n_dead = int((sds < 1e-9).sum())
     rk = lambda a: np.argsort(np.argsort(a)).astype(float)
