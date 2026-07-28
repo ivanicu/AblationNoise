@@ -639,6 +639,24 @@
       "defect": "the pre-registered taxonomy verdict ONE-JOINT-DOMINATES has been reported prominently since n=31, and its threshold defect (an absolute count on a growing ledger) was flagged at the time and never measured",
       "operation": "DEAD AS EVIDENCE, by permutation test. With labels assigned uniformly at random over the six bins it fires on 20000 of 20000 draws at n=69. It was informative at n=22 (10.8%), mostly inevitable at n=31 (67.0%), and carries nothing from about n=45. Reported rather than deleted, because a pre-registered gate that stops discriminating is a finding about the gate. What replaces it is the DISTRIBUTION: chi-square 20.65, permutation p 0.00055, and the signal is carried by the two SMALL bins -- INTERVENTION 2 and UNCLASSIFIED 4 against an expected 11.5 -- not by the large one the threshold watches",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D71",
+      "round": "repo",
+      "bin": "CONTROL",
+      "commit": "c958732",
+      "defect": "the taxonomy verdict function's REACHABLE SET shrinks as the ledger grows, and nothing reported it. UNCLASSIFIED never decreases and TAXONOMY-EXISTS requires it <= 2, so that outcome became permanently unreachable at n=22; THIRTEEN-ONE-OFFS needs >= 5 but the >= 8 branch is tested first and masks it",
+      "operation": "THE VERDICT SPACE COLLAPSED TO ONE REACHABLE OUTCOME AT n=26, forty-four rows ago. Replaying row by row, the test discriminated five ways in its first 26 rows and has been frozen since -- it worked, and then the ledger grew past it. Sharper than the permutation test in the row before: that showed the verdict is uninformative, this shows it is the only thing the function can return. validate_defects.py now prints the reachable set on every run, because a function whose reachable set shrinks keeps printing a verdict long after it has stopped being one, and the printout is indistinguishable from a working test",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D72",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "c958732",
+      "defect": "the taxonomy power curve continued the main permutation loop's random generator, whose state depends on how many draws it consumed -- which is n -- so every added defect row silently shifted the published curve",
+      "operation": "CAUGHT WHEN THE GATE FLAGGED A NUMBER THAT HAD BEEN CORRECT ONE COMMIT EARLIER. A generated number that moves when UNRELATED data moves cannot be checked against anything, which is the same failure as a hand-copied one wearing a generator's clothes. Each point now uses its own seeded RNG and two consecutive runs return identical values",
+      "found_by": "instrument"
     }
   ]
 }

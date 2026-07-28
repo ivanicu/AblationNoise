@@ -598,6 +598,24 @@ def taxonomy_power():
             return 'TAXONOMY-EXISTS'
         return 'AMBIGUOUS'
 
+    # THE VERDICT'S OWN TRAJECTORY, replayed row by row. It discriminated five ways in the first
+    # 26 rows and has been frozen since -- the test worked, and then the ledger grew past it.
+    hist, run = [], Counter()
+    unreach_n = None
+    for i, r in enumerate(d, 1):
+        run[r['bin']] += 1
+        v = verdict(run)
+        if not hist or hist[-1]['verdict'] != v:
+            hist.append({'n': i, 'verdict': v, 'unclassified': run.get('UNCLASSIFIED', 0),
+                         'largest': max(run.values())})
+        if unreach_n is None and run.get('UNCLASSIFIED', 0) > 2:
+            unreach_n = i
+    # Which verdicts can still be returned, given UNCLASSIFIED and the bin counts only GROW?
+    reachable = ['ONE-JOINT-DOMINATES']          # fires now and cannot stop
+    probe = Counter(obs)
+    probe['UNCLASSIFIED'] += 1
+    if verdict(probe) == 'THIRTEEN-ONE-OFFS':
+        reachable.append('THIRTEEN-ONE-OFFS')
     chi = sum((obs.get(b, 0) - exp) ** 2 / exp for b in bins)
     rng = _r.Random(11)
     T = 20000
@@ -607,10 +625,15 @@ def taxonomy_power():
         c = Counter(rng.choice(bins) for _ in range(n))
         fires += verdict(c) == 'ONE-JOINT-DOMINATES'
         ge += sum((c.get(b, 0) - exp) ** 2 / exp for b in bins) >= chi
+    # A SEPARATE, INDEPENDENTLY SEEDED RNG PER POINT. The first version continued the main loop's
+    # generator, whose state depends on how many draws it consumed -- which is n -- so every added
+    # defect row silently shifted this curve. A generated number that moves when UNRELATED data
+    # moves is the same defect class as a hand-copied one: it cannot be checked against anything.
     curve = {}
     for m in (22, 31, 45, 69):
+        c_rng = _r.Random(1000 + m)
         h = sum(1 for _ in range(4000)
-                if verdict(Counter(rng.choice(bins) for _ in range(m)))
+                if verdict(Counter(c_rng.choice(bins) for _ in range(m)))
                 == 'ONE-JOINT-DOMINATES')
         curve[m] = 100 * h / 4000
     return {'n': n, 'n_bins': len(bins), 'observed': dict(obs), 'expected_per_bin': exp,
@@ -618,7 +641,17 @@ def taxonomy_power():
             'verdict_fires_under_random_labels_pct': 100 * fires / T,
             'chi_square': chi, 'chi_square_p': ge / T,
             'fires_by_n': curve,
-            'smallest_bins': sorted(obs.items(), key=lambda kv: kv[1])[:2]}
+            'smallest_bins': sorted(obs.items(), key=lambda kv: kv[1])[:2],
+            # REACHABILITY, which is sharper than the permutation test above and was found by
+            # asking what ELSE the verdict function can return. UNCLASSIFIED never decreases --
+            # rows are never removed -- and TAXONOMY-EXISTS requires it <= 2, so that verdict
+            # became PERMANENTLY UNREACHABLE the moment it hit 3. THIRTEEN-ONE-OFFS needs it >= 5,
+            # but the >= 8 branch is tested first and masks it. The verdict space collapsed to ONE
+            # reachable outcome at n=26, forty-four rows ago.
+            'verdict_history': hist,
+            'unclassified_now': obs.get('UNCLASSIFIED', 0),
+            'taxonomy_exists_unreachable_from_n': unreach_n,
+            'reachable_verdicts': reachable}
 
 
 def r15_design():
@@ -2062,7 +2095,16 @@ def main() -> int:
         print("        " + ", ".join(f"{k} {v}" for k, v in TP['smallest_bins']) +
               f" against an expected {TP['expected_per_bin']:.1f}")
         print(f"      the right question was never 'does a bin dominate' but 'is the partition "
-              f"uneven', and the answer sits at the opposite end from the threshold\n")
+              f"uneven', and the answer sits at the opposite end from the threshold")
+        print(f"      AND THE VERDICT SPACE HAS COLLAPSED. It discriminated five ways in the first "
+              f"26 rows and has been frozen since:")
+        print("        " + "  ".join(f"n={h['n']}:{h['verdict'].split('-')[0]}"
+                                     for h in TP['verdict_history']))
+        print(f"        UNCLASSIFIED never decreases and is {TP['unclassified_now']}; "
+              f"TAXONOMY-EXISTS needs <=2, so it is PERMANENTLY UNREACHABLE from "
+              f"n={TP['taxonomy_exists_unreachable_from_n']}")
+        print(f"        reachable verdicts now: {TP['reachable_verdicts']} -- a test with one "
+              f"reachable outcome is not a test\n")
 
     if FD:
         print("R15 a design defect in a run that has NOT happened, from an earlier run's records")
@@ -2481,9 +2523,12 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('TAX taxonomy-exists unreachable from',
+             TP['taxonomy_exists_unreachable_from_n'] if TP else -1, 22, 0),
+            ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 20.686, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 22.0, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -2558,9 +2603,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 70, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 19, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 10.0, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 72, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 20, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.722, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

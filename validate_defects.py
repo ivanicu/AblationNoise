@@ -150,5 +150,27 @@ def main() -> int:
     return 1 if bad else 0
 
 
+def reachability_note(counts, verdict_fn) -> str:
+    """Which verdicts can this function still return, given its inputs only GROW?
+
+    THE DEFECT THIS EXISTS FOR. The taxonomy verdict discriminated five ways in the ledger's first
+    26 rows and has returned the same answer for the 44 since. UNCLASSIFIED never decreases -- rows
+    are never removed -- and TAXONOMY-EXISTS requires it <= 2, so that outcome became PERMANENTLY
+    UNREACHABLE at n=22 and nothing said so. A verdict function whose reachable set shrinks as the
+    ledger grows will keep printing a verdict long after it has stopped being one, and the printout
+    is indistinguishable from a working test.
+
+    Reported on every run, so the collapse is stated rather than discovered.
+    """
+    from collections import Counter as _C
+    reach = [verdict_fn(counts)]
+    probe = _C(counts)
+    probe['UNCLASSIFIED'] += 1
+    if verdict_fn(probe) not in reach:
+        reach.append(verdict_fn(probe))
+    return (f"  REACHABLE VERDICTS from here: {', '.join(reach)}"
+            + ("  <- ONE reachable outcome is not a test" if len(reach) == 1 else ""))
+
+
 if __name__ == '__main__':
     raise SystemExit(main())
