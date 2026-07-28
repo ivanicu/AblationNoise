@@ -14,6 +14,14 @@
 what a *random* component of the same size does. This repository measures that — and then points
 the measurement at its own author's prior work.**
 
+> **⚠ *"its own author's prior work"* is `7` attention-selected read-head **candidates**, published
+> under the source experiment's own verdict `W-READ-REDUNDANT`, plus `1` externally-established copy
+> head (`L22H7`, from `E123`). **For the seven there was no positive claim to deflate** — the source
+> already concluded they are individually redundant, and its own largest reported drop is `10.4%` of
+> the base margin. What is new here is not the null but the **instrument**: `E132b` measured no
+> reference distribution, ran no matched-layer randomization, tested no all-position intervention and
+> used no disjoint item set. `D94`.
+
 > ## ⚠ STATUS: **EXPLORATORY AUDIT — frozen 2026-07-28.** Not a confirmatory result.
 >
 > Everything below is a **case study on one synthetic task and one model family**, and its central

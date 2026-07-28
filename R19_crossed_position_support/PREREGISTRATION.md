@@ -196,6 +196,10 @@ for every one of the eight is therefore `HURT`: ablation should LOWER the room-l
 No per-head exceptions; if a head's original claim was directionally different, this document is
 wrong and that is recorded rather than adjusted.
 
+> **⚠ THIS PARAGRAPH IS FALSE AND WAS FALSE WHEN WRITTEN. See
+> [Amendment 2](#amendment-2--the-direction-enumeration-was-wrong-and-the-source-verdict-is-redundant-2026-07-28-still-before-the-run).**
+> The escape hatch in its own last sentence is the one being used.
+
 ### And a fourth thing, added because `D91` made it necessary
 
 **Discovery / confirmation split, fixed by the build seed.** `D91` established that the eight were
@@ -212,3 +216,58 @@ prior experiment on a disjoint item family; for them `R19` is already confirmato
 itself surfaces is nominated on `0..31` and tested on `32..63`, or it is reported as
 post-selection descriptive.** The split is deterministic from `BUILD_SEED = 20260728` and needs no
 extra run.
+
+---
+
+## Amendment 2 — the direction enumeration was wrong, and the source verdict is `REDUNDANT`
+
+**2026-07-28, still before the run.** `results/` is empty and `R19` is queued behind `pueue 232`.
+Amendment 1 was committed roughly twenty minutes before this one; **it was wrong, and it was wrong in
+the direction that would have favoured this repository's conclusion.**
+
+### What the source experiment actually says
+
+Read from `E132b`'s own result file rather than from my note about it:
+
+```
+results/e132b_read_head_causal.json
+
+  "verdict": "W-READ-REDUNDANT"
+
+  "drop": {  L17H7  -0.0352      L17H11  +0.0379      L18H9  +0.0410
+             L19H0  +0.0154      L19H5   +0.0373      L16H3  -0.4668
+             L17H0  +0.1336      L22H7   -0.1317  }
+
+  base_margin 4.4768        largest |drop| is L16H3 at 10.4% of it
+```
+
+Every one of the eight reproduces in `R10` to `< 1e-4` on the same base margin, so the convention is
+the same: `drop = margin_base − margin_ablated`, **negative means ablation HELPED.**
+
+### Two things follow, and both cut against what this repository has been saying
+
+**1 · `THREE OF THE EIGHT HELP`, including the two largest.** `L16H3` (`−0.4668`, the biggest effect
+of the set), `L22H7` (`−0.1317`, the copy head) and `L17H7` (`−0.0352`). **Amendment 1's one-sided
+`HURT` test would have been aimed at the wrong tail for exactly those three** — and would have
+systematically failed to detect them, which is a false null in my own favour.
+
+**The replacement is `TWO-SIDED` for all eight**, and the reason is not convenience: **`E132b` made
+no per-head directional claim to enumerate.** Taking the source's *observed* signs as the "claimed
+direction" is circular — it is the same data the test would then run on.
+
+**2 · `E132b`'s own verdict is `W-READ-REDUNDANT`.** The source experiment concluded that the read
+heads are **redundant** — that individually they do not carry the effect. **This repository has
+framed itself as pointing a measurement at published positive claims.** For seven of the eight there
+was no positive claim to deflate; the audit's null is *consistent with* the source's own conclusion
+rather than a correction of it.
+
+> **What remains genuinely new, stated so the correction does not overshoot in the other direction:**
+> `E132b` never measured a reference distribution at all, never ran a matched-layer set
+> randomization, never tested `I_all`, and never used a disjoint item set. Those four results are
+> this repository's and are unaffected. **And `L22H7` is different** — its copy-head status comes
+> from `E123`, an independent positive claim, which is why the front page narrowed to *"one head with
+> an independently established role"* several steps ago.
+
+**The corrected description of the audited set:** *seven attention-selected read-head candidates,
+published under a `REDUNDANT` verdict, plus one externally-established copy head.* Not *"eight
+published single-head effects."*
