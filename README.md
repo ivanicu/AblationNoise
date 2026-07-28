@@ -15,6 +15,54 @@
 what a *random* component of the same size does. This repository measures that — and then points
 the measurement at its own author's prior work.**
 
+```bash
+git clone https://github.com/ivanicu/AblationNoise.git && cd AblationNoise && make verify
+```
+
+**Every number below is recomputed by that command** — no GPU, no model download, no network, no
+dependencies, `2.6 s` on a stock `python3` with `numpy` confirmed absent. It was run from a fresh
+clone of this remote on 2026-07-28, not asserted.
+
+## The finding
+
+`L22H7` was independently established, by a prior experiment, as the copy head for this task.
+Ablate **every one** of the `168` heads in the studied band, once each — no sampling — and place the
+eight previously published single-head effects in that ranking:
+
+```
+the eight published heads rank    10 · 41 · 77 · 79 · 129 · 157 · 158 · 162    of 168
+the proven copy head              41st
+of the 10 heads that clear the exhaustive floor, published ones:   1   (L16H3, the 10th)
+of those 10, ones where ablation HELPS the model:                  7
+```
+
+> **Ablation magnitude and mechanistic role are close to unrelated on this task.** Seven of the
+> eight sit inside a floor built from random heads of the same size; the copy head is at `0.37×` of
+> it. The claim is about the **ranking**, which needs no threshold.
+
+**And the zero is admissible**, which this repository's own rule requires before any null may be
+reported: nine heads on the *same run* are both resolvable at `2σ` **and** beyond the floor, at
+`1.18×`–`2.54×` the floor and `2.5×`–`22.1×` their own measurement noise. The instrument returns
+non-zero on exactly the data that returns near-zero for the eight.
+
+**Scope, stated because this repository requires it of every claim:** one model (`qwen2.5-1.5b`),
+one synthetic task, one vocabulary, `n=120` items, `k=1`, exhaustive over `28 × 12` heads, and — see
+the correction immediately below — **one prompt configuration**, because the answer always sits at
+line `0`.
+
+> ### This front page has been rewritten six times, and every version it replaced is still on it
+>
+> `almost none report a random control` → `7 of 8 sit inside the floor` → `the single head is the
+> wrong unit` → `9 of 168 clear, so ablation resolves effects` → `0 of 8 distinguishable` →
+> `a synthetic binding task`. **Each was killed by a cheaper computation on data already in the
+> repository**, and each correction is annotated in place below rather than deleted — a page that
+> shows only its current claim cannot be checked against the ones it abandoned.
+>
+> **The corrections are the substance of this project, not its errata.** They start immediately
+> below and run to the `78`-row defect ledger at the end.
+
+---
+
 > # READ THIS FIRST — the task is not what twelve rounds of this repository said it was
 >
 > Every runner picks its query person as *the first single-token name*, and every binding assigns
@@ -740,23 +788,23 @@ against, which is a fact about your directory and not about the ledger.
 
 ```
     PROVENANCE     21      whether the number has a generator at all
-    SCOPE          18      which population the claim covers
+    SCOPE          19      which population the claim covers
     CONTROL        13      what the control arm actually holds fixed
     STATISTIC      14      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 42 · instrument 17 · outside reader 7
+    found by:  author reading the object 43 · instrument 17 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 77 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 78 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 77 were findable only by an outside reader** — `9.1%`. That fraction was 27% at n=22 and
+**7 of 78 were findable only by an outside reader** — `9.0%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -767,7 +815,7 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 ```
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE            12                9                    0
-SCOPE                 14                2                    2
+SCOPE                 15                2                    2
 STATISTIC             10                4                    1
 CONTROL               11                2                    4
 UNCLASSIFIED           4                0                    0
@@ -805,10 +853,10 @@ this page said so at n=`31` — and then nobody measured how uninformative it ha
 n = 22    the verdict fires  12.65% of the time      informative
 n = 31                       66.975%                  already mostly inevitable
 n = 45                      100.0%
-n = 77                      100.0%   (20000 of 20000 random relabelings)
+n = 78                      100.0%   (20000 of 20000 random relabelings)
 ```
 
-> **At n=`77` the verdict carries no information at all.** It was informative at n=`22` and stopped
+> **At n=`78` the verdict carries no information at all.** It was informative at n=`22` and stopped
 > discriminating around n=`45`. It is reported here rather than deleted, because **a pre-registered
 > gate that stops discriminating is a finding about the gate**, and quietly dropping it is how a
 > ledger keeps only the tests that still flatter it.
@@ -827,12 +875,12 @@ unreachable at n=`22`.** `THIRTEEN-ONE-OFFS` needs `≥5`, and even then the `�
 first and masks it. **One reachable outcome is not a test**, and `validate_defects.py` now prints
 the reachable set on every run so the collapse is stated rather than discovered.
 
-**What replaces it is the distribution, and that *is* informative.** Chi-square `24.221` against a
+**What replaces it is the distribution, and that *is* informative.** Chi-square `24.769` against a
 uniform null gives a permutation `p` of `0.0002` — `4` of `20000`.
 
 ```
-PROVENANCE 21   SCOPE 18   CONTROL 17   STATISTIC 14   UNCLASSIFIED 4   INTERVENTION 2
-                                                        expected 12.8 each
+PROVENANCE 21   SCOPE 19   CONTROL 17   STATISTIC 14   UNCLASSIFIED 4   INTERVENTION 2
+                                                        expected 13.0 each
 ```
 
 **The two *small* bins carry the signal** — `INTERVENTION` at `2` and `UNCLASSIFIED` at `4` — not
