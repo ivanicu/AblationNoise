@@ -14,7 +14,38 @@
 > Split out of `README.md` on 2026-07-28 without rewriting: the sections below are the same
 > bytes, moved. Status, scope and the runnable command are on the [front page](README.md).
 
-## The finding
+### The right test, run last: **the eight are not enriched, and they sit below the median**
+
+Every earlier round compared each head, one at a time, against a **scalar** floor. That asks the
+wrong question twice: it runs eight uncorrected comparisons, and its reference class does not hold
+**layer** fixed. The question the audit is actually asking is
+
+> is the **pre-specified set of eight** more extreme than a random set of eight drawn from the
+> **same layers**?
+
+```
+T_pub = mean over the set of |tau_h − mu_band|
+null  = replace each published head with a uniform random head FROM ITS OWN LAYER, 50,000 times
+
+              T_pub   matched-layer null median      p     excess kurtosis
+I_final      0.1154            0.1670            0.7994         7.31
+I_all        0.3196            0.4004            0.6782         6.67
+```
+
+**Not enriched under either intervention — and `T_pub` is *below* the null median in both.** The
+eight published heads are, on average, **less** extreme than random heads from the same layers.
+
+> **The instrument was checked before the null was believed.** Positive control: the actual top-`8`
+> by `|centred|` is reached by only `1` of `50000` matched sets, so the test can separate. Null calibration: `200`
+> random matched sets fall under `0.05` at a rate of `0.035` against a nominal `0.05`.
+>
+> **Layer matching is not decoration.** The eight sit in `L16`–`L22`, magnitude varies strongly with
+> depth, and an unmatched null would manufacture enrichment out of nothing but where the heads live.
+
+**Both distributions are heavy-tailed** — excess kurtosis `7.31` and `6.67` — which is why the `2σ`
+floor is not a test in either arm and the percentile replaces it.
+
+## The finding, as the scalar floor described it
 
 `L22H7` was independently established, by a prior experiment, as the copy head for this task.
 Ablate **every one** of the `168` heads in the studied band, once each — no sampling — and place the

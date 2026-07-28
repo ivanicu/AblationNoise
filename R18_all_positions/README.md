@@ -65,6 +65,21 @@ Under the total head knockout it is `1.40×` the floor and **the 4th largest eff
 **`L17H7` runs the other way**, from `0.17×` to `0.00×` and rank `163`. The eight do not move
 together; the intervention re-sorts them.
 
+> ### ⚠ `L17H0` at rank `4` is a **post-selection descriptive tail**, not a finding — corrected the
+> ### same day, by the test this repository had never run
+>
+> ```
+> L17H0 under I_all      |centred| 1.3703 = 2.81 sd      one-head exact randomization p = 0.0296
+>                                                        Bonferroni over the 8 tested   p = 0.2367
+>
+> the SET of eight, matched-layer randomization, 50,000 replicates:   p = 0.6782   NOT enriched
+> ```
+>
+> `168` heads were scanned to surface it, the eight were tested without correction, and **the set
+> they belong to is not enriched — it is below the matched-layer null median.** The paragraph above
+> is kept because the re-sorting it describes is real and is `R18`'s actual result; what is withdrawn
+> is calling `L17H0` *"the result"*, which this page did for one step.
+
 > **The `×floor` column is not comparable across the two arms**, because the floor itself doubles
 > (`0.4870 → 0.9766`). That is [R15](../R15_shuffled_scan/)'s finding applied here: `×floor` is not
 > portable across configurations, and the intervention is part of the configuration. **Read the

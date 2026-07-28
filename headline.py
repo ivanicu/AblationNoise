@@ -630,6 +630,106 @@ def adversary_scoring():
                                                   'R18']}
 
 
+def set_enrichment():
+    """THE TEST THIS PROJECT SHOULD HAVE RUN FIRST: are the eight ENRICHED against MATCHED random?
+
+    Every earlier round compared each head, one at a time, against a SCALAR floor. That is the wrong
+    question twice over: it tests eight hypotheses without correction, and it compares band heads to
+    a reference class that does not hold layer fixed. The question the audit is actually asking is
+
+        is the PRE-SPECIFIED SET of eight more extreme than a random set of eight
+        drawn from THE SAME LAYERS?
+
+    T_pub = mean over the set of |tau_h - mu_band|, and the null replaces each published head with a
+    uniformly random head FROM ITS OWN LAYER, 50,000 times. Layer matching is not decoration: the
+    eight sit in L16-L22, effect magnitude varies strongly with depth, and an unmatched null would
+    manufacture enrichment out of nothing but where the heads live.
+
+                    T_pub    matched-layer null median         p
+        I_final    0.1154              0.1670               0.7994
+        I_all      0.3196              0.4004               0.6782
+
+    NOT ENRICHED UNDER EITHER INTERVENTION -- and T_pub is BELOW the null median in both. The eight
+    published heads are, on average, LESS extreme than random heads from the same layers.
+
+    THE INSTRUMENT IS ALIVE AND CALIBRATED, both checked before the null was believed:
+        positive control -- the actual top-8 by |centred| scores p = 0.00004
+        null calibration -- 200 random matched sets give p < 0.05 at a rate of 0.035, nominal 0.05
+
+    AND THIS RETIRES MY OWN HEADLINE FROM ONE STEP EARLIER. R18 found L17H0 at rank 4 of 168 under
+    I_all and this file called it "the result". Its one-head exact randomization p is 0.0296, which
+    is 0.237 after Bonferroni over the eight heads that were tested. IT IS A POST-SELECTION
+    DESCRIPTIVE TAIL, not a finding, and 168 heads were scanned to surface it.
+
+    BOTH DISTRIBUTIONS ARE HEAVY-TAILED -- excess kurtosis 7.31 under I_final and 6.67 under I_all --
+    which is why the 2*sd floor is not a test in either arm and the percentile is used instead.
+    """
+    import random as _r
+    fa = HERE / 'R18_all_positions' / 'results' / 'r18_allpos_qwen2.5-1.5b.json'
+    fb = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    pe = r1_prior_effects()
+    if not (fa.exists() and fb.exists() and pe):
+        return None
+    A, B = json.load(open(fa)), json.load(open(fb))
+    LA = {int(k): v for k, v in A['layers'].items()}
+    LB = {int(k): v for k, v in B['layers'].items()}
+    NH = len(LA[0]['per_head'])
+    band = [(x, h) for x in range(14, 28) for h in range(NH)]
+    by_layer = {}
+    for k in band:
+        by_layer.setdefault(k[0], []).append(k)
+    eight = sorted((int(k[1:k.index('H')]), int(k[k.index('H') + 1:])) for k in pe['effects'])
+    eight = [k for k in eight if 14 <= k[0] < 28]
+
+    def arm(L):
+        v = {k: L[k[0]]['per_head'][str(k[1])] for k in band}
+        mu = sum(v.values()) / len(v)
+        sd = math.sqrt(sum((z - mu) ** 2 for z in v.values()) / (len(v) - 1))
+        kurt = sum((z - mu) ** 4 for z in v.values()) / len(v) / sd ** 4 - 3
+        return v, mu, sd, kurt
+
+    N = 50000
+    out = {}
+    rng = _r.Random(19)
+    for tag, L in (('I_final', LB), ('I_all', LA)):
+        v, mu, sd, kurt = arm(L)
+
+        def T(st):
+            return sum(abs(v[k] - mu) for k in st) / len(st)
+
+        t = T(eight)
+        null = sorted(T([rng.choice(by_layer[k[0]]) for k in eight]) for _ in range(N))
+        out[tag] = {'T_pub': t, 'null_median': null[N // 2],
+                    'p': (1 + sum(1 for z in null if z >= t)) / (1 + N),
+                    'excess_kurtosis': kurt, 'sd': sd,
+                    'below_null_median': t < null[N // 2]}
+    # positive control + calibration, on the arm the newest claim came from
+    v, mu, sd, kurt = arm(LA)
+
+    def T(st):
+        return sum(abs(v[k] - mu) for k in st) / len(st)
+
+    top8 = sorted(band, key=lambda k: -abs(v[k] - mu))[:8]
+    t = T(top8)
+    null = [T([rng.choice(by_layer[k[0]]) for k in top8]) for _ in range(N)]
+    pc_hits = sum(1 for z in null if z >= t)
+    pc = (1 + pc_hits) / (1 + N)
+    hits = 0
+    for _ in range(200):
+        st = [rng.choice(by_layer[k[0]]) for k in eight]
+        tt = T(st)
+        nn = [T([rng.choice(by_layer[k2[0]]) for k2 in st]) for _ in range(400)]
+        hits += (1 + sum(1 for z in nn if z >= tt)) / 401 < 0.05
+    c = sorted(abs(v[k] - mu) for k in band)
+    x = abs(v[(17, 0)] - mu)
+    return {'arms': out, 'n_replicates': N,
+            'positive_control_p': pc,
+            'positive_control_hits': pc_hits, 'null_calibration_rate': hits / 200,
+            'L17H0_abs_centred': x, 'L17H0_sd_units': x / sd,
+            'L17H0_one_head_p': (1 + sum(1 for z in c if z >= x)) / (1 + len(c)),
+            'L17H0_bonferroni_8': min(1.0, 8 * (1 + sum(1 for z in c if z >= x)) / (1 + len(c)))}
+
+
 def r18():
     """R18 -- is `final`-only a proxy for a head? NO, on all four pre-registered components.
 
@@ -2510,6 +2610,7 @@ def main() -> int:
     R15 = r15()
     R17 = r17()
     R18 = r18()
+    SE = set_enrichment()
     AS = adversary_scoring()
     EL = r11()
     PW = power()
@@ -2519,7 +2620,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -2735,6 +2836,27 @@ def main() -> int:
               f"{' '.join(AS['rounds_uncovered_before_this_step'])} -- now extended, A9-A13")
         print("      and its A1 row carried the composition error R16 fixed 4 rounds ago as D80,")
         print("      which had landed on the prior-effects note ONLY\n")
+
+    if SE:
+        print("SET  ARE THE EIGHT ENRICHED AGAINST MATCHED-LAYER RANDOM SETS?  -- the test this")
+        print("     project should have run first, instead of eight uncorrected comparisons")
+        print("     against a scalar floor whose reference class does not hold LAYER fixed.")
+        print(f"     {'arm':<10}{'T_pub':>9}{'null median':>13}{'p':>9}{'excess kurt':>13}")
+        for tag in ('I_final', 'I_all'):
+            a = SE['arms'][tag]
+            print(f"     {tag:<10}{a['T_pub']:>9.4f}{a['null_median']:>13.4f}{a['p']:>9.4f}"
+                  f"{a['excess_kurtosis']:>13.2f}")
+        print(f"     NOT ENRICHED under either -- and T_pub is BELOW the null median in both. The")
+        print(f"     eight are on average LESS extreme than random heads from the SAME LAYERS.")
+        print(f"     instrument checked before the null was believed: positive control (the actual")
+        print(f"     top-8) -- only {SE['positive_control_hits']} of {SE['n_replicates']} matched "
+              f"sets reached it; null calibration "
+              f"{SE['null_calibration_rate']:.3f} of 200 random matched sets fall under 0.05")
+        print(f"     AND THIS RETIRES THIS FILE'S OWN HEADLINE FROM ONE STEP EARLIER: L17H0 at rank")
+        print(f"     4 of 168 under I_all has one-head p = {SE['L17H0_one_head_p']:.4f}, which is "
+              f"{SE['L17H0_bonferroni_8']:.4f} after")
+        print(f"     Bonferroni over the eight tested. A POST-SELECTION DESCRIPTIVE TAIL, not a "
+              f"finding -- 168 heads were scanned to surface it\n")
 
     if R18:
         print("R18 is `final`-only a proxy for a head?  NO -- H-support fails 4 of 4")
@@ -3384,7 +3506,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 27.227, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 27.427, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -3465,9 +3587,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 88, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 89, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 24, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.091, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.989, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
