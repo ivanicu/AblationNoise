@@ -36,9 +36,17 @@ of the 10 heads that clear the exhaustive floor, published ones:   1   (L16H3, t
 of those 10, ones where ablation HELPS the model:                  7
 ```
 
-> **Ablation magnitude and mechanistic role are close to unrelated on this task.** Seven of the
-> eight sit inside a floor built from random heads of the same size; the copy head is at `0.37×` of
-> it. The claim is about the **ranking**, which needs no threshold.
+> **The direction that is supported: the heads ablation flags loudest were never identified.** Of
+> the `10` that clear the exhaustive floor, `0` are in any prior experiment's list until the `10`th,
+> and `7` of them clear by *helping* the model. That is `10` points, and it needs no second known
+> mechanism.
+>
+> **The reverse direction is not supported, and this page claimed it for one step.** *"Magnitude and
+> role are unrelated"* is a statement about a relationship, and this repository has exactly **one**
+> head with an independently established role — `L22H7`, which ranks `41` of `168` at `0.37×` the
+> floor. **One point is an anecdote, not a relationship.** Five of the other seven were read-head
+> *candidates*; a candidate is a hypothesis, and finding that hypotheses fail to clear a floor is
+> close to tautological.
 
 **And the zero is admissible**, which this repository's own rule requires before any null may be
 reported: nine heads on the *same run* are both resolvable at `2σ` **and** beyond the floor, at
@@ -59,7 +67,7 @@ line `0`.
 > shows only its current claim cannot be checked against the ones it abandoned.
 >
 > **The corrections are the substance of this project, not its errata.** They start immediately
-> below and run to the `78`-row defect ledger at the end.
+> below and run to the `79`-row defect ledger at the end.
 
 ---
 
@@ -188,9 +196,12 @@ the evidence supports:
 > the eight published heads rank   10 · 41 · 77 · 79 · 129 · 157 · 158 · 162   of 168
 > ```
 >
-> **Ablation magnitude and mechanistic role are close to unrelated on this task.** The claim is
-> about the **ranking**, which needs no threshold — see the correction below for what the *count*
-> does and does not establish.
+> **The heads ablation flags loudest were never identified** — `10` clear the exhaustive floor and
+> the first published one is the `10`th. That direction rests on `10` points and needs no threshold.
+>
+> **The reverse — *magnitude and role are unrelated* — is `n=1` and was claimed here for one step.**
+> `L22H7` is the only head in this repository with an independently established role. See the
+> correction below for what the *count* does and does not establish.
 >
 > *Every number in this block moved when the null was re-centred on its own mean of `+0.0479`. The
 > counts read `9` and `0`; the ranks read `10 · 55 · 56 · 109 · 113 · 115 · 116 · 143` and the copy
@@ -788,23 +799,23 @@ against, which is a fact about your directory and not about the ledger.
 
 ```
     PROVENANCE     21      whether the number has a generator at all
-    SCOPE          19      which population the claim covers
+    SCOPE          20      which population the claim covers
     CONTROL        13      what the control arm actually holds fixed
     STATISTIC      14      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 43 · instrument 17 · outside reader 7
+    found by:  author reading the object 44 · instrument 17 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 78 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 79 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 78 were findable only by an outside reader** — `9.0%`. That fraction was 27% at n=22 and
+**7 of 79 were findable only by an outside reader** — `8.9%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -815,7 +826,7 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 ```
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE            12                9                    0
-SCOPE                 15                2                    2
+SCOPE                 16                2                    2
 STATISTIC             10                4                    1
 CONTROL               11                2                    4
 UNCLASSIFIED           4                0                    0
@@ -853,10 +864,10 @@ this page said so at n=`31` — and then nobody measured how uninformative it ha
 n = 22    the verdict fires  12.65% of the time      informative
 n = 31                       66.975%                  already mostly inevitable
 n = 45                      100.0%
-n = 78                      100.0%   (20000 of 20000 random relabelings)
+n = 79                      100.0%   (20000 of 20000 random relabelings)
 ```
 
-> **At n=`78` the verdict carries no information at all.** It was informative at n=`22` and stopped
+> **At n=`79` the verdict carries no information at all.** It was informative at n=`22` and stopped
 > discriminating around n=`45`. It is reported here rather than deleted, because **a pre-registered
 > gate that stops discriminating is a finding about the gate**, and quietly dropping it is how a
 > ledger keeps only the tests that still flatter it.
@@ -875,12 +886,12 @@ unreachable at n=`22`.** `THIRTEEN-ONE-OFFS` needs `≥5`, and even then the `�
 first and masks it. **One reachable outcome is not a test**, and `validate_defects.py` now prints
 the reachable set on every run so the collapse is stated rather than discovered.
 
-**What replaces it is the distribution, and that *is* informative.** Chi-square `24.769` against a
+**What replaces it is the distribution, and that *is* informative.** Chi-square `25.430` against a
 uniform null gives a permutation `p` of `0.0002` — `4` of `20000`.
 
 ```
-PROVENANCE 21   SCOPE 19   CONTROL 17   STATISTIC 14   UNCLASSIFIED 4   INTERVENTION 2
-                                                        expected 13.0 each
+PROVENANCE 21   SCOPE 20   CONTROL 17   STATISTIC 14   UNCLASSIFIED 4   INTERVENTION 2
+                                                        expected 13.2 each
 ```
 
 **The two *small* bins carry the signal** — `INTERVENTION` at `2` and `UNCLASSIFIED` at `4` — not

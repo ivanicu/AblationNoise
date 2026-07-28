@@ -711,6 +711,15 @@
       "defect": "the front page opened with FIVE correction blocks before stating what the project found, and the first runnable command sat 5685 words in, at line 513 of 994",
       "operation": "MEASURED, not suspected. A reader forming a mental model in the 1-3 minutes the review standard calls L2 received, in order: the task is not what we said, R14 resolved something, every number is in one configuration, R12 settled the hump -- and only then the finding. The page read as a chronology of the author's corrections rather than as an inferential path, and an L2 failure caps the artifact because nobody reaches the depth where the rigour is. FIXED BY INSERTION, NOT REORDERING: the finding, the runnable command and a pointer to the six-version retraction ladder now sit above everything, and nothing was deleted or moved. The finding carries its own retraction pointer inline, so a reader who stops there still knows it was corrected six times",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D79",
+      "round": "repo",
+      "bin": "SCOPE",
+      "commit": "881af8e",
+      "defect": "'ablation magnitude and mechanistic role are close to unrelated on this task' -- a claim about a RELATIONSHIP between two variables, promoted to the top of the front page one step earlier, resting on exactly ONE head with an independently established role",
+      "operation": "n=1 ON THE ROLE AXIS. L22H7 is the only established mechanism here; five of the other seven were read-head CANDIDATES, and a candidate is a hypothesis, so finding hypotheses fail to clear a floor is close to tautological (already conceded as ADVERSARY.md row A1). One point is an anecdote, not a relationship. THE REVERSE DIRECTION IS SUPPORTED AND IS NOW WHAT THE PAGE SAYS: of the 10 heads that clear the exhaustive floor, the first published one is the 10th, and 7 of the 10 clear by HELPING the model -- that rests on 10 points and needs no second known mechanism. The asymmetry is the honest finding and is stronger than the symmetric claim it replaces",
+      "found_by": "author_reading_the_object"
     }
   ]
 }
