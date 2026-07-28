@@ -191,7 +191,24 @@ L17H7    -0.0352    0.0082        4.31          0.07       116      116
 L19H0    +0.0154    0.0033        4.64          0.03       143      144
 
 RESOLVABLE at 2σ      8 of 8            DISTINGUISHABLE from a random head      1 of 8
+   on a disjoint item set:  7 of 8
 ```
+
+> ### The `8 of 8` does not fully replicate — and the head that flips is the copy head, for the third time
+>
+> `8 of 8 resolvable` was computed on the **published** item set and stated without that scope. On
+> the **disjoint** set it is **`7` of `8`**: `L22H7` goes `1.27×` → `0.57×` and crosses the line.
+> Every other head is stable and far above `1`.
+>
+> **The instrument replicates; this one head does not.** Across all `168` band heads the two runs
+> agree on `157` resolvability verdicts (`93.5%`) with Spearman `+0.9825` between the ratios.
+>
+> **That is the third independent signature on the same head.** Its rank moved `40` places between
+> item sets while every other published head moved `≤5`; it is the band's worst
+> SEM-versus-disagreement case; and it is the only one of the eight whose resolvability verdict
+> flips. **The one head with an independently established role is the one whose ablation effect is
+> least reproducible across items** — which is what an item-dependent mechanism should look like,
+> and is the opposite of how a large ablation number is usually read.
 
 > ### CORRECTED — the null is not centred at zero, and every verdict here assumed it was
 >
@@ -661,23 +678,23 @@ against, which is a fact about your directory and not about the ledger.
 
 ```
     PROVENANCE     19      whether the number has a generator at all
-    SCOPE          11      which population the claim covers
+    SCOPE          12      which population the claim covers
     CONTROL        10      what the control arm actually holds fixed
     STATISTIC      12      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 34 · instrument 14 · outside reader 7
+    found by:  author reading the object 35 · instrument 14 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 65 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 66 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 65 were findable only by an outside reader** — `10.8%`. That fraction was 27% at n=22 and
+**7 of 66 were findable only by an outside reader** — `10.6%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -688,14 +705,14 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 ```
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE            11                8                    0
-SCOPE                 11                0                    2
+SCOPE                 12                0                    2
 STATISTIC              8                4                    1
 CONTROL                8                2                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**An instrument has finally caught a `CONTROL` defect — the first, at n=`65`.** A second followed at n=`65`. It was the
+**An instrument has finally caught a `CONTROL` defect — the first, at n=`66`.** A second followed at n=`65`. It was the
 provenance validator, firing on its own during a routine gate run, and what it revealed was a
 false-conviction rule **inside itself**. The `--check` line asserting `0` had been written at n=`37`
 precisely so the build would fail the day this happened; it failed, and the expected count was
@@ -710,12 +727,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`65` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`66` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `19`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`65` a bin of `19` is `29.2%`, which is not domination
+> ledger; at n=`66` a bin of `19` is `28.8%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

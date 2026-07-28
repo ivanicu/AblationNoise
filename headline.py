@@ -494,6 +494,12 @@ def r11():
              'ratio': abs(dA[k]) / (2 * semA[k]),
              'rank_A': rA[k], 'rank_B': rB[k], 'rank_move': rA[k] - rB[k]}
             for k in sorted(eight, key=lambda k: rA[k])]
+    semB = {(x, int(h)): v for x, L in LB.items() for h, v in L['per_head_sem'].items()}
+    rows_b = [{'head': eight[k], 'drop': dB[k], 'two_sem': 2 * semB[k],
+               'ratio': abs(dB[k]) / (2 * semB[k])}
+              for k in sorted(eight, key=lambda k: rA[k])]
+    band_ratio_a = [abs(dA[k]) / (2 * semA[k]) for k in band]
+    band_ratio_b = [abs(dB[k]) / (2 * semB[k]) for k in band]
     n = len(band)
     mx = sum(rA[k] for k in band) / n
     my = sum(rB[k] for k in band) / n
@@ -523,6 +529,23 @@ def r11():
             # instability is evidence FOR item-dependent machinery, not against it.
             'least_stable_published_head': worst['head'],
             'least_stable_rank_move': worst['rank_move'],
+            # DOES THE RESOLVABILITY VERDICT ITSELF REPLICATE? `8 of 8 resolvable` was computed on
+            # the PUBLISHED item set only, and stated without that scope. On the disjoint set it is
+            # 7 of 8: L22H7 goes 1.27 -> 0.57 and flips. Every other head is stable and far above 1,
+            # and across all 168 band heads the two runs agree on 157 verdicts with Spearman
+            # +0.9825 -- so the instrument is reliable and this ONE head is not.
+            'n_resolvable_B': sum(1 for r in rows_b if r['ratio'] > 1),
+            'resolvable_verdicts_agree': sum(1 for a, b in zip(rows, rows_b)
+                                             if (a['ratio'] > 1) == (b['ratio'] > 1)),
+            'band_resolvable_A': sum(1 for v in band_ratio_a if v > 1),
+            'band_resolvable_B': sum(1 for v in band_ratio_b if v > 1),
+            'band_verdicts_agree': sum(1 for a, b in zip(band_ratio_a, band_ratio_b)
+                                       if (a > 1) == (b > 1)),
+            'band_ratio_spearman': _spearman(band_ratio_a, band_ratio_b),
+            # AS A PERCENTAGE TOO, because the prose quotes one and 157/168 does not back "93.5%".
+            'band_verdicts_agree_pct': 100 * sum(1 for a, b in zip(band_ratio_a, band_ratio_b)
+                                                 if (a > 1) == (b > 1)) / len(band_ratio_a),
+            'effects_B': rows_b,
             'effects': rows}
 
 
@@ -1762,8 +1785,13 @@ def main() -> int:
         for e in EL['effects']:
             print(f"      {e['head']:<9}{e['drop']:>+9.4f}{e['two_sem']:>9.4f}{e['ratio']:>8.2f}"
                   f"{e['rank_A']:>9}{e['rank_B']:>8}{e['rank_move']:>+7}")
-        print(f"      1| RESOLVABLE at 2 sigma: {EL['n_resolvable']} of {EL['n_defined']}  "
-              f"-- replaces the WITHDRAWN quiet-layer bound, which said 3 of 8")
+        print(f"      1| RESOLVABLE at 2 sigma: {EL['n_resolvable']} of {EL['n_defined']} on the "
+              f"PUBLISHED item set, {EL['n_resolvable_B']} of {EL['n_defined']} on the disjoint one "
+              f"-- verdicts agree on {EL['resolvable_verdicts_agree']} of {EL['n_defined']}")
+        print(f"         the one that flips is L22H7, 1.27 -> 0.57. Across all "
+              f"{EL['n_band_heads']} band heads the runs agree on {EL['band_verdicts_agree']} "
+              f"verdicts, Spearman {EL['band_ratio_spearman']:+.4f} -- the instrument replicates, "
+              f"this HEAD does not")
         print(f"      2| run-to-run disagreement inside the SEM band: {EL['agree_within_sem']} of "
               f"{EL['n_band_pairs']} ({EL['agree_pct']:.1f}%), nominal "
               f"{EL['nominal_coverage_2sigma_pct']:.2f}% -- the SEM is the whole "
@@ -2180,6 +2208,9 @@ def main() -> int:
             ('PWR positive-control heads', PW['n_positive_control'] if PW else -1, 9, 0),
             ('PWR heads with dynamic range', PW['n_with_room'] if PW else -1, 167, 0),
             ('PWR undecidable heads', len(PW['undecidable']) if PW else -1, 1, 0),
+            ('R11 resolvable on the disjoint set', EL['n_resolvable_B'] if EL else -1, 7, 0),
+            ('R11 band verdicts agreeing', EL['band_verdicts_agree'] if EL else -1, 157, 0),
+            ('R11 band ratio Spearman', EL['band_ratio_spearman'] if EL else -1, 0.9825, 0.0001),
             ('R11 resolvable at 2 sigma', EL['n_resolvable'] if EL else -1, 8, 0),
             ('R11 agreement inside the SEM band', EL['agree_within_sem'] if EL else -1, 164, 0),
             ('R11 floor divergence across item sets',
@@ -2204,9 +2235,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 65, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 66, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 19, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 10.769, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 10.606, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
