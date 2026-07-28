@@ -1,0 +1,50 @@
+{
+ "method": "per-head COLUMN permutation of M. Each column keeps its own argmax, so every head keeps its matrix structure and only the DIAGONAL ALIGNMENT is destroyed. A head counts as perfect when every source token maps to itself.",
+ "n_permutations": 2000,
+ "p_floor": 0.0004997501249375312,
+ "note": "p = 0.00050 IS THE FLOOR. It means the observed count was never reached in 2000 draws, not a value resolved to five places.",
+ "results": {
+  "qwen2.5-1.5b": {
+   "n_heads": 168,
+   "rooms": {
+    "observed": 25,
+    "null_mean": 1.04,
+    "null_max": 6,
+    "p": 0.0005
+   },
+   "objects": {
+    "observed": 11,
+    "null_mean": 0.0,
+    "null_max": 1,
+    "p": 0.0005
+   },
+   "persons": {
+    "observed": 7,
+    "null_mean": 0.0,
+    "null_max": 1,
+    "p": 0.0005
+   }
+  },
+  "qwen2.5-3b": {
+   "n_heads": 288,
+   "rooms": {
+    "observed": 45,
+    "null_mean": 1.97,
+    "null_max": 7,
+    "p": 0.0005
+   },
+   "objects": {
+    "observed": 23,
+    "null_mean": 0.0,
+    "null_max": 1,
+    "p": 0.0005
+   },
+   "persons": {
+    "observed": 15,
+    "null_mean": 0.0,
+    "null_max": 0,
+    "p": 0.0005
+   }
+  }
+ }
+}

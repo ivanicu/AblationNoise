@@ -1035,6 +1035,15 @@
       "defect": "every instrument comparison in this repository -- D108, D110, D111, D113 -- was computed on qwen2.5-1.5b alone, so 'the three instruments are mutually uninformative' was an n=1 claim about a model. The OV circuit costs nothing to compute on a second model and R10/R18 already held that model's ablations; nobody had done it",
       "operation": "REPLICATED ON qwen2.5-3b, 36 layers, 16 heads per layer, 288 band heads, scaled basis. ALL SIX OV x ablation EDGES SIT WITHIN +-0.07 -- pooled +0.0140 to +0.0658, within-layer -0.0359 to +0.0649 -- against -0.14 to +0.22 on 1.5b, so THE SECOND MODEL IS CLOSER TO ZERO, NOT FURTHER. The null is not a 1.5b idiosyncrasy. AND THE POSITIVE CONTROL IS STRONGER THERE: 45 heads copy all four rooms against 25 on 1.5b, 23 copy all eight objects, 15 copy all eight persons -- the instrument finds plenty of copiers, they are simply not the heads ablation flags. SCOPE IS NARROWER THAN 'TWO MODELS' SOUNDS AND THE PAGE SAYS SO: both are Qwen2.5, same family, same training data, same architecture, NOT independent draws. And the ATTENTION edges cannot be replicated at all because E132's scores exist only for 1.5b, so what replicates is the OV x ablation null while the attention edges remain n=1. Incidentally 3b's final RMSNorm scale spans 232x against 1.5b's 2063x, so the D113 basis correction matters less there",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D115",
+      "round": "repo",
+      "bin": "CONTROL",
+      "commit": "ebe332f",
+      "defect": "D108, D110, D111 and D114 all rested on the same positive control -- 'N heads map every token to itself, so the instrument can find copiers' -- and N was never tested against a null. If N is what matrix structure gives for free, THE POSITIVE CONTROL ITSELF IS VOID, and four negative results become silence from an instrument that had never returned a real non-zero. That is the exact failure this repository has a written rule against, committed four times against my own work",
+      "operation": "THE NULL IS A PER-HEAD COLUMN PERMUTATION, not (1/n)^n. Each column keeps its own argmax, so every head keeps its matrix structure and only the DIAGONAL ALIGNMENT is destroyed -- (1/n)^n would have assumed the argmaxes are independent, which they are not. 2000 permutations, both models, three token sets. qwen2.5-1.5b, 168 heads: rooms observed 25 against a null mean of 1.04 and a null MAX of 6; objects 11 against mean 0.00, max 1; persons 7 against mean 0.00, max 1. qwen2.5-3b, 288 heads: rooms 45 against mean 1.97, max 7; objects 23 against 0.00, max 1; persons 15 against 0.00, max 0. EVERY p IS AT THE FLOOR -- the observed count was never reached once in 2000 draws, on either model, on any set. THE POSITIVE CONTROL IS REAL and the four negatives stand. AND THE FLOOR IS STATED RATHER THAN QUOTED AS PRECISION: p = 0.00050 is 1/2001 and means 'never in 2000', not a value resolved to five places",
+      "found_by": "author_attacking_own_detector"
     }
   ]
 }

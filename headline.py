@@ -630,6 +630,39 @@ def adversary_scoring():
                                                   'R18']}
 
 
+def ov_permutation_null():
+    """IS THE POSITIVE CONTROL ITSELF REAL? Four steps rested on it and none had tested it.
+
+    D108, D110, D111 and D114 all used "N heads map every token to itself, so the instrument can
+    find copiers" as their positive control, and N was never compared to a null. If N is what matrix
+    structure gives for free, THE POSITIVE CONTROL IS VOID and four negatives become silence from an
+    instrument that had never returned a real non-zero -- the failure this repository has a rule
+    against, committed four times against my own work.
+
+    THE NULL IS A PER-HEAD COLUMN PERMUTATION, not (1/n)^n. Each column keeps its own argmax, so
+    every head keeps its matrix structure and only the DIAGONAL ALIGNMENT is destroyed. (1/n)^n would
+    have assumed the argmaxes are independent, which they are not.
+
+        model         set        observed   null mean   null max   p
+        qwen2.5-1.5b  rooms          25       1.04         6       0.00050
+                      objects        11       0.00         1       0.00050
+                      persons         7       0.00         1       0.00050
+        qwen2.5-3b    rooms          45       1.97         7       0.00050
+                      objects        23       0.00         1       0.00050
+                      persons        15       0.00         0       0.00050
+
+    EVERY p IS AT THE FLOOR: the observed count was never reached once in 2000 draws, on either
+    model, on any set. The positive control is real and the four negatives stand.
+
+    AND THE FLOOR IS STATED RATHER THAN QUOTED AS PRECISION. p = 0.00050 is 1/2001 and means "never
+    in 2000", not a value resolved to five places.
+    """
+    f = HERE / 'R16_selection_vs_effect' / 'results' / 'ov_permutation_null.json'
+    if not f.exists():
+        return None
+    return json.load(open(f))
+
+
 def ov_3b():
     """THE SAME INSTRUMENT ON A SECOND MODEL. Every comparison before this was qwen2.5-1.5b alone.
 
@@ -3194,6 +3227,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    OVP = ov_permutation_null()
     OV3 = ov_3b()
     TRI = instrument_triangle()
     OVC = ov_copying()
@@ -3209,7 +3243,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -3446,6 +3480,22 @@ def main() -> int:
             print(f"        Chosen after the fact it would have been called layer-shaped; the rule")
             print(f"        is honoured at a 3% miss rather than renegotiated. Both centroids move")
             print(f"        EARLIER -- the direction replicates, the SHAPE does not resolve at n=2\n")
+
+    if OVP:
+        print("OVN  IS THE POSITIVE CONTROL ITSELF REAL? Four steps rested on it, none had tested it")
+        print(f"     null = per-head COLUMN permutation ({OVP['n_permutations']} draws): each column")
+        print(f"     keeps its own argmax, so structure is preserved and only the DIAGONAL ALIGNMENT")
+        print(f"     is destroyed. (1/n)^n would assume the argmaxes are independent; they are not.")
+        print(f"     {'model':<14}{'set':<9}{'observed':>9}{'null mean':>11}{'null max':>10}{'p':>10}")
+        for m, r in OVP['results'].items():
+            for nm in ('rooms', 'objects', 'persons'):
+                v = r[nm]
+                print(f"     {m:<14}{nm:<9}{v['observed']:>9}{v['null_mean']:>11.2f}"
+                      f"{v['null_max']:>10}{v['p']:>10.5f}")
+        print(f"     EVERY p IS AT THE FLOOR {OVP['p_floor']:.5f} -- never reached once in "
+              f"{OVP['n_permutations']} draws, either model, any set.")
+        print(f"     The positive control is REAL and the four negatives stand. The floor is stated")
+        print(f"     rather than quoted as precision: it means `never in 2000`\n")
 
     if OV3:
         print("OV3  THE SAME INSTRUMENT ON A SECOND MODEL -- qwen2.5-3b, band "
@@ -4346,7 +4396,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 36.421, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 36.565, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -4427,9 +4477,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 114, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 115, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 28, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 7.895, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 7.826, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
