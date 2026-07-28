@@ -5,7 +5,8 @@
  are dated measurements rather than regenerable values. Also: the detector's own
  false-pass rate, plus the earlier rate and the ceiling.
  2605.24059 2606.05378 2605.29126 2605.00333 2607.01002 2604.01094
- 2603.11793 2606.09607 2607.04167 2607.18921 -- arXiv identifiers, not measurements: they name the
+ 2603.11793 2606.09607 2607.04167 2607.18921 2407.08734 2309.16042 2510.00845 2404.15255
+ -- arXiv identifiers, not measurements: they name the
  papers that refuted this project's novelty premise and no generator here could emit them.
  57.5 18.1 80.5 1.4 -- results QUOTED FROM 2606.05378 section 6, which this repository did not run.
  29.0 -- 9/31, arithmetic on two counts already shown in the same sentence.
@@ -435,6 +436,35 @@ contribution, and the numbers are unaffected by learning that.**
 to carry across configurations while carrying perfectly across item samples. **Neither paper does
 that. But an abstract-level search cannot settle it**, which is the confound written before this
 search ran and the same reason the original novelty premise died. **`UNVERIFIED`, not `novel`.**
+
+### The transport claim is prior art too — three times, and the closest one states the thesis almost verbatim
+
+`D119` left the transport result as the one possibly-novel thing here and marked it `UNVERIFIED`,
+because the query that killed the `OV` claim was not aimed at transport. **Aimed properly, it lands.**
+
+| paper | what it already says |
+|---|---|
+| [`2407.08734`](https://arxiv.org/abs/2407.08734) *Transformer Circuit Faithfulness Metrics are not Robust* (2024-07) | *"existing methods are **highly sensitive to seemingly insignificant changes in the ablation methodology**"*; scores *"reflect **both the methodological choices of researchers as well as the actual components**"*; **"the task a circuit is required to perform depends on the ablation used to test it"** |
+| [`2309.16042`](https://arxiv.org/abs/2309.16042) *Towards Best Practices of Activation Patching* (2023-09) | *"**varying these hyperparameters could lead to disparate interpretability results**"* — metrics and corruption methods, systematically |
+| [`2510.00845`](https://arxiv.org/abs/2510.00845) *Mechanistic Interpretability as Statistical Estimation* (2025-10) | *"circuit discovery is ... a **statistical estimation problem**"*; *"**the causal effect of a component is a volatile random variable rather than a fixed property**"*; *"small perturbations in input data or hyperparameters yield **vastly different circuits**"* |
+
+**The last of those is this repository's thesis, stated in an abstract, `9` months before it started.**
+
+> **So the project has no established novelty claim.** The floor result, the instrument comparison and
+> the transport framing each have published prior art, and in two of three cases the paper was already
+> cited here or trivially findable.
+>
+> **What it still is:** a worked audit of one prior experiment, carried out in public, with an
+> unusually complete error record — `120` rows, each naming what was wrong and what the operation on
+> it was. **That is a case study, not a contribution to method**, and saying so is the only honest
+> version.
+
+**And the search discipline is part of the finding.** The first transport query returned ten papers on
+dialogue contradiction, document expansion and pronoun resolution — **zero relevant.** That was
+**silence from a badly phrased query, not evidence of absence**, and the tool had returned two
+squarely relevant papers minutes earlier. **I have now been wrong in the same direction twice: an
+abstract search that finds nothing is not a null, it is an unfit instrument until a working query
+proves otherwise.**
 
 ### ⚠ The meta-separator, stated once: **there is no ground truth here, and that limits everything above**
 
