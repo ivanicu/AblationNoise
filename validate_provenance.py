@@ -41,6 +41,29 @@ def last_commit_ts(rel: str):
     return int(r.stdout.strip()) if r.returncode == 0 and r.stdout.strip() else None
 
 
+def stamp_in_history(rel: str, stamp: str) -> bool:
+    """Did ANY committed version of this runner hash to `stamp`?
+
+    THE BLIND SPOT THIS CLOSES, and it is the exact scenario the stamp was invented for. A job that
+    has already loaded its source keeps executing the PRE-EDIT file. Edit and commit the runner
+    while it runs, and the result it finally writes carries the OLD hash while git says the runner
+    has not moved since -- so the IMPOSSIBLE branch convicts a file that is simply honest about
+    which code produced it. Caught the first time it happened, on R11's run A: I fixed the runner's
+    refusal branches during the ~16 minutes that job was executing.
+
+    Resolving the stamp against HISTORY rather than against HEAD turns that false conviction into
+    the true statement: STALE, and here is the commit whose source it matches.
+    """
+    r = subprocess.run(['git', 'rev-list', '--all', '--', rel],
+                       cwd=str(HERE), capture_output=True, text=True)
+    for rev in r.stdout.split():
+        b = subprocess.run(['git', 'show', f'{rev}:{rel}'],
+                           cwd=str(HERE), capture_output=True)
+        if b.returncode == 0 and hashlib.sha256(b.stdout).hexdigest()[:8] == stamp:
+            return True
+    return False
+
+
 def runner_for(result_path: Path):
     """The runner that owns a result file: the .py in its round whose name matches its prefix."""
     round_dir = result_path.parent
@@ -77,9 +100,21 @@ def main() -> int:
         named = d.get('producer') if isinstance(d, dict) else None
         runner = None
         if named:
-            cands = [Path(x) for x in glob.glob(str(HERE / '**' / named), recursive=True)]
-            runner = cands[0] if cands else None
-        guessed = runner is None
+            # An exact repo-relative path first; a bare basename only as a fallback, and a
+            # basename that matches MORE THAN ONE file is a GUESS, however confidently the field
+            # was written. Taking cands[0] and reporting guessed=False is how R11's result got
+            # convicted against R6's runner: eleven rounds all name their script `run.py`.
+            exact = HERE / named
+            if exact.exists():
+                runner, ambiguous = exact, False
+            else:
+                cands = sorted(Path(x) for x in
+                               glob.glob(str(HERE / '**' / named), recursive=True))
+                runner = cands[0] if cands else None
+                ambiguous = len(cands) > 1
+        else:
+            ambiguous = False
+        guessed = runner is None or ambiguous
         if runner is None:
             runner = runner_for(p)
         rel_r = str(runner.relative_to(HERE)) if runner else None
@@ -107,7 +142,12 @@ def main() -> int:
                                cwd=str(HERE)).returncode != 0 if rel_r else False
         older = (None if (ts_r is None or ts_f is None or dirty)
                  else (ts_r > ts_f))
+        # Only asked when it can change a verdict: resolving a stamp against every historical
+        # blob of the runner is O(history), and running it on CONFIRMED rows would be waste.
+        known = (stamp_in_history(rel_r, stamp)
+                 if (v == 'STALE' and rel_r and stamp) else None)
         rows.append({'result': str(p.relative_to(HERE)), 'runner': rel_r, 'verdict': v,
+                     'stamp_matches_a_historical_version': known,
                      'stamp': stamp, 'current': cur, 'runner_committed_after_result': older,
                      'runner_dirty': dirty, 'producer_guessed_from_path': guessed})
 
@@ -122,9 +162,13 @@ def main() -> int:
     # uncommitted file, whose timestamps are unknown, cannot be convicted.
     # A GUESSED PRODUCER CANNOT CONVICT. If the file did not name its own producer, the
     # comparison is against a script inferred from a directory, and a mismatch says nothing.
+    # A STAMP THAT MATCHES SOME COMMITTED VERSION OF THE RUNNER IS NOT IMPOSSIBLE, IT IS STALE.
+    # Without this the check convicts exactly the case the stamp exists to reveal: a long-running
+    # job executing source that was edited underneath it.
     impossible = [r for r in rows if r['verdict'] == 'STALE'
                   and r['runner_committed_after_result'] is False
-                  and not r['producer_guessed_from_path']]
+                  and not r['producer_guessed_from_path']
+                  and r['stamp_matches_a_historical_version'] is not True]
 
     out = {'n': n, 'counts': c, 'n_unverified_and_older_by_git': len(older),
            'n_timestamps_unknown': len(unknown_ts),
@@ -145,6 +189,11 @@ def main() -> int:
     if unknown_ts:
         print(f"  {len(unknown_ts)} file(s) have no git timestamp on one side (uncommitted): the "
               f"timestamp fallback is UNKNOWN there, not 'not older'.")
+    for r in rows:
+        if r['verdict'] == 'STALE' and r['stamp_matches_a_historical_version'] is True:
+            print(f"  STALE {r['result']}: its stamp {r['stamp']} matches an EARLIER committed "
+                  f"version of {r['runner']} -- the runner was edited while the job was running, "
+                  f"which is the case the stamp exists to make visible, not a fault")
     for r in impossible:
         print(f"  IMPOSSIBLE {r['result']}: carries stamp {r['stamp']} but its runner has not "
               f"been edited since -- the stamp cannot have come from that runner")

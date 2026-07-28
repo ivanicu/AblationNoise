@@ -15,35 +15,45 @@ the measurement at its own author's prior work.**
 Then it points the measurement at its own author's prior results. The finding, stated at the size
 the evidence supports:
 
-> ## The single head is the wrong unit — and this repository's own data shows what the right one does
+> ## The heads that ablation flags loudest are not the heads anyone identified — and are mostly heads whose removal *helps*
 >
-> **`L22H7` was independently established as the copy head for this task. Ablating it moves the
-> answer by `0.27×` the noise floor — indistinguishable from ablating a random head.**
->
-> **Ablate the whole copy circuit and it clears its own floor by `1.45×`**, at `−1.4279` against a
-> `k=5` null whose `2 × sd` is `0.9822` — `3.29` standard deviations below that null's mean.
->
-> So the mechanism is real, it is localised, and **the granularity at which it was reported —
-> one head — cannot see it.** One statistic, both units:
+> `L22H7` was independently established as the copy head for this task. Ablate every one of the
+> `168` heads in the studied band, once each, and it ranks **`56` of `168`**.
 >
 > ```
-> L22H7      k=1     0.27× its floor      indistinguishable from a random head
-> COPY       k=5     1.45× its floor      clears, and the k=5 floor is 2.02× larger
+> 9 of 168 heads clear the exhaustive floor of 0.4870 at k=1, up to 2.54×
+> 0 of those 9 are among the eight published heads
+> 7 of those 9 clear in the HELPING direction — ablating them makes the model MORE correct
+>
+> the eight published heads rank   10 · 55 · 56 · 109 · 113 · 115 · 116 · 143   of 168
 > ```
+>
+> **So single-head ablation resolves effects here perfectly well.** It just does not rank the heads
+> a mechanistic hypothesis picked anywhere near the top — and the heads it *does* rank at the top
+> were never identified as anything, mostly because removing them is an improvement.
+>
+> **Ablation magnitude and mechanistic role are close to unrelated on this task.**
 
-> ### Corrected within an hour of being written — the first version of the paragraph above overstated it
+> ### The symmetric error, refused explicitly
 >
-> It said the circuit lands at the *"`0.0`th percentile of the `k=5` null"* and added: **"Not
-> marginal. Not inside anything."** The percentile is true and carries less than it sounds: with
-> `30` draws a percentile resolves to `3.3%`, so `0.0`th means **"below all thirty"** and nothing
-> finer. The circuit is beyond the most extreme of those thirty by `0.38` sd.
+> Those nine heads are **not** hereby claimed to be the real mechanism. A large ablation effect is
+> evidence that *removal matters*, in either direction — `7` of the `9` matter by making the answer
+> **better**. Reading a big number as a role is precisely the inference this repository exists to
+> refuse, and it does not become sound when the big number is one I found.
 >
-> Put on the statistic `k=1` already uses — `|effect| / (2 × sd of its own null)` — it is `1.45×`.
-> **It clears by `45%`, not by an order of magnitude.** The claim survives; the sentence did not.
+> What the exhaustive scan yields is a **list of heads whose removal moves the answer**. Turning
+> that into a list of heads that implement the task requires the work nobody has done here.
+
+> ### This is the third front page in three steps, and the two it replaces are kept below
 >
-> **Written in the step whose entire subject was overstatement.** A percentile that hides magnitude
-> is the same failure as a floor treated as measured when it was chosen: a number carrying a claim
-> its own construction cannot support.
+> `all eight published effects sit inside the noise floor` → `the single head is the wrong unit` →
+> the paragraph above. Each was corrected by a cheaper computation on data already in the
+> repository, and each correction is annotated in place rather than deleted, because a page that
+> only shows its current claim cannot be checked against the ones it abandoned.
+>
+> The second of the three — *"the single head is the wrong unit"* — was **wrong in the direction
+> that flattered the project**: it made a limitation of the granularity sound like a discovery about
+> it. Nine heads clearing the floor at up to `2.54×` says the granularity was never the problem.
 
 ### Two corrections to how this used to be worded, both predicted by [`ADVERSARY.md`](ADVERSARY.md) before they were made
 
@@ -445,24 +455,24 @@ it does not fail, and it does not claim the rows are wrong. There is no reposito
 against, which is a fact about your directory and not about the ledger.
 
 ```
-    PROVENANCE     14      whether the number has a generator at all
-    SCOPE           9      which population the claim covers
+    PROVENANCE     15      whether the number has a generator at all
+    SCOPE           8      which population the claim covers
     CONTROL         8      what the control arm actually holds fixed
-    STATISTIC       9      what quantity the number is
+    STATISTIC       8      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 21 · instrument 8 · outside reader 7
+    found by:  author reading the object 23 · instrument 10 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 46 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 49 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 46 were findable only by an outside reader** — `15.2%`. That fraction was 27% at n=22 and
+**7 of 49 were findable only by an outside reader** — `14.3%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -472,15 +482,21 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 
 ```
 joint            by the author   by an instrument   by an outside reader
-PROVENANCE             9                5                    0
-SCOPE                  7                0                    2
-CONTROL                4                0                    4
+PROVENANCE             9                6                    0
+SCOPE                  8                0                    2
 STATISTIC              5                3                    1
+CONTROL                4                1                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**The overlap is one bin, and n=`46` has not changed it.** `SCOPE` has grown to `9` — the largest jump of any bin — entirely from the author attacking his own framing, and an instrument still has not caught one. Nine detectors now exist and **not one has
+**An instrument has finally caught a `CONTROL` defect — the first, at n=`49`.** It was the
+provenance validator, firing on its own during a routine gate run, and what it revealed was a
+false-conviction rule **inside itself**. The `--check` line asserting `0` had been written at n=`37`
+precisely so the build would fail the day this happened; it failed, and the expected count was
+updated rather than the check. **`SCOPE` remains `0` from instruments against `2` from an outside
+reader**, and `SCOPE` is now the second-largest bin at `8`, grown almost entirely from the author
+attacking his own framing. Nine detectors now exist and **not one has
 ever caught a `CONTROL` or `SCOPE` defect** — those two joints were found only by another mind. That measurement is what
 [`arm_contrast`](detectors/arm_contrast.py) was built from: it is aimed at the joint the instruments
 had never reached, and its first selftest case is the real defect that eight rounds inherited.
@@ -489,12 +505,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`46` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
-the pre-registered threshold of ≥8 and now stands at `14`.
+`AMBIGUOUS` by one instance. At n=`49` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+the pre-registered threshold of ≥8 and now stands at `15`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`46` a bin of `14` is `30.4%`, which is not domination
+> ledger; at n=`49` a bin of `15` is `30.6%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

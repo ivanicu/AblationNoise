@@ -53,7 +53,14 @@ from task import PERSONS, OBJECTS, ROOMS
 # the output could have shown it. Its durable fix -- stamp sha256(source) into every row -- was
 # never carried here, and on 2026-07-28 an audit found 40 result files with zero provenance and
 # 12 of them produced by code that has since been edited.
-_PRODUCER = __import__("pathlib").Path(__file__).name
+_HERE_F = __import__("pathlib").Path(__file__).resolve()
+# A BASENAME DOES NOT IDENTIFY A FILE. `_PRODUCER = Path(__file__).name` recorded "run.py", which
+# eleven rounds share, so the provenance check looked it up with a glob, took whichever came first,
+# and reported that it had NOT guessed. It convicted R11's result against R6's runner. The earlier
+# fix -- "read the producer from the file, do not infer it from the directory" -- was right and
+# incomplete: what the file recorded could not name the object either.
+_ROOT_F = next(p for p in _HERE_F.parents if (p / "Makefile").exists())
+_PRODUCER = str(_HERE_F.relative_to(_ROOT_F))
 _CODE_VERSION = __import__("hashlib").sha256(
     __import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:8]
 

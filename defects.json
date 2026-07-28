@@ -423,6 +423,33 @@
       "defect": "the NEW front-page lead, written one step earlier to fix an overstatement, said the k=5 COPY circuit is at the '0.0th percentile of the null' and added 'Not marginal. Not inside anything.'",
       "operation": "OVERSTATED. A percentile from 30 draws resolves to 3.3%: '0.0th' means 'below all thirty' and nothing finer, and the circuit is beyond the most extreme of them by 0.38 sd. On the statistic k=1 already uses -- |effect|/(2*sd of its own null) -- it is 1.45x, i.e. it clears by 45%, not by an order of magnitude. The claim survives, the sentence did not. Both units now reported on one statistic: L22H7 at k=1 is 0.27x, COPY at k=5 is 1.45x, and the k=5 floor is 2.02x larger",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D47",
+      "round": "repo",
+      "bin": "SCOPE",
+      "commit": "f9261cf",
+      "defect": "the front page's SECOND lead -- 'the single head is the wrong unit' -- written one step earlier to replace an oversold first lead",
+      "operation": "ALSO WRONG, and wrong in the direction that flattered the project. Ablating all 168 band heads once each: 9 CLEAR the exhaustive floor at k=1, up to 2.54x. Single-head ablation resolves effects here perfectly well. What it does not do is rank the eight published heads anywhere near the top -- they sit at 10, 55, 56, 109, 113, 115, 116, 143 of 168, and the independently proven copy head is 56th. Zero of the nine clearing heads is among the eight. Third front page in three steps; all three kept and annotated",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D48",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "f9261cf",
+      "defect": "_PRODUCER recorded Path(__file__).name -- a BASENAME. Eleven rounds all call their script run.py, so the provenance check looked it up with a glob, took whichever candidate sorted first, and reported producer_guessed_from_path = False",
+      "operation": "IT CONVICTED R11's RESULT AGAINST R6's RUNNER. The earlier fix -- 'read the producer from the file, do not infer it from the directory' -- was right and incomplete: what the file recorded could not name the object either. Now a repo-relative path in all 12 runners, and a basename matching more than one file is treated as a GUESS, which cannot convict",
+      "found_by": "instrument"
+    },
+    {
+      "id": "D49",
+      "round": "repo",
+      "bin": "CONTROL",
+      "commit": "f9261cf",
+      "defect": "the IMPOSSIBLE branch fired on a result whose stamp matched no CURRENT runner and whose runner had not been committed since -- concluding the stamp could not have come from that runner",
+      "operation": "FALSE CONVICTION, on exactly the scenario the stamp exists to reveal: a 16-minute job holds the source it loaded, so editing and committing the runner mid-run leaves the result carrying the PRE-EDIT hash while git reports no movement. Stamps are now resolved against every committed version of the runner, not just HEAD; a stamp found in history is reported as STALE with the reason, and cannot be called impossible",
+      "found_by": "instrument"
     }
   ]
 }

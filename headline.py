@@ -168,6 +168,67 @@ def _spearman(a, b):
     return num / den if den else float('nan')
 
 
+def rank_vs_role():
+    """Where do the hypothesis-identified heads sit in the EXHAUSTIVE ablation ranking?
+
+    Nine rounds compared each published effect against a floor and asked "does it clear?". None
+    asked the cheaper question the exhaustive scan makes free: **of all 168 band heads, which ones
+    clear, and are the published ones among them?**
+
+    They are not. Nine heads clear the exhaustive floor at k=1, up to 2.54x, and ZERO of the eight
+    published heads is one of them. The independently proven copy head ranks 56 of 168.
+
+    SO THE PREVIOUS LEAD -- "the single head is the wrong unit" -- IS WRONG TOO. Single-head
+    ablation resolves effects on this task perfectly well. What it does not do is rank the heads an
+    interpretability hypothesis picked anywhere near the top.
+
+    AND THE SYMMETRIC ERROR MUST NOT BE COMMITTED HERE. Five of the nine have POSITIVE drop:
+    removing them IMPROVES the margin, L18H0 by +1.2361. A large ablation effect is not evidence of
+    a role -- it is evidence that removal matters, in either direction. The exhaustive scan yields a
+    list of heads whose removal moves the answer, NOT a list of heads that implement the task.
+    Reading it as the second would be exactly the inference this repository exists to refuse.
+    """
+    import re as _re
+    p = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    pe = r1_prior_effects()
+    if not (p.exists() and pe):
+        return None
+    t = json.load(open(p))
+    L = {int(k): v for k, v in t['layers'].items()}
+    lo, hi = 14, 27
+    band = [(x, int(h), v) for x in range(lo, hi + 1) for h, v in L[x]['per_head'].items()]
+
+    def sd(xs):
+        m = sum(xs) / len(xs)
+        return math.sqrt(sum((y - m) ** 2 for y in xs) / (len(xs) - 1))
+
+    floor = 2 * sd([v for _, _, v in band])
+    order = sorted(band, key=lambda x: -abs(x[2]))
+    clear = [x for x in order if abs(x[2]) > floor]
+    eight = {(int(m.group(1)), int(m.group(2))): h
+             for h in pe['effects'] if (m := _re.match(r'L(\d+)H(\d+)', h))}
+    ranks = [{'head': eight[(x, h)], 'rank': i, 'drop': v, 'x_floor': abs(v) / floor}
+             for i, (x, h, v) in enumerate(order, 1) if (x, h) in eight]
+    return {
+        'n_band_heads': len(band), 'floor_2sd': floor,
+        'n_clear': len(clear), 'pct_clear': 100 * len(clear) / len(band),
+        'clearing_heads': [{'head': f'L{x}H{h}', 'drop': v, 'x_floor': abs(v) / floor,
+                            'direction': 'ablation HELPS' if v > 0 else 'ablation hurts'}
+                           for x, h, v in clear],
+        'n_clear_positive': sum(v > 0 for _, _, v in clear),
+        'n_published_among_clearing': sum((x, h) in eight for x, h, _ in clear),
+        'published_ranks': sorted(ranks, key=lambda r: r['rank']),
+        'copy_head_rank': next((r['rank'] for r in ranks if r['head'] == 'L22H7'), None),
+        # PARTICIPATION RATIO per layer: 1 = one head carries everything, NH = all equal. It
+        # separates "a layer with a dominant head" from "a layer whose effect is spread", and the
+        # answer is layer-dependent, which is why a single global statement about "the right unit"
+        # was always going to be wrong.
+        'participation_ratio': {x: (sum(v * v for v in L[x]['per_head'].values()) ** 2 /
+                                    sum((v * v) ** 2 for v in L[x]['per_head'].values()))
+                                for x in range(lo, hi + 1)},
+    }
+
+
 def set_level_scale():
     """The circuit result on the SAME statistic as the head result -- because a percentile hides size.
 
@@ -990,11 +1051,12 @@ def main() -> int:
     FA, VD, DL = r1_floor_audit(), variance_decomposition(), defect_ledger()
     IN = item_noise_bound()
     SL = set_level_scale()
+    RV = rank_vs_role()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -1072,6 +1134,21 @@ def main() -> int:
               f"{h['min_pct']:.1f}%-{h['max_pct']:.1f}%, and "
               f"{h['n_within_3pp_of_52']} land within 3pp of the retracted 52%")
         print(f"      -> the ESTIMATOR was free, so the held-out claim is WITHDRAWN, not weakened\n")
+
+    if RV:
+        print("RNK of ALL 168 band heads, which clear -- and where do the published ones rank?")
+        print(f"      exhaustive floor {RV['floor_2sd']:.4f};  {RV['n_clear']} of "
+              f"{RV['n_band_heads']} heads clear it ({RV['pct_clear']:.1f}%)")
+        for c in RV['clearing_heads']:
+            print(f"        {c['head']:<8}{c['drop']:>+9.4f}{c['x_floor']:>7.2f}x   {c['direction']}")
+        print(f"      {RV['n_clear_positive']} of {RV['n_clear']} clear in the HELPING direction -- "
+              f"clearing the floor is not evidence of a role")
+        print(f"      published heads among the clearing set: "
+              f"{RV['n_published_among_clearing']} of {RV['n_clear']}")
+        for r in RV['published_ranks']:
+            print(f"        rank {r['rank']:>3}/{RV['n_band_heads']}   {r['head']:<8}"
+                  f"{r['drop']:>+9.4f}{'   <- the proven copy head' if r['head']=='L22H7' else ''}")
+        print()
 
     if SL:
         print("SET the circuit result on the SAME statistic as the head result")
@@ -1359,15 +1436,23 @@ def main() -> int:
             ('SET copy circuit z vs null mean',
              SL['sets']['COPY']['z_from_null_mean'] if SL else -1, -3.291, 0.001),
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
-            ('LDG defect rows', DL['n'] if DL else -1, 46, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 14, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 15.217, 0.001),
-            # THE FINDING THE WHOLE DETECTOR SUITE WAS BUILT FROM, asserted so it cannot rot:
-            # at n=37 no instrument has yet caught a CONTROL or a SCOPE defect. If a detector
-            # ever does, this assertion fails and the front page's claim must be rewritten --
-            # which is the correct behaviour, not a nuisance.
+            ('RNK heads clearing the exhaustive floor', RV['n_clear'] if RV else -1, 9, 0),
+            ('RNK published heads among them',
+             RV['n_published_among_clearing'] if RV else -1, 0, 0),
+            ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 56, 0),
+            ('RNK clearing heads where ablation HELPS',
+             RV['n_clear_positive'] if RV else -1, 7, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 49, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 15, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 14.286, 0.001),
+            # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
+            # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
+            # validator fired on its own during a routine gate run, and what it revealed was a
+            # false-conviction rule inside itself -- the first CONTROL defect any instrument here
+            # has found. The claim the detector suite was built from is now FALSE, and the check
+            # written to notice that is what noticed. Expected count updated, not the check.
             ('LDG instrument-found CONTROL defects',
-             DL['cross_tab']['CONTROL']['instrument'] if DL else -1, 0, 0),
+             DL['cross_tab']['CONTROL']['instrument'] if DL else -1, 1, 0),
             ('LDG instrument-found SCOPE defects',
              DL['cross_tab']['SCOPE']['instrument'] if DL else -1, 0, 0),
             ('VAR in-sample floor share', VD['in_sample']['floor_share_pct'] if VD else -1,
