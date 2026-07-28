@@ -253,14 +253,14 @@ it does not fail, and it does not claim the rows are wrong. There is no reposito
 against, which is a fact about your directory and not about the ledger.
 
 ```
+    PROVENANCE      9      whether the number has a generator at all
+    CONTROL         7      what the control arm actually holds fixed
+    STATISTIC       5      what quantity the number is
+    SCOPE           4      which population the claim covers
     INTERVENTION    2      what the operation physically writes / where / when
-    CONTROL         4      what the control arm actually holds fixed
-    STATISTIC       4      what quantity the number is
-    SCOPE           2      which population the claim covers
-    PROVENANCE      7      whether the number has a generator at all
-    UNCLASSIFIED    3
+    UNCLASSIFIED    4
 
-    found by:  instrument 8 · author reading the object 7 · outside reader 6 · author writing it up 1
+    found by:  author reading the object 15 · instrument 8 · outside reader 7 · author writing it up 1
 ```
 
 **Not one of the 22 is a statistics error.** Every one is the same shape: a *label* carried where a
@@ -268,8 +268,9 @@ against, which is a fact about your directory and not about the ledger.
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**Six of twenty-two were findable only by an outside reader** — 27%, and that is the number that
-bounds how far self-audit goes here.
+**7 of 31 were findable only by an outside reader** — 22%. That fraction was 27% at n=22 and
+fell as the author kept finding more, which is the right direction and also a reminder that a
+ceiling estimated from a small sample moves.
 
 And the split is not uniform. Cross-tabulating the joint against who found it:
 
@@ -287,11 +288,20 @@ SCOPE                 0                    2
 [`arm_contrast`](detectors/arm_contrast.py) was built from: it is aimed at the joint the instruments
 had never reached, and its first selftest case is the real defect that eight rounds inherited.
 
-### The taxonomy test returned `AMBIGUOUS`, by one instance
+### The taxonomy test now returns `ONE-JOINT-DOMINATES` — **and the threshold that produced it is a defect**
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
-classifying his own defects will group them until a taxonomy appears. `TAXONOMY-EXISTS` needed ≥3
-bins with ≥2 instances **and** `UNCLASSIFIED ≤ 2`. Five bins cleared the first; `UNCLASSIFIED` is 3.
+classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
+`AMBIGUOUS` by one instance. At n=31 it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+the pre-registered threshold of ≥8.
+
+> **That threshold is an absolute count, not a proportion, and that is a defect in the
+> pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
+> ledger; at n=31 a bin of 9 is 29%, which is not domination
+> by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
+> ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
+> seeing which verdict it produces is the single move the pre-registration exists to refuse. The
+> verdict is reported as pre-registered, with its defect stated beside it.
 
 And the three do not split evenly: **two of them are the same unnamed type** — a prediction row
 derived from a *world's name* instead of from what the arms physically do, which happened in R7 and
