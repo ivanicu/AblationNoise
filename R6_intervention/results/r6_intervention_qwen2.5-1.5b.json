@@ -1,0 +1,95 @@
+{
+  "model": "qwen2.5-1.5b",
+  "n_items": 120,
+  "n_draws": 30,
+  "k": 1,
+  "dtype": "float32",
+  "band": [
+    14,
+    27
+  ],
+  "sham_band": [
+    0,
+    7
+  ],
+  "rooms": [
+    "stone",
+    "iron",
+    "glass",
+    "water"
+  ],
+  "draw_seed": 20260727,
+  "resample_seed": 20260728,
+  "resample_offset": 113,
+  "pc_layer": 20,
+  "base_margin": 3.2866061369578046,
+  "mean_source": "in-run, all items, final position",
+  "arms": {
+    "zero": {
+      "band_floor": 0.08371500408090034,
+      "sham_floor": 0.019402259995628703,
+      "ratio_k1": 4.314703756148057,
+      "band_mean": 0.05174244986640083,
+      "band_sd": 0.2751382461677347,
+      "sham_mean": 0.019290025499131946,
+      "sham_sd": 0.0637675867724842,
+      "band_min": -0.4302728811899821,
+      "band_max": 1.0767229715983073,
+      "positive_control": 0.6457941850026448,
+      "pc_layer": 20,
+      "pc_clears_own_floor": true,
+      "pc_over_band_sd": 2.347162541004729
+    },
+    "mean": {
+      "band_floor": 0.028918207231838706,
+      "sham_floor": 3.546247406495536e-05,
+      "ratio_k1": 815.4593833151699,
+      "band_mean": 0.02085736751556396,
+      "band_sd": 0.09504275735797865,
+      "sham_mean": -1.907613542344836e-05,
+      "sham_sd": 0.00011655118489358928,
+      "band_min": -0.016971524556477866,
+      "band_max": 0.5055008888244629,
+      "positive_control": 0.09812038739522298,
+      "pc_layer": 20,
+      "pc_clears_own_floor": true,
+      "pc_over_band_sd": 1.0323815314580198
+    },
+    "resample": {
+      "band_floor": 0.03959129959419284,
+      "sham_floor": 3.459997076477848e-05,
+      "ratio_k1": 1144.2581805443417,
+      "band_mean": 0.02804789013332791,
+      "band_sd": 0.1301210082164092,
+      "sham_mean": 1.0519027709960935e-05,
+      "sham_sd": 0.00011371647625408156,
+      "band_min": -0.015645456314086915,
+      "band_max": 0.6985572179158529,
+      "positive_control": 0.10003811518351237,
+      "pc_layer": 20,
+      "pc_clears_own_floor": false,
+      "pc_over_band_sd": 0.7688083312199301
+    }
+  },
+  "rr": {
+    "mean": 188.995451229581,
+    "resample": 265.19970899830116
+  },
+  "af": {
+    "mean": 0.34543637128528104,
+    "resample": 0.4729295546104576
+  },
+  "check1_zero_reproduces_r1": {
+    "r1_file": "r1v3_atlas_qwen2.5-1.5b.json",
+    "available": true,
+    "r1_ratio_k1": 4.314703756148057,
+    "r6_zero_ratio_k1": 4.314703756148057,
+    "rel_diff": 0.0,
+    "reproduces": true
+  },
+  "check2_dead_arms": [
+    "resample"
+  ],
+  "round_valid": false,
+  "informative": true
+}
