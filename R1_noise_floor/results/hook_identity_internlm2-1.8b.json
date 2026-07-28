@@ -1,8 +1,31 @@
 {
-  "code_version": "d749bebf",
+  "code_version": "6f3a7be4",
+  "producer": "hook_identity.py",
   "model": "internlm2-1.8b",
   "layer": 18,
   "module": "attention.wo",
-  "verdict": "UNRUNNABLE",
-  "why": "the UNABLATED forward is not finite: 3053952 non-finite values in logits. Nothing about the hook can be concluded from this run."
+  "device": "cuda",
+  "n_heads": 16,
+  "head_dim": 128,
+  "worst_rel_err": 1.053935493766716e-06,
+  "per_head_rel_err": [
+    7.652074858486396e-07,
+    3.965859410601734e-07,
+    4.817186165264996e-07,
+    4.4689188296367505e-07,
+    9.253491606521241e-07,
+    3.732564316437624e-07,
+    9.76102341578887e-07,
+    6.716250389190815e-07,
+    1.053935493766716e-06,
+    3.8093177190616964e-07,
+    9.961906691465103e-07,
+    3.6898824776011907e-07,
+    5.706675469337121e-07,
+    3.522489056329038e-07,
+    4.0254138406186246e-07,
+    4.6239829414966195e-07
+  ],
+  "tolerance": 0.0001,
+  "verdict": "HOOK-CORRECT"
 }

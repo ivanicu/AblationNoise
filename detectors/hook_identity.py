@@ -48,12 +48,16 @@ def main() -> int:
     ap.add_argument('--tag', required=True)
     ap.add_argument('--layer', type=int, default=None)
     ap.add_argument('--tol', type=float, default=1e-4)
+    # THE DEVICE WAS HARDCODED TO CPU AND THE QUEUE LABEL SAID GPU. internlm2 was submitted to the
+    # GPU queue to escape a CPU-only NaN, and ran on the CPU anyway because this file said so. The
+    # label and the operation disagreed one layer up from the code -- in the job description.
+    ap.add_argument('--device', default='cpu', choices=['cpu', 'cuda'])
     ap.add_argument('--out', default=str(HERE.parent / 'R1_noise_floor' / 'results'
                                          / 'hook_identity'))
     args = ap.parse_args()
     tok = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
     m = AutoModelForCausalLM.from_pretrained(args.model, trust_remote_code=True,
-                                             torch_dtype=torch.float32, device_map='cpu',
+                                             torch_dtype=torch.float32, device_map=args.device,
                                              attn_implementation='eager').eval()
     m.config.use_cache = False
     NL, NH = m.config.num_hidden_layers, m.config.num_attention_heads
@@ -62,7 +66,7 @@ def main() -> int:
     name, proj = resolve(m.model.layers[L])
     if proj is None:
         raise SystemExit(f"REFUSED: no output projection found on {args.tag} layer {L}")
-    enc = tok(PROMPT, return_tensors='pt')
+    enc = {k: v.to(args.device) for k, v in tok(PROMPT, return_tensors='pt').items()}
 
     cap, out = {}, {}
     h1 = proj.register_forward_pre_hook(lambda mod, a: cap.__setitem__('x', a[0].detach().clone()))
@@ -129,8 +133,8 @@ def main() -> int:
     print(f"  {args.tag}  layer {L} at .{name}  NH={NH} HD={HD}  W_O {tuple(WO.shape)}")
     print(f"  worst relative error over {NH} heads: {worst:.2e}  (tolerance {args.tol:g})")
     print(f"  -> {'HOOK ADDRESSES THE RIGHT SLICE' if ok else '*** HOOK IS MISLABELLED ***'}")
-    res = {'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'model': args.tag, 'layer': L, 'module': name,
-           'n_heads': NH, 'head_dim': HD, 'worst_rel_err': worst, 'per_head_rel_err': errs,
+    res = {'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'model': args.tag, 'layer': L,
+           'module': name, 'device': args.device, 'n_heads': NH, 'head_dim': HD, 'worst_rel_err': worst, 'per_head_rel_err': errs,
            'tolerance': args.tol, 'verdict': 'HOOK-CORRECT' if ok else 'HOOK-MISLABELLED'}
     p = f"{args.out}_{args.tag}.json"
     Path(p).parent.mkdir(parents=True, exist_ok=True)
