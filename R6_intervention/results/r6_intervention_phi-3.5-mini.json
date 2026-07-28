@@ -1,0 +1,96 @@
+{
+  "model": "phi-3.5-mini",
+  "n_items": 120,
+  "n_draws": 30,
+  "k": 1,
+  "dtype": "float32",
+  "band": [
+    16,
+    31
+  ],
+  "sham_band": [
+    0,
+    8
+  ],
+  "rooms": [
+    "stone",
+    "iron",
+    "glass",
+    "water"
+  ],
+  "draw_seed": 20260727,
+  "resample_seed": 20260728,
+  "resample_offset": 113,
+  "pc_layer": 23,
+  "base_margin": 13.046194807688396,
+  "mean_source": "in-run, all items, final position",
+  "arms": {
+    "zero": {
+      "band_floor": 0.015882194825442786,
+      "sham_floor": 0.0012939949131955816,
+      "ratio_k1": 12.27376913423945,
+      "band_mean": 0.024445167117648648,
+      "band_sd": 0.20720220766638717,
+      "sham_mean": 0.0055525218115912555,
+      "sham_sd": 0.01688170971770739,
+      "band_min": -0.8290548324584961,
+      "band_max": 0.41930955251057944,
+      "positive_control": 0.5751771926879883,
+      "pc_layer": 23,
+      "pc_clears_own_floor": true,
+      "pc_over_band_sd": 2.775922125376538
+    },
+    "mean": {
+      "band_floor": 0.008208938556059189,
+      "sham_floor": 3.8490238747972315e-06,
+      "ratio_k1": 2132.732563653334,
+      "band_mean": 0.03666433016459147,
+      "band_sd": 0.10709541156669247,
+      "sham_mean": 1.6890631781684032e-06,
+      "sham_sd": 5.0215115290048314e-05,
+      "band_min": -0.005137093861897786,
+      "band_max": 0.4777551015218099,
+      "positive_control": 0.068943723042806,
+      "pc_layer": 23,
+      "pc_clears_own_floor": false,
+      "pc_over_band_sd": 0.6437598215855593
+    },
+    "resample": {
+      "band_floor": 0.010850470696849841,
+      "sham_floor": 5.302504223020403e-06,
+      "ratio_k1": 2046.2917596073532,
+      "band_mean": 0.047129960589938694,
+      "band_sd": 0.14155735446621748,
+      "sham_mean": 5.704032050238715e-06,
+      "sham_sd": 6.917750306211457e-05,
+      "band_min": -0.00493326187133789,
+      "band_max": 0.5695653915405273,
+      "positive_control": 0.08523944218953451,
+      "pc_layer": 23,
+      "pc_clears_own_floor": false,
+      "pc_over_band_sd": 0.6021548121675079
+    }
+  },
+  "rr": {
+    "mean": 173.76345768992584,
+    "resample": 166.72073078993535
+  },
+  "af": {
+    "mean": 0.5168642398787806,
+    "resample": 0.6831845860162679
+  },
+  "check1_zero_reproduces_r1": {
+    "r1_file": "r1v3_atlas_phi-3.5-mini.json",
+    "available": true,
+    "r1_ratio_k1": 12.27376913423945,
+    "r6_zero_ratio_k1": 12.27376913423945,
+    "rel_diff": 0.0,
+    "reproduces": true
+  },
+  "check2_dead_arms": [
+    "mean",
+    "resample"
+  ],
+  "round_valid": false,
+  "informative": true
+}
