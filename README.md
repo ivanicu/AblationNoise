@@ -111,6 +111,23 @@ on that model, and records any scope reduction in its own output rather than in 
 * R5's readout axis is withdrawn: each model cleared on a different column, and the mechanism
   strengths were not matched across models, so that axis is confounded rather than null.
 
+## What is open
+
+Not a roadmap — the questions this instrument raised and cannot yet answer, each tied to the round
+that raised it. They are listed because a reader deciding whether to trust the closed results is
+entitled to see the shape of the open ones.
+
+| | raised by | what would settle it |
+|---|---|---|
+| **Is the floor a property of ablation or of zeroing?** | every round — all of them zero | R6, pre-registered and running. Its gate can retract the first sentence of this page |
+| **Does readability transfer across models?** | R4, whose across-model verdict is `UNVERIFIED` | an order of magnitude more models. Five cannot decide it: the best of 324 admissible estimators fits three model-level parameters to four model-level observations |
+| **Which readout is more readable?** | R5, whose readout axis is **withdrawn as confounded** | a mechanism-**strength**-matched design. The identified head's attention was 0.244 on one model and 0.852/0.877 on the others, so the readout comparison is confounded with mechanism quality. More models do not fix this; matched mechanisms do |
+| **Does any of it hold outside attention heads?** | scope of every round | MLP neurons, SAE features, residual directions. Nothing here is evidence about them, and the two-point calibration is a hypothesis there, not a method |
+| **Does it hold off a synthetic task?** | scope of every round | a natural-text task with a known mechanism. The synthetic binding task was chosen so the answer key is not arguable, which is also why it is not a claim about language modelling |
+
+One item that is **not** open: whether R1's number is an artifact of R1's own code. R6's zero arm
+reproduced it to **0.0%** through a completely rewritten measurement path.
+
 ## Licence
 
 MIT.
