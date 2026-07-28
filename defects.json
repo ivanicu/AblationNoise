@@ -603,6 +603,15 @@
       "defect": "'8 of 8 resolvable at 2 sigma' was computed on the PUBLISHED item set and stated without that scope, while the disjoint item set from the same round sat unused for this check",
       "operation": "IT IS 7 OF 8 ON THE DISJOINT SET. L22H7 goes 1.27x -> 0.57x and flips; every other head is stable and far above 1. The INSTRUMENT replicates -- across all 168 band heads the runs agree on 157 verdicts with Spearman +0.9825 between ratios -- so it is this one HEAD that does not. Third independent signature on the same head: rank moved 40 places between item sets while every other moved <=5, worst SEM-versus-disagreement case in the band, and the only resolvability verdict to flip",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D67",
+      "round": "R14",
+      "bin": "SCOPE",
+      "commit": "3a41435",
+      "defect": "across two steps I let R13's task-level finding hang as an implication about the MODEL -- that L22H7 'may be copying from position 0' -- without testing it",
+      "operation": "REFUTED BY THE PRE-REGISTERED PROBE. Shuffling the fact lines so the answer lands at a random index: accuracy 1.000 -> 0.800 against chance 0.25, pre-registered verdict MIXED. Every line is above chance and the worst is 2.3x it. The confound control, built to separate a STEP (position-copying) from a SMOOTH DECAY (primacy), returned a THIRD shape -- a U, primacy AND recency, ends 0.966 vs middle 0.639, z=+4.96. R13's statement about what the TASK permits stands unchanged; the insinuation about what the MODEL does was mine and is dead",
+      "found_by": "instrument"
     }
   ]
 }

@@ -549,6 +549,53 @@ def r11():
             'effects': rows}
 
 
+def r14():
+    """Does the model bind the name, or copy line 0? Pre-registered before the probe ran.
+
+    R13 showed the task cannot tell those apart. R14 shuffles the fact lines so it can. The
+    pre-registered verdict is MIXED -- accuracy 1.000 unshuffled, 0.800 shuffled, against
+    thresholds of 0.900 for BINDING and 0.350 for POSITION -- and the CONFOUND CONTROL is the
+    result, because it was built to separate two shapes and returned a third.
+
+        position-copying predicted a STEP: line 0 perfect, the rest at chance 0.25
+        a primacy effect predicted a SMOOTH DECAY with distance from the start
+        what came back is a U -- primacy AND recency, a serial-position curve
+
+    Every line is above chance; the worst is 0.57, which is 2.3x chance with a lower 95% bound of
+    0.31. THE MODEL IS NOT COPYING POSITION 0, and across two earlier steps I let R13's finding
+    hang as an implication that it might be. The pre-registration named that outcome as a kill
+    pointing at my own steps and required it be reported as loudly as the other. It fired.
+    """
+    p = HERE / 'R14_position_vs_binding' / 'results' / 'r14_probe_qwen2.5-1.5b.json'
+    if not p.exists():
+        return None
+    d = json.load(open(p))
+    bl = {int(k): v for k, v in d['accuracy_by_answer_line'].items()}
+    ends, mid = (0, 1, 6, 7), (2, 3, 4, 5)
+
+    def agg(ks):
+        n = sum(bl[k]['n'] for k in ks if k in bl)
+        c = sum(round(bl[k]['acc'] * bl[k]['n']) for k in ks if k in bl)
+        q = c / n
+        return {'n': n, 'correct': c, 'acc': q, 'ci95': 1.96 * math.sqrt(q * (1 - q) / n)}
+
+    e, m = agg(ends), agg(mid)
+    sed = math.sqrt((e['ci95'] / 1.96) ** 2 + (m['ci95'] / 1.96) ** 2)
+    worst = min(bl.items(), key=lambda kv: kv[1]['acc'])
+    return {'model': d['model'], 'n_items': d['n_items'], 'chance': d['chance'],
+            'accuracy_original': d['accuracy_original'],
+            'accuracy_shuffled': d['accuracy_shuffled'],
+            'binding_ratio_threshold': d['binding_ratio_threshold'],
+            'position_ceiling': d['position_ceiling'], 'verdict': d['verdict'],
+            'by_line': {k: v['acc'] for k, v in sorted(bl.items())},
+            'ends': e, 'middle': m,
+            'ends_minus_middle': e['acc'] - m['acc'],
+            'ends_minus_middle_z': (e['acc'] - m['acc']) / sed,
+            'worst_line': worst[0], 'worst_acc': worst[1]['acc'],
+            'worst_over_chance': worst[1]['acc'] / d['chance'],
+            'all_lines_above_chance': all(v['acc'] > d['chance'] for v in bl.values())}
+
+
 def task_audit():
     """WHAT DOES THE TASK ACTUALLY REQUIRE? Twelve rounds audited the measurement and none audited this.
 
@@ -1616,6 +1663,7 @@ def main() -> int:
     RV = rank_vs_role()
     IR = input_replication()
     TA = task_audit()
+    FT = r14()
     EL = r11()
     PW = power()
     RC = reference_class()
@@ -1624,7 +1672,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -1806,6 +1854,26 @@ def main() -> int:
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
               f"<=5 -- and it is the proven copy head\n")
+
+    if FT:
+        print("R14 does the model BIND the name, or COPY line 0? -- pre-registered before the probe")
+        print(f"      accuracy ORIGINAL (answer always at line 0): {FT['accuracy_original']:.3f}")
+        print(f"      accuracy SHUFFLED (answer at a random line): {FT['accuracy_shuffled']:.3f}"
+              f"   chance {FT['chance']:.2f}")
+        print(f"      -> {FT['verdict']}   (BINDING needed >= "
+              f"{FT['binding_ratio_threshold'] * FT['accuracy_original']:.3f}, POSITION needed <= "
+              f"{FT['position_ceiling']:.3f})")
+        print("      accuracy by the answer's line -- the control returned a THIRD shape:")
+        print("        line  " + "  ".join(f"{k:>4}" for k in FT['by_line']))
+        print("              " + "  ".join(f"{v:>4.2f}" for v in FT['by_line'].values()))
+        print(f"        ends L0,1,6,7 {FT['ends']['acc']:.3f} +-{FT['ends']['ci95']:.3f}   "
+              f"middle L2-5 {FT['middle']['acc']:.3f} +-{FT['middle']['ci95']:.3f}   "
+              f"diff {FT['ends_minus_middle']:+.3f}  z {FT['ends_minus_middle_z']:+.2f}")
+        print(f"        a U, not a step and not a decay: primacy AND recency")
+        print(f"      every line above chance ({FT['all_lines_above_chance']}); worst is line "
+              f"{FT['worst_line']} at {FT['worst_acc']:.2f} = {FT['worst_over_chance']:.1f}x chance")
+        print(f"      -> THE MODEL IS NOT COPYING POSITION 0. R13's finding about the TASK stands; "
+              f"the insinuation about the MODEL was mine and is refuted\n")
 
     if TA:
         print("TSK what does the TASK require? -- twelve rounds audited the measurement, not this")
@@ -2169,6 +2237,9 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('R14 shuffled accuracy', FT['accuracy_shuffled'] if FT else -1, 0.8, 0.001),
+            ('R14 ends minus middle z', FT['ends_minus_middle_z'] if FT else -1, 4.96, 0.01),
+            ('R14 worst line over chance', FT['worst_over_chance'] if FT else -1, 2.286, 0.001),
             ('TSK cross-model cells probed',
              TA['cross_model']['n_cells'] if (TA and TA.get('cross_model')) else -1, 8, 0),
             ('TSK cross-model query line',
@@ -2235,9 +2306,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 66, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 67, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 19, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 10.606, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 10.448, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
@@ -2247,7 +2318,7 @@ def main() -> int:
             ('LDG instrument-found CONTROL defects',
              DL['cross_tab']['CONTROL']['instrument'] if DL else -1, 2, 0),
             ('LDG instrument-found SCOPE defects',
-             DL['cross_tab']['SCOPE']['instrument'] if DL else -1, 0, 0),
+             DL['cross_tab']['SCOPE']['instrument'] if DL else -1, 1, 0),
             ('VAR in-sample floor share', VD['in_sample']['floor_share_pct'] if VD else -1,
              72.05, 0.01),
             ('VAR held-out pairings near 52',

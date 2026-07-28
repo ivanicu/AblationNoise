@@ -57,6 +57,26 @@ the measurement at its own author's prior work.**
 > **Uniform.** The counts differ, `Alice` is single-token everywhere, and every model is asked about
 > line `0`. The cross-model comparisons stay commensurable — **and the degeneracy is everywhere.**
 >
+> ### RESOLVED by [R14](R14_position_vs_binding/) — the model is **not** copying line `0`, and the implication was mine
+>
+> Shuffling the fact lines so the answer lands at a random index: accuracy `1.000` → `0.800`,
+> against a chance of `0.25`. **Pre-registered verdict `MIXED`** (`BINDING` needed `≥0.900`,
+> `POSITION` needed `≤0.350`). And the confound control, built to separate two shapes, returned a
+> third:
+>
+> ```
+> line   0     1     2     3     4     5     6     7
+>       1.00  1.00  0.60  0.62  0.75  0.57  0.86  1.00      a U, not a step and not a decay
+>
+> ends L0,1,6,7  0.966 ±0.046      middle L2–5  0.639 ±0.121      diff +0.327,  z = +4.96
+> ```
+>
+> **Every line is above chance**; the worst is `0.57`, which is `2.3×` chance. The task *permits* a
+> degenerate strategy — that part of the finding below stands — but **the model does not use it**,
+> and across two steps I let the implication that it might hang unresolved. The pre-registration
+> named that outcome as a kill aimed at my own steps and required it be reported as loudly as the
+> other one.
+
 > **And the reason it took thirteen rounds:** an elaborate apparatus was built to audit
 > *measurements* — `4` detectors, `62` logged defects, a pre-registration per round — and **none of
 > it was ever pointed at the thing being measured.** The task's own construction was read for the
@@ -684,17 +704,17 @@ against, which is a fact about your directory and not about the ledger.
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 35 · instrument 14 · outside reader 7
+    found by:  author reading the object 35 · instrument 15 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 66 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 67 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 66 were findable only by an outside reader** — `10.6%`. That fraction was 27% at n=22 and
+**7 of 67 were findable only by an outside reader** — `10.4%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -705,34 +725,41 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 ```
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE            11                8                    0
-SCOPE                 12                0                    2
+SCOPE                 12                1                    2
 STATISTIC              8                4                    1
 CONTROL                8                2                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**An instrument has finally caught a `CONTROL` defect — the first, at n=`66`.** A second followed at n=`65`. It was the
-provenance validator, firing on its own during a routine gate run, and what it revealed was a
-false-conviction rule **inside itself**. The `--check` line asserting `0` had been written at n=`37`
-precisely so the build would fail the day this happened; it failed, and the expected count was
-updated rather than the check. **`SCOPE` remains `0` from instruments against `2` from an outside
-reader**, and `SCOPE` is now the second-largest bin at `8`, grown almost entirely from the author
-attacking his own framing. Nine detectors now exist and **not one has
-ever caught a `CONTROL` or `SCOPE` defect** — those two joints were found only by another mind. That measurement is what
-[`arm_contrast`](detectors/arm_contrast.py) was built from: it is aimed at the joint the instruments
-had never reached, and its first selftest case is the real defect that eight rounds inherited.
+**Both halves of the claim this detector suite was built from are now dead — and the same two
+`--check` lines killed them.** At n=`37` the build asserted that no instrument had ever caught a
+`CONTROL` or a `SCOPE` defect, written that way precisely so it would fail the day either changed.
+
+* **`CONTROL` fell at n=`49`.** The provenance validator fired on its own during a routine gate run,
+  and what it revealed was a false-conviction rule **inside itself**.
+* **`SCOPE` fell at n=`67`.** [R14](R14_position_vs_binding/)'s pre-registered probe refuted an
+  implication its author had left hanging across two steps.
+
+Both times **the expected count was updated and the check was not.** It took `30` further ledger
+rows for the instruments to reach the two joints they had never touched, and neither was reached by
+being read — **each fired on its own.** That original measurement is what
+[`arm_contrast`](detectors/arm_contrast.py) was built from: aimed at the joint the instruments had
+never reached, with the real defect eight rounds inherited as its first selftest case.
+
+**An outside reader still holds the lead on both**: `4` `CONTROL` and `2` `SCOPE` against the
+instruments' `2` and `1`.
 
 ### The taxonomy test now returns `ONE-JOINT-DOMINATES` — **and the threshold that produced it is a defect**
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`66` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`67` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `19`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`66` a bin of `19` is `28.8%`, which is not domination
+> ledger; at n=`67` a bin of `19` is `28.4%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

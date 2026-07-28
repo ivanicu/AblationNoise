@@ -1,0 +1,775 @@
+{
+  "code_version": "1a609c66",
+  "producer": "R14_position_vs_binding/probe.py",
+  "model": "qwen2.5-1.5b",
+  "n_items": 120,
+  "rooms": [
+    "pine",
+    "gold",
+    "rust",
+    "frost"
+  ],
+  "query_person": "Alice",
+  "chance": 0.25,
+  "accuracy_original": 1.0,
+  "accuracy_shuffled": 0.8,
+  "binding_ratio_threshold": 0.9,
+  "position_ceiling": 0.35,
+  "verdict": "MIXED",
+  "accuracy_by_answer_line": {
+    "0": {
+      "n": 12,
+      "acc": 1.0
+    },
+    "1": {
+      "n": 13,
+      "acc": 1.0
+    },
+    "2": {
+      "n": 15,
+      "acc": 0.6
+    },
+    "3": {
+      "n": 16,
+      "acc": 0.625
+    },
+    "4": {
+      "n": 16,
+      "acc": 0.75
+    },
+    "5": {
+      "n": 14,
+      "acc": 0.5714285714285714
+    },
+    "6": {
+      "n": 14,
+      "acc": 0.8571428571428571
+    },
+    "7": {
+      "n": 20,
+      "acc": 1.0
+    }
+  },
+  "rows": [
+    {
+      "seed": 3000,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3001,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3002,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3003,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3004,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3005,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3006,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3007,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3008,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3009,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3010,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3011,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3012,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3013,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3014,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3015,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3016,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3017,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3018,
+      "answer_line_shuffled": 0,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3019,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3020,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3021,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3022,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3023,
+      "answer_line_shuffled": 0,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3024,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3025,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3026,
+      "answer_line_shuffled": 0,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3027,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3028,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3029,
+      "answer_line_shuffled": 0,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3030,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3031,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3032,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3033,
+      "answer_line_shuffled": 0,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3034,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3035,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3036,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3037,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3038,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3039,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3040,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3041,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3042,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3043,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3044,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3045,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3046,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3047,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3048,
+      "answer_line_shuffled": 0,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3049,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3050,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3051,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3052,
+      "answer_line_shuffled": 0,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3053,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3054,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3055,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3056,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3057,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3058,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3059,
+      "answer_line_shuffled": 0,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3060,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3061,
+      "answer_line_shuffled": 0,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3062,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3063,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3064,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3065,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3066,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3067,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3068,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3069,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3070,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3071,
+      "answer_line_shuffled": 0,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3072,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3073,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3074,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3075,
+      "answer_line_shuffled": 0,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3076,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3077,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3078,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3079,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3080,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3081,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3082,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3083,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3084,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3085,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3086,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3087,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3088,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3089,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3090,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3091,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3092,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3093,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3094,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3095,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3096,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3097,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3098,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3099,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3100,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3101,
+      "answer_line_shuffled": 2,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3102,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3103,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3104,
+      "answer_line_shuffled": 1,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3105,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3106,
+      "answer_line_shuffled": 5,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3107,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3108,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3109,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3110,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3111,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3112,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3113,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3114,
+      "answer_line_shuffled": 6,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3115,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3116,
+      "answer_line_shuffled": 3,
+      "orig_ok": true,
+      "shuf_ok": false
+    },
+    {
+      "seed": 3117,
+      "answer_line_shuffled": 7,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3118,
+      "answer_line_shuffled": 4,
+      "orig_ok": true,
+      "shuf_ok": true
+    },
+    {
+      "seed": 3119,
+      "answer_line_shuffled": 0,
+      "orig_ok": true,
+      "shuf_ok": true
+    }
+  ]
+}
