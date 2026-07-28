@@ -740,23 +740,23 @@ against, which is a fact about your directory and not about the ledger.
 
 ```
     PROVENANCE     21      whether the number has a generator at all
-    SCOPE          13      which population the claim covers
-    CONTROL        12      what the control arm actually holds fixed
+    SCOPE          16      which population the claim covers
+    CONTROL        13      what the control arm actually holds fixed
     STATISTIC      13      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 38 · instrument 17 · outside reader 7
+    found by:  author reading the object 39 · instrument 17 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 72 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 74 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 72 were findable only by an outside reader** — `9.7%`. That fraction was 27% at n=22 and
+**7 of 74 were findable only by an outside reader** — `9.5%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -766,10 +766,10 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 
 ```
 joint            by the author   by an instrument   by an outside reader
-PROVENANCE            11                9                    0
+PROVENANCE            12                9                    0
 SCOPE                 13                2                    2
 STATISTIC              9                4                    1
-CONTROL               10                2                    4
+CONTROL               11                2                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
@@ -805,10 +805,10 @@ this page said so at n=`31` — and then nobody measured how uninformative it ha
 n = 22    the verdict fires  12.65% of the time      informative
 n = 31                       66.975%                  already mostly inevitable
 n = 45                      100.0%
-n = 72                      100.0%   (20000 of 20000 random relabelings)
+n = 74                      100.0%   (20000 of 20000 random relabelings)
 ```
 
-> **At n=`72` the verdict carries no information at all.** It was informative at n=`22` and stopped
+> **At n=`74` the verdict carries no information at all.** It was informative at n=`22` and stopped
 > discriminating around n=`45`. It is reported here rather than deleted, because **a pre-registered
 > gate that stops discriminating is a finding about the gate**, and quietly dropping it is how a
 > ledger keeps only the tests that still flatter it.
@@ -827,12 +827,12 @@ unreachable at n=`22`.** `THIRTEEN-ONE-OFFS` needs `≥5`, and even then the `�
 first and masks it. **One reachable outcome is not a test**, and `validate_defects.py` now prints
 the reachable set on every run so the collapse is stated rather than discovered.
 
-**What replaces it is the distribution, and that *is* informative.** Chi-square `22.0` against a
-uniform null gives a permutation `p` of `0.0005` — `10` of `20000`.
+**What replaces it is the distribution, and that *is* informative.** Chi-square `23.459` against a
+uniform null gives a permutation `p` of `0.0002` — `4` of `20000`.
 
 ```
-PROVENANCE 21   SCOPE 16   CONTROL 16   STATISTIC 13   UNCLASSIFIED 4   INTERVENTION 2
-                                                        expected 12.0 each
+PROVENANCE 21   SCOPE 16   CONTROL 17   STATISTIC 13   UNCLASSIFIED 4   INTERVENTION 2
+                                                        expected 12.3 each
 ```
 
 **The two *small* bins carry the signal** — `INTERVENTION` at `2` and `UNCLASSIFIED` at `4` — not

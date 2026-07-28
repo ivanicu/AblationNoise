@@ -657,6 +657,24 @@
       "defect": "the taxonomy power curve continued the main permutation loop's random generator, whose state depends on how many draws it consumed -- which is n -- so every added defect row silently shifted the published curve",
       "operation": "CAUGHT WHEN THE GATE FLAGGED A NUMBER THAT HAD BEEN CORRECT ONE COMMIT EARLIER. A generated number that moves when UNRELATED data moves cannot be checked against anything, which is the same failure as a hand-copied one wearing a generator's clothes. Each point now uses its own seeded RNG and two consecutive runs return identical values",
       "found_by": "instrument"
+    },
+    {
+      "id": "D73",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "8b77a47",
+      "defect": "a commit message was damaged by the shell: git commit -m inside double quotes COMMAND-SUBSTITUTED a backticked field name, deleting it and leaving a hole in the sentence. make verify checks the repository's prose and never its history, so the diary -- which is the durable record for the next reader -- has no gate at all",
+      "operation": "AMENDED before pushing, and the mechanism recorded. The preventive is procedural and already the project's norm: every other commit used a heredoc with -F, which does not substitute. No detector was added, for the reason in D74",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D74",
+      "round": "repo",
+      "bin": "CONTROL",
+      "commit": "8b77a47",
+      "defect": "the detector written to find that damage across 86 commits flagged 58 of them, and its rule -- any run of two or more spaces -- measures TEXT ALIGNMENT, not shell damage",
+      "operation": "UNFIT, and the check could not find its own target case. Sampled three flagged commits: all three were aligned tables inside the body. The one odd-backtick flag was a ``` code fence. The single real instance was already amended and so was invisible to it. NO MECHANICAL SIGNATURE EXISTS -- a vanished substitution leaves nothing distinguishable from ordinary prose -- so NO DETECTOR WAS ADDED, and that is the deliverable. A loud unfit check is as dangerous as a silent one when its output is plausible: the only reason 58 damaged commits were not reported is that three of them were opened and read",
+      "found_by": "author_attacking_own_detector"
     }
   ]
 }
