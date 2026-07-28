@@ -351,6 +351,42 @@
       "defect": "'inside the noise floor' was used for nine rounds as one predicate covering two different failures: NOT MEASURABLE (below what the instrument resolves on 120 items) and NOT DISTINCTIVE (resolvable, and a random head of the same size does the same)",
       "operation": "SEPARATED, for free, from data already checked in. Every head's drop is a mean over the SAME items, so the item-sampling term appears in every layer and the quietest layer bounds it from above; R10 measured all 28. At most 0.66% of the floor's VARIANCE is item sampling. Against that bound 3 of 8 effects are MEASURABLE (11.8x, 3.4x, 3.3x) and 0 of 8 are DISTINCTIVE. The proven copy head is 3.3x above measurement noise and 0.27x of the floor -- the experiment saw it clearly, and what it saw is not special",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D39",
+      "round": "repo",
+      "bin": "SCOPE",
+      "commit": "0546c22",
+      "defect": "detector 6 globbed only **/README.md, so every AMENDMENT_*.md, every PREREGISTRATION.md and the new top-level ADVERSARY.md were outside the checked population",
+      "operation": "WIDENED to **/*.md: 11 files became 27, and 16 previously invisible unbacked numbers surfaced at once -- including the WITHDRAWN R4 fold errors (155.9x) sitting unguarded in the amendment that withdraws them. Same class as the blockquote exemption removed the same day: a clean report over the wrong POPULATION reads exactly like a clean report over the right one",
+      "found_by": "author_attacking_own_detector"
+    },
+    {
+      "id": "D40",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "0546c22",
+      "defect": "the exemption marker regex was <!--\\\\s*unbacked-ok:([^>]*)-->, so a single '>' anywhere inside the exemption's own prose ended the character class early and the whole marker silently did nothing",
+      "operation": "TRIGGERED BY ITS FIRST REAL USE: ADVERSARY.md's marker contained '>700'. No error, no sign in the report, six numbers flagged as unbacked while carrying an exemption. Fixed to a non-greedy match to '-->'. One character disabling a mechanism is the same shape as the unclosed code fence this detector already refuses on",
+      "found_by": "author_attacking_own_detector"
+    },
+    {
+      "id": "D41",
+      "round": "repo",
+      "bin": "STATISTIC",
+      "commit": "0546c22",
+      "defect": "the detector's own false-pass rate is a function of how many numbers the repository generates, and nothing was measuring it over time",
+      "operation": "MEASURED AND WATCHED. 17.2% at a reference set of ~500 became 24.34% at >700 in one session -- a 41% relative increase in false passes, caused entirely by adding generators to strengthen the gate. Now printed on EVERY make verify run with a ceiling that fails the build. The ceiling was chosen knowing the current value, so it is stated as NOT a pre-registration",
+      "found_by": "author_attacking_own_detector"
+    },
+    {
+      "id": "D42",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "0546c22",
+      "defect": "an exemption written in scientific notation (3.55e-05) registers as 3.55 and 05, because the number pattern does not parse exponents -- so it exempts neither value",
+      "operation": "FIXED by writing the exemption in the table's own decimal notation. The match rule is not the concept, in the mechanism built to enforce that numbers match their concept",
+      "found_by": "author_attacking_own_detector"
     }
   ]
 }

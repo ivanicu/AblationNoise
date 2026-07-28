@@ -1,3 +1,7 @@
+<!-- unbacked-ok: 0.2089 11.2414 -- the baseline induction logprob and the bottom-5 ablation,
+ the two numbers that motivated the specificity control. Emitted by R2's runner into a result
+ file this amendment predates. -->
+
 # R2 AMENDMENT 1 — the round-invalidating check assumed an inert control that is not inert
 
 Written 2026-07-27, **immediately after the check ran and before any other R2 run**. The

@@ -292,9 +292,16 @@ def defect_ledger():
         # An "instrument" find is any found_by naming a detector or the gate, as opposed to the
         # author reading, or another mind. Grouped by prefix so a new detector does not need a
         # new branch here -- the failure mode this whole function exists to remove.
-        who = ('outside' if r['found_by'] == 'outside_reader'
-               else 'instrument' if ('instrument' in r['found_by'] or
-                                     'detector' in r['found_by'] or 'gate' in r['found_by'])
+        # PREFIX, NOT SUBSTRING, AND THE SUBSTRING VERSION WAS CAUGHT BY THE ASSERTION IT BROKE.
+        # `author_attacking_own_detector` contains the substring `detector`, so a defect the AUTHOR
+        # found by attacking an instrument was credited to the instrument -- and the --check line
+        # written specifically to fire if an instrument ever caught a SCOPE defect duly fired, for
+        # the wrong reason. A finder is an instrument only if it IS one; anything beginning
+        # `author_` is the author, whatever the author was pointing at.
+        fb = r['found_by']
+        who = ('outside' if fb == 'outside_reader'
+               else 'author' if fb.startswith('author')
+               else 'instrument' if fb.startswith(('instrument', 'detector', 'gate'))
                else 'author')
         inst.setdefault(r['bin'], {'author': 0, 'instrument': 0, 'outside': 0})[who] += 1
     largest = max(bins.values())
@@ -1291,9 +1298,9 @@ def main() -> int:
             ('ITM copy head vs item noise',
              next((e['x_item_noise'] for e in IN['effects'] if e['head'] == 'L22H7'), -1)
              if IN else -1, 3.33, 0.01),
-            ('LDG defect rows', DL['n'] if DL else -1, 38, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 11, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 18.421, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 42, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 13, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 16.667, 0.001),
             # THE FINDING THE WHOLE DETECTOR SUITE WAS BUILT FROM, asserted so it cannot rot:
             # at n=37 no instrument has yet caught a CONTROL or a SCOPE defect. If a detector
             # ever does, this assertion fails and the front page's claim must be rewritten --

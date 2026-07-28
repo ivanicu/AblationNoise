@@ -1,3 +1,6 @@
+<!-- unbacked-ok: 10.8 -- a per-set-size ratio from the ORIGINAL median statistic, which this
+ amendment replaces. Quoted to show the reversal that motivated the change. -->
+
 # R1 AMENDMENT 1 — the summary statistic was badly chosen, and this is the record of changing it
 
 Written 2026-07-27, **after two models had run and before any further model runs**, so that the

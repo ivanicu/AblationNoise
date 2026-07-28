@@ -1,3 +1,7 @@
+<!-- unbacked-ok: 155.9 10.5 18.7 15.6 -- the WITHDRAWN across-model fold errors. They reached a
+ README from a commit message and no code reproduces them; that unreproducibility IS the
+ amendment's subject, so they are quoted rather than deleted. -->
+
 # R4 AMENDMENT 1 — the pre-registration fixed the gate and left the feature set free
 
 Written 2026-07-27, **after** R4 reported its verdict and **before** that verdict is restated

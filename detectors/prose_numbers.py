@@ -71,7 +71,11 @@ NUM = re.compile(r'(?<![\w.])(\d+(?:\.\d+)?)(?=[x%×]?(?![\w]))')
 # covering them.
 def _checkable(tok: str, line: str, at: int) -> bool:
     return '.' in tok or line[at + len(tok):at + len(tok) + 1] in ('%', '×')
-MARKER = re.compile(r'<!--\s*unbacked-ok:([^>]*)-->')
+# NON-GREEDY TO `-->`, NOT `[^>]*`. A single '>' anywhere in the exemption's own prose -- ">700"
+# in ADVERSARY.md -- ended the character class early, so `-->` never matched and the ENTIRE marker
+# silently did nothing. One character disables the mechanism, with no error and no sign in the
+# report, which is the same shape as the unclosed code fence this file already refuses on.
+MARKER = re.compile(r'<!--\s*unbacked-ok:(.*?)-->', re.S)
 
 
 @dataclass
@@ -149,6 +153,29 @@ def backs(prose_token: str, gen: set) -> bool:
     dec = len(prose_token.split('.')[1]) if '.' in prose_token else 0
     p = float(prose_token)
     return any(round(abs(v), dec) == p for v in gen)
+
+
+# THE DETECTOR GETS WEAKER EVERY TIME A GENERATOR LEARNS TO EMIT ANOTHER NUMBER, and nothing was
+# watching that. Measured 2026-07-28 at a reference set of ~500: a random x.xx in [0,10) -- the
+# shape of nearly every ratio here -- passed by coincidence 17.2% of the time. One session of
+# additions later the set is >700 and the same rate is 24.3%: a 41% relative increase in false
+# passes, caused entirely by the repository growing. A property that degrades silently as the
+# project succeeds is exactly the kind this repository exists to find, and it was in the detector.
+#
+# CEILING_XX chosen KNOWING the present value, which is not a pre-registration and is not claimed
+# as one. Its job is to bound FUTURE growth: at 35% a clean report on an x.xx number would be worth
+# less than two-thirds of a number, and the reference set would need pruning or the match rule
+# tightening. Stated here rather than in a commit message so the next reader sees the reasoning at
+# the threshold, not the number alone.
+CEILING_XX = 35.0
+
+
+def false_pass_rate(gen: set, lo=0.0, hi=10.0, nd=2, trials=20000, seed=7) -> float:
+    """How often a RANDOM number of this shape is 'backed' by coincidence. The detector's power."""
+    import random as _r
+    rng = _r.Random(seed)
+    return 100.0 * sum(1 for _ in range(trials)
+                       if backs(f"%.{nd}f" % rng.uniform(lo, hi), gen)) / trials
 
 
 def check_file(path: Path, gen: set) -> Report:
@@ -335,18 +362,13 @@ def main() -> int:
         # inflating the set to 803 and giving a random x.xx in [0,10) -- the shape of nearly every
         # ratio here -- a 57.9% chance of passing. That is not a detector, and no green report
         # would have said so.
-        import random as _r
         gen = generator_numbers()
         print(f"  reference set: {len(gen)} values emitted by this repo's generators\n")
         for lo, hi, nd, label in ((0, 10, 2, 'x.xx  in [0,10)'),
                                   (0, 100, 1, 'xx.x  in [0,100)'),
                                   (0, 1000, 0, 'integer in [0,1000)')):
-            rng = _r.Random(7)
-            trials = 20000
-            hits = sum(1 for _ in range(trials)
-                       if backs(f"%.{nd}f" % rng.uniform(lo, hi), gen))
             print(f"  a random {label:<20} is 'backed' by coincidence "
-                  f"{100*hits/trials:5.2f}% of the time")
+                  f"{false_pass_rate(gen, lo, hi, nd):5.2f}% of the time")
         print("\n  Read this as the detector's FALSE-PASS rate. It bounds nothing about the\n"
               "  sound direction -- a number absent from the set was still not generated -- but a\n"
               "  clean report on the x.xx row is worth roughly (1 - that rate) per number.")
@@ -356,7 +378,13 @@ def main() -> int:
     # `relative_to(ROOT)` because a relative argument is not under the absolute ROOT. `make verify`
     # passes no arguments and takes the glob branch, whose paths are already absolute, so the
     # documented invocation was the only broken one and nothing in the build could see it.
-    files = [Path(f).resolve() for f in args.files] or sorted(ROOT.glob('**/README.md'))
+    # EVERY MARKDOWN FILE, NOT JUST READMEs. The glob was `**/README.md`, so ADVERSARY.md --
+    # a new top-level document full of claims -- was invisible to the gate the moment it was
+    # written, as were every PREREGISTRATION.md and AMENDMENT_*.md. Same class as the blockquote
+    # exemption removed the same day: the checker's POPULATION did not cover the surface it is
+    # supposed to guard, and a clean report over the wrong population reads exactly like a clean
+    # report over the right one.
+    files = [Path(f).resolve() for f in args.files] or sorted(ROOT.glob('**/*.md'))
     files = [f for f in files if '.git' not in f.parts]
     gen = generator_numbers()
     print(f"  reference set: {len(gen)} distinct values emitted by this repo's generators\n")
@@ -373,6 +401,14 @@ def main() -> int:
     if args.json:
         print(json.dumps(reports, indent=2, default=str))
     print(f"\n  {len(files) - bad} of {len(files)} files fully backed")
+    fp = false_pass_rate(gen)
+    print(f"  detector power: a random x.xx in [0,10) is 'backed' by COINCIDENCE {fp:.2f}% of the "
+          f"time, so a clean row is worth ~{100-fp:.0f}% per number, not 100%")
+    if fp > CEILING_XX:
+        print(f"  BREACH: {fp:.2f}% exceeds the {CEILING_XX:.0f}% ceiling. The reference set has "
+              f"grown until coincidence explains too many passes -- tighten the match rule or "
+              f"prune generators; do NOT raise the ceiling.")
+        return 1
     return 1 if bad else 0
 
 

@@ -1,3 +1,7 @@
+<!-- unbacked-ok: 1.25 0.049 1.7 -- the raw-noise and floor columns of the vocabulary
+ comparison, computed once for this amendment and not by any current generator. They are the
+ evidence FOR the amendment's rule (report raw sd beside every floor), not results. -->
+
 # R1 AMENDMENT 2 — the dimensionless floor moves for two reasons, and one of them is the denominator
 
 Written 2026-07-27, after the first shared-vocabulary run and **before the remaining three models

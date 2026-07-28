@@ -1,3 +1,6 @@
+<!-- unbacked-ok: 1.25 -- a COST ESTIMATE written before the run (about 1.25x R7's compute),
+ not a measurement. -->
+
 # R8 — is it the *direction relative to the data*, or *which component* gets destroyed?
 
 Written 2026-07-28, before `run.py` exists and before any R8 measurement.

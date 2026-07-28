@@ -183,7 +183,7 @@ pre-registered worlds had identical predictions.
 > proper distribution. That is an audit, not an instrument. It is the honest description.
 
 ```bash
-make verify     # 5 detector selftests + the attack suite, 23 recomputed numbers, 11 READMEs
+make verify     # 5 selftests + the attack suite, 41 recomputed numbers, 27 markdown files
 make headline   # just the numbers, recomputed from the checked-in results
 ```
 
@@ -389,23 +389,23 @@ it does not fail, and it does not claim the rows are wrong. There is no reposito
 against, which is a fact about your directory and not about the ledger.
 
 ```
-    PROVENANCE     11      whether the number has a generator at all
+    PROVENANCE     13      whether the number has a generator at all
     CONTROL         8      what the control arm actually holds fixed
-    STATISTIC       7      what quantity the number is
-    SCOPE           5      which population the claim covers
+    STATISTIC       8      what quantity the number is
+    SCOPE           7      which population the claim covers
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
     found by:  author reading the object 19 · instrument 8 · outside reader 7
-               author attacking own detector 2 · author writing it up 1 · detector 6 1
+               author attacking own detector 6 · author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 38 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 42 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 38 were findable only by an outside reader** — `18.4%`. That fraction was 27% at n=22 and
+**7 of 42 were findable only by an outside reader** — `16.7%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -415,15 +415,15 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 
 ```
 joint            by the author   by an instrument   by an outside reader
-PROVENANCE             4                7                    0
+PROVENANCE             8                5                    0
+SCOPE                  5                0                    2
 CONTROL                4                0                    4
-STATISTIC              3                3                    1
-SCOPE                  4                0                    2
+STATISTIC              4                3                    1
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**The overlap is one bin, and n=38 has not changed it.** Nine detectors now exist and **not one has
+**The overlap is one bin, and n=`42` has not changed it — after a step that added `4` rows, all found by attacking the instruments themselves.** Nine detectors now exist and **not one has
 ever caught a `CONTROL` or `SCOPE` defect** — those two joints were found only by another mind. That measurement is what
 [`arm_contrast`](detectors/arm_contrast.py) was built from: it is aimed at the joint the instruments
 had never reached, and its first selftest case is the real defect that eight rounds inherited.
@@ -432,12 +432,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`38` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
-the pre-registered threshold of ≥8 and now stands at `11`.
+`AMBIGUOUS` by one instance. At n=`42` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+the pre-registered threshold of ≥8 and now stands at `13`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`38` a bin of `11` is `28.9%`, which is not domination
+> ledger; at n=`42` a bin of `13` is `31.0%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

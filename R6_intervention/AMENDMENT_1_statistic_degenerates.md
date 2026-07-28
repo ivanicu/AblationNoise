@@ -1,3 +1,8 @@
+<!-- unbacked-ok: 0.0000355 0.0000346 0.03959 560 -- (written in the table's own decimal
+ notation: the number pattern does not parse 3.55e-05, so an exemption in scientific
+ notation registers 3.55 and 05 and exempts neither) -- the collapsing sham sd that made ratio_k1
+ divide by ~zero, transcribed from the diagnostic run that triggered this amendment. -->
+
 # R6 AMENDMENT 1 — the pre-registered statistic divides by a quantity the new arms drive to zero
 
 Written 2026-07-27 **after the first model and before the second finished**, and committed before any
