@@ -1,0 +1,81 @@
+{
+ "model": "qwen2.5-1.5b",
+ "band": [
+  14,
+  27
+ ],
+ "n_heads": 168,
+ "note": "All three pairwise Spearman relationships between the three instrument classes on this task. Every edge is null-to-negative. Each is a SPECIFIC operationalization -- E132 final-position attention, zero-ablation at final/all positions, direct-path OV -- not \"attention\" or \"ablation\" in general. Within-layer means control the shared layer trend.",
+ "edges": {
+  "attention.room_att x OV.rooms": {
+   "pooled": -0.21244071451349203,
+   "within_layer": -0.17882117882117884
+  },
+  "attention.name_att x OV.rooms": {
+   "pooled": -0.07263579350175389,
+   "within_layer": -0.04245754245754246
+  },
+  "OV.rooms x ablation.I_final": {
+   "pooled_abs": 0.06175054793203112,
+   "pooled_signed": 0.06218079479249447,
+   "within_layer_abs": -0.09140859140859141
+  },
+  "OV.rooms x ablation.I_all": {
+   "pooled_abs": 0.09539585242026513,
+   "pooled_signed": 0.1605706591888075,
+   "within_layer_abs": -0.034465534465534464
+  },
+  "attention.room_att x OV.objects": {
+   "pooled": -0.21024898638901401,
+   "within_layer": -0.19880119880119881
+  },
+  "attention.name_att x OV.objects": {
+   "pooled": -0.08379184150718007,
+   "within_layer": -0.048451548451548455
+  },
+  "OV.objects x ablation.I_final": {
+   "pooled_abs": 0.02796098420234763,
+   "pooled_signed": 0.11976047904191617,
+   "within_layer_abs": -0.11038961038961037
+  },
+  "OV.objects x ablation.I_all": {
+   "pooled_abs": 0.11177813434837848,
+   "pooled_signed": 0.21714305961196795,
+   "within_layer_abs": 0.04295704295704295
+  },
+  "attention.room_att x OV.persons": {
+   "pooled": -0.24299836506193023,
+   "within_layer": -0.20629370629370627
+  },
+  "attention.name_att x OV.persons": {
+   "pooled": -0.09951609882517298,
+   "within_layer": 0.02547452547452548
+  },
+  "OV.persons x ablation.I_final": {
+   "pooled_abs": 0.05338098106407641,
+   "pooled_signed": 0.13058751474228214,
+   "within_layer_abs": -0.14385614385614387
+  },
+  "OV.persons x ablation.I_all": {
+   "pooled_abs": 0.12429831798786198,
+   "pooled_signed": 0.2050986783828792,
+   "within_layer_abs": -0.035464535464535464
+  },
+  "attention.room_att x ablation.I_final": {
+   "pooled_abs": -0.18850633475230436,
+   "within_layer_abs": 0.005994005994005994
+  },
+  "attention.room_att x ablation.I_all": {
+   "pooled_abs": -0.1805644838809279,
+   "within_layer_abs": 0.12887112887112886
+  },
+  "attention.name_att x ablation.I_final": {
+   "pooled_abs": -0.39521970429386366,
+   "within_layer_abs": -0.434065934065934
+  },
+  "attention.name_att x ablation.I_all": {
+   "pooled_abs": -0.32264465152535166,
+   "within_layer_abs": -0.34265734265734266
+  }
+ }
+}

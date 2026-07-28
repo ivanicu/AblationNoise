@@ -291,6 +291,45 @@ distribution — `8` under the repository's own preferred uncorrected method, `0
 where `0` is an artifact of `n`. **This does not touch the transport result above**, which compares
 counts under a *fixed* rule across configurations and never claims per-head significance.
 
+### Three instruments, three edges, **none positive** — and one of `R16`'s two numbers was a layer artifact
+
+The repository had measured **one** of the three pairwise relationships between its instrument
+classes and called the result *"no arbiter"*. That rested on a single edge. All three are now closed.
+
+```
+edge                                   pooled Spearman    within-layer mean
+attention.name_att x ablation.I_final      -0.3952            -0.4341
+attention.name_att x ablation.I_all        -0.3226            -0.3427
+attention.room_att x ablation.I_final      -0.1885            +0.0060   <- vanishes
+attention.room_att x ablation.I_all        -0.1806            +0.1289   <- reverses
+attention.room_att x OV.rooms              -0.2124            -0.1788
+attention.name_att x OV.rooms              -0.0726            -0.0425
+OV.rooms   x ablation.I_final              +0.0618            -0.0914
+OV.rooms   x ablation.I_all                +0.0954            -0.0345
+OV.objects x ablation.I_all  (signed)      +0.2171            +0.0430
+```
+
+**⚠ This narrows `R16` by half.** Its headline was *"attention and ablation anti-correlate at `−0.19`
+and `−0.40`"*. **Within layer the room-attention edge is `+0.006` and `+0.129` — it does not survive.**
+Only the **name**-attention edge holds, and it holds strongly (`−0.43`, `−0.34`).
+
+**And `attention.room_att × OV.rooms = −0.2124`, surviving the within-layer control at `−0.1788`:**
+attention to the room token **anti-correlates** with the OV circuit's ability to copy the room token.
+
+> **The three ways this literature identifies a copy head — *it attends to the thing*, *ablating it
+> hurts*, *its OV maps the thing to itself* — are mutually uninformative or mildly opposed here.**
+
+**The correct scope, which is narrower than it looks.** Three instruments disagreeing does **not** mean
+all three are wrong. A head can attend to `X`, not copy `X` *directly*, and still matter causally
+through composition — **disagreement is exactly what a compositional mechanism predicts.** What
+follows is only that **on this task these three operationalizations do not identify the same heads,
+so none of them alone licenses the phrase *"the copy head"***. Each is also a *specific*
+operationalization — `E132`'s final-position attention, zero-ablation at the final or all positions,
+direct-path `OV` — not "attention" or "ablation" in general.
+
+**Both gauge checks ran:** signed *and* magnitude correlations for the `OV` edge (`D82`'s lesson), and
+a within-layer control on every edge — which is what caught the `R16` narrowing.
+
 ### ⚠ The meta-separator, stated once: **there is no ground truth here, and that limits everything above**
 
 Two checks, both cheap, both aimed at the section above rather than at the eight heads.

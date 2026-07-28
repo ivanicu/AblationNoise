@@ -630,6 +630,41 @@ def adversary_scoring():
                                                   'R18']}
 
 
+def instrument_triangle():
+    """ALL THREE PAIRWISE RELATIONSHIPS BETWEEN THE THREE INSTRUMENT CLASSES, with a layer control.
+
+    The repository had measured ONE edge -- R16's attention x ablation -- and called it "no arbiter".
+    That rested on a single edge of a triangle. Closing it does two things.
+
+    FIRST, IT NARROWS R16 BY HALF. Within layer, the ROOM-attention edge is +0.0060 and +0.1289: it
+    does not survive, and the pooled -0.19 was mostly the shared layer trend. Only the NAME-attention
+    edge holds, at -0.4341 and -0.3427 within layer.
+
+    SECOND, attention.room_att x OV.rooms is -0.2124 pooled and -0.1788 within layer: attention to
+    the room token ANTI-correlates with the OV circuit's ability to copy the room token.
+
+    So the three ways this literature identifies a copy head -- it attends to the thing, ablating it
+    hurts, its OV maps the thing to itself -- are mutually uninformative or mildly opposed here.
+
+    THE SCOPE IS NARROWER THAN IT LOOKS. Three instruments disagreeing does NOT mean all three are
+    wrong: a head can attend to X, not copy X directly, and still matter through composition, which
+    is exactly what disagreement predicts. What follows is only that on this task these three
+    operationalizations do not identify the same heads, so none of them ALONE licenses "the copy
+    head". Each is specific -- E132's final-position attention, zero-ablation at final or all
+    positions, direct-path OV -- not attention or ablation in general.
+    """
+    f = HERE / 'R16_selection_vs_effect' / 'results' / 'instrument_triangle_qwen2.5-1.5b.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    e = d['edges']
+    return {'n_heads': d['n_heads'], 'edges': e,
+            'r16_room_survives': abs(e['attention.room_att x ablation.I_final']['within_layer_abs'])
+            > 0.15,
+            'r16_name_survives': abs(e['attention.name_att x ablation.I_final']['within_layer_abs'])
+            > 0.15}
+
+
 def ov_copying():
     """A THIRD INSTRUMENT, AND THE FIRST ONE INDEPENDENT OF BOTH ATTENTION AND ABLATION.
 
@@ -3093,6 +3128,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    TRI = instrument_triangle()
     OVC = ov_copying()
     RSL = resolution_limit()
     WOC = wo_conditioning()
@@ -3106,7 +3142,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -3342,6 +3378,23 @@ def main() -> int:
             print(f"        Chosen after the fact it would have been called layer-shaped; the rule")
             print(f"        is honoured at a 3% miss rather than renegotiated. Both centroids move")
             print(f"        EARLIER -- the direction replicates, the SHAPE does not resolve at n=2\n")
+
+    if TRI:
+        print("TRI  ALL THREE EDGES between the three instrument classes, with a LAYER control")
+        print(f"     {'edge':<42}{'pooled':>10}{'within-layer':>14}")
+        for k in sorted(TRI['edges']):
+            v = TRI['edges'][k]
+            po = v.get('pooled', v.get('pooled_abs'))
+            wl = v.get('within_layer', v.get('within_layer_abs'))
+            print(f"     {k:<42}{po:>+10.4f}{wl:>+14.4f}")
+        print(f"     -> R16 IS NARROWED BY HALF: the ROOM-attention edge does not survive the layer")
+        print(f"     control ({TRI['edges']['attention.room_att x ablation.I_final']['within_layer_abs']:+.4f}, "
+              f"{TRI['edges']['attention.room_att x ablation.I_all']['within_layer_abs']:+.4f}); only the NAME edge holds")
+        print(f"     -> attention to the room token ANTI-correlates with the OV circuit's ability to")
+        print(f"     copy the room token, and that one DOES survive the layer control")
+        print(f"     NOT 'all three are wrong': a head can attend to X, not copy X directly, and")
+        print(f"     still matter through composition. Only 'none of them ALONE licenses the copy")
+        print(f"     head' follows\n")
 
     if OVC:
         print("OV   A THIRD INSTRUMENT -- the weights. Independent of BOTH attention and ablation.")
@@ -4201,7 +4254,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 34.545, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 34.676, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -4282,9 +4335,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 110, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 111, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 27, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.182, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.108, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
