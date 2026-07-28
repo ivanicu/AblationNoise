@@ -83,6 +83,14 @@ a reason the framing is right.
 count changes** — that check is not in the repository and should be. Predicted severity: medium,
 because R1 *already* reports percentiles at the set level and the two conventions coexist unreconciled.
 
+> **RESOLVED 2026-07-28 — the first row in this file to be settled, and it scores me BADLY.**
+> The count does **not** change: leave-one-out, each head judged by a null excluding it, still `9`.
+> The *interpretation* breaks instead. Excess kurtosis is `+7.43`, and beyond `2 × sd` a normal
+> gives `7.6` of `168` while a Laplace gives `9.9` — observed `9`. **So "nine heads clear the floor"
+> is the tail a heavy-tailed distribution hands you for free**, and the front-page inference it
+> carried (*"so single-head ablation resolves effects here perfectly well"*) never followed.
+> **Predicted severity medium; actual severity invalidated a front-page inference.** Under-severe.
+
 ### A5 · Two floor definitions still coexist — `LANDS, narrowly`
 
 R9 emits `floor = sd/|margin|`; R10 and R1 use `2×sd`. R5 was already caught by exactly this and
@@ -118,15 +126,15 @@ reading of a clean row is *(1 − that rate)* per number rather than a guarantee
 
 ### A8 · The defect ledger is self-reported — `LANDS`
 
-`49` rows, `23` of them found by the author reading the object, classified by the author, against
+`50` rows, `24` of them found by the author reading the object, classified by the author, against
 bins the author pre-registered. The taxonomy test caught its own designer once; **that is one check, not
 independence.** `7` rows came from an outside reader. The cross-tab used to show that **no
-instrument had ever caught a `CONTROL` or `SCOPE` defect**; at n=`49` an instrument has caught its
+instrument had ever caught a `CONTROL` or `SCOPE` defect**; at n=`50` an instrument has caught its
 first `CONTROL` one — a false-conviction rule inside the provenance validator, which the validator
 surfaced itself. **`SCOPE` is still `0` from instruments against `2` from an outside reader.**
 
 **Prediction:** the adversary says the ledger measures *what the author noticed*, not *what is
-there*, and the `14.3%` outside-reader fraction is a floor on the true rate, not an estimate. Correct.
+there*, and the `14.0%` outside-reader fraction is a floor on the true rate, not an estimate. Correct.
 
 ---
 

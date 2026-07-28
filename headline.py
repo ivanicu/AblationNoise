@@ -212,6 +212,23 @@ def rank_vs_role():
     return {
         'n_band_heads': len(band), 'floor_2sd': floor,
         'n_clear': len(clear), 'pct_clear': 100 * len(clear) / len(band),
+        # IS THE COUNT ITSELF INFORMATIVE? No. Beyond 2sd a normal gives 4.55% and a Laplace 5.91%;
+        # the observed 5.36% sits between them. Nine heads in the tail is what a heavy-tailed
+        # distribution of 168 numbers gives for free, and the excess kurtosis is +7.43, so `2*sd`
+        # is a normal-theory cut on a distribution that is nothing like normal. The COUNT
+        # establishes nothing; the RANKING below needs no threshold and survives untouched.
+        'expected_beyond_2sd_normal': len(band) * math.erfc(2 / math.sqrt(2)),
+        'expected_beyond_2sd_laplace': len(band) * math.exp(-2 * math.sqrt(2)),
+        'excess_kurtosis': (sum((v - sum(w for _, _, w in band) / len(band)) ** 4
+                                for _, _, v in band) / len(band)) /
+                           ((sum((v - sum(w for _, _, w in band) / len(band)) ** 2
+                                 for _, _, v in band) / len(band)) ** 2) - 3,
+        # LEAVE-ONE-OUT: each head judged by a null that excludes it. It changes nothing at n=168 --
+        # reported because a null containing its own test point is the defect this repository found
+        # at k=1, and a check that came back clean is still a check that ran.
+        'n_clear_leave_one_out': sum(
+            1 for x, h, v in band
+            if abs(v) > 2 * sd([w for a, b, w in band if not (a == x and b == h)])),
         'clearing_heads': [{'head': f'L{x}H{h}', 'drop': v, 'x_floor': abs(v) / floor,
                             'direction': 'ablation HELPS' if v > 0 else 'ablation hurts'}
                            for x, h, v in clear],
@@ -1143,6 +1160,13 @@ def main() -> int:
             print(f"        {c['head']:<8}{c['drop']:>+9.4f}{c['x_floor']:>7.2f}x   {c['direction']}")
         print(f"      {RV['n_clear_positive']} of {RV['n_clear']} clear in the HELPING direction -- "
               f"clearing the floor is not evidence of a role")
+        print(f"      AND THE COUNT ITSELF IS NOT INFORMATIVE: a normal would give "
+              f"{RV['expected_beyond_2sd_normal']:.1f} beyond 2sd, a Laplace "
+              f"{RV['expected_beyond_2sd_laplace']:.1f}; observed {RV['n_clear']}. Excess kurtosis "
+              f"{RV['excess_kurtosis']:+.2f} -- 2*sd is a normal-theory cut on a heavy tail")
+        print(f"      leave-one-out (each head judged by a null excluding it): "
+              f"{RV['n_clear_leave_one_out']} -- the circularity check ran and came back clean")
+        print(f"      WHAT SURVIVES IS THE RANKING, which needs no threshold:")
         print(f"      published heads among the clearing set: "
               f"{RV['n_published_among_clearing']} of {RV['n_clear']}")
         for r in RV['published_ranks']:
@@ -1436,15 +1460,20 @@ def main() -> int:
             ('SET copy circuit z vs null mean',
              SL['sets']['COPY']['z_from_null_mean'] if SL else -1, -3.291, 0.001),
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
+            ('RNK excess kurtosis of the band', RV['excess_kurtosis'] if RV else -1, 7.43, 0.01),
+            ('RNK normal-predicted tail count',
+             RV['expected_beyond_2sd_normal'] if RV else -1, 7.64, 0.01),
+            ('RNK leave-one-out clearing count',
+             RV['n_clear_leave_one_out'] if RV else -1, 9, 0),
             ('RNK heads clearing the exhaustive floor', RV['n_clear'] if RV else -1, 9, 0),
             ('RNK published heads among them',
              RV['n_published_among_clearing'] if RV else -1, 0, 0),
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 56, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 49, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 50, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 15, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 14.286, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 14.0, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

@@ -450,6 +450,15 @@
       "defect": "the IMPOSSIBLE branch fired on a result whose stamp matched no CURRENT runner and whose runner had not been committed since -- concluding the stamp could not have come from that runner",
       "operation": "FALSE CONVICTION, on exactly the scenario the stamp exists to reveal: a 16-minute job holds the source it loaded, so editing and committing the runner mid-run leaves the result carrying the PRE-EDIT hash while git reports no movement. Stamps are now resolved against every committed version of the runner, not just HEAD; a stamp found in history is reported as STALE with the reason, and cannot be called impossible",
       "found_by": "instrument"
+    },
+    {
+      "id": "D50",
+      "round": "repo",
+      "bin": "STATISTIC",
+      "commit": "69d3c47",
+      "defect": "the front page inferred '9 of 168 heads clear the exhaustive floor, SO single-head ablation resolves effects here perfectly well' -- written one step earlier",
+      "operation": "THE COUNT ESTABLISHES NOTHING. Beyond 2*sd a normal over 168 numbers gives 7.6 and a Laplace gives 9.9; observed 9. Excess kurtosis is +7.43, so 2*sd is a normal-theory cut on a distribution nothing like normal, and the tail is what such a distribution hands you for free. Leave-one-out (each head judged by a null excluding it) leaves the count at 9, so the circularity check ran and came back clean -- it is the INTERPRETATION that breaks. Every statement about ORDER survives, because a ranking needs no threshold. Predicted as ADVERSARY.md row A4 at MEDIUM severity; actual severity invalidated a front-page inference, so the calibration was under-severe",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

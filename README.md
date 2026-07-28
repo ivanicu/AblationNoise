@@ -28,11 +28,28 @@ the evidence supports:
 > the eight published heads rank   10 · 55 · 56 · 109 · 113 · 115 · 116 · 143   of 168
 > ```
 >
-> **So single-head ablation resolves effects here perfectly well.** It just does not rank the heads
-> a mechanistic hypothesis picked anywhere near the top — and the heads it *does* rank at the top
-> were never identified as anything, mostly because removing them is an improvement.
+> **Ablation magnitude and mechanistic role are close to unrelated on this task.** The claim is
+> about the **ranking**, which needs no threshold — see the correction below for what the *count*
+> does and does not establish.
+
+> ### And the count `9` establishes nothing — corrected the step after it was written
 >
-> **Ablation magnitude and mechanistic role are close to unrelated on this task.**
+> *"`9` of `168` clear, **so single-head ablation resolves effects here perfectly well**"* does not
+> follow. Beyond `2 × sd` a **normal** distribution of `168` numbers gives `7.6` and a **Laplace**
+> gives `9.9`. Observed: `9`. **The tail is exactly what a heavy-tailed distribution hands you for
+> free**, and this one has excess kurtosis `+7.43`, so `2 × sd` is a normal-theory cut on something
+> nothing like normal. A count of tail members is not evidence that any member is resolvable.
+>
+> This is [`ADVERSARY.md`](ADVERSARY.md) row **A4**, and it is the first prediction in that file to
+> resolve. I rated it *"partly lands, medium severity — I do not know whether the count changes."*
+> **The count does not change** (leave-one-out, each head judged by a null excluding it: still `9`).
+> **The interpretation breaks instead.** My severity estimate was too low, which is the row scoring
+> me rather than the other way round.
+>
+> **What survives is every statement about ORDER**, because a ranking needs no threshold: the eight
+> published heads at `10 · 55 · 56 · 109 · 113 · 115 · 116 · 143`, the proven copy head `56`th, and
+> `0` of the top nine among them. Whether any individual head is *resolvable* is a question about
+> measurement noise, not about the spread across heads, and it is what R11 was launched to answer.
 
 > ### The symmetric error, refused explicitly
 >
@@ -458,21 +475,21 @@ against, which is a fact about your directory and not about the ledger.
     PROVENANCE     15      whether the number has a generator at all
     SCOPE           8      which population the claim covers
     CONTROL         8      what the control arm actually holds fixed
-    STATISTIC       8      what quantity the number is
+    STATISTIC       9      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 23 · instrument 10 · outside reader 7
+    found by:  author reading the object 24 · instrument 10 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 49 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 50 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 49 were findable only by an outside reader** — `14.3%`. That fraction was 27% at n=22 and
+**7 of 50 were findable only by an outside reader** — `14.0%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -484,13 +501,13 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE             9                6                    0
 SCOPE                  8                0                    2
-STATISTIC              5                3                    1
+STATISTIC              6                3                    1
 CONTROL                4                1                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**An instrument has finally caught a `CONTROL` defect — the first, at n=`49`.** It was the
+**An instrument has finally caught a `CONTROL` defect — the first, at n=`50`.** It was the
 provenance validator, firing on its own during a routine gate run, and what it revealed was a
 false-conviction rule **inside itself**. The `--check` line asserting `0` had been written at n=`37`
 precisely so the build would fail the day this happened; it failed, and the expected count was
@@ -505,12 +522,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`49` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`50` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `15`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`49` a bin of `15` is `30.6%`, which is not domination
+> ledger; at n=`50` a bin of `15` is `30.0%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The
