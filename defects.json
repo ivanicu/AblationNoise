@@ -297,6 +297,51 @@
       "defect": "the front page's first sentence: 'almost none report what a random component of the same size does' -- the project's entire novelty premise",
       "operation": "FALSE. One arXiv query returned ten of ten relevant papers reporting a random-component control, several as required methodology, including one that samples the null across TEN SEEDS per cell. The query contained the word 'random' so the sample cannot estimate a base rate -- but it refutes a universal negative, which is what the sentence was",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D33",
+      "round": "R1",
+      "bin": "CONTROL",
+      "commit": "3930ba8",
+      "defect": "two of the eight published effects -- L16H3 and L19H0 -- are among the thirty random draws that define the floor judging them, and L16H3 is that sample's extreme value",
+      "operation": "CIRCULAR, and conservative. Leaving both out SHRINKS the floor from 0.4418 to 0.4131, so L16H3 clears by MORE (1.13x vs 1.06x) and the count is unchanged. A defect whose sign happens to help the conclusion is still a defect; the control is now in make headline",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D34",
+      "round": "R1",
+      "bin": "STATISTIC",
+      "commit": "3930ba8",
+      "defect": "the headline floor 0.4418 is 2*sd of THIRTY RANDOM DRAWS from a band of 168 heads, while R10 measured all 168 exhaustively in the same vocabulary at the same margin -- the reference class was never itself checked",
+      "operation": "UNRESOLVED, not wrong. The exhaustive floor is 0.4870 (10.2% higher) and against it the count is 8 of 8, not 7 of 8. A 30-draw floor from this population spans 2.7x between p05 and p95, so the two are the same measurement to within its own resolution. The floor had a noise floor",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D35",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "3930ba8",
+      "defect": "detector 6 skipped every blockquote line -- 97 of 625 numbers, 15.5%, of which 25 were emitted by no generator and 18 were on the front page",
+      "operation": "A BLANKET EXEMPTION WITH A SOUND PREMISE. Correction blocks do restate wrong numbers deliberately; but the rule could not name what it exempted, and this repository argues in blockquotes, so every NEW claim written in that style went unchecked too. Replaced by the per-value <!-- unbacked-ok --> marker, which forces each exempt number to be listed next to the sentence needing it",
+      "found_by": "author_attacking_own_detector"
+    },
+    {
+      "id": "D36",
+      "round": "repo",
+      "bin": "STATISTIC",
+      "commit": "3930ba8",
+      "defect": "the front page's held-out variance decomposition -- 'on R5's six margin cells the floor carries 52%, effects spanning 3.8x and floors 5.2x'",
+      "operation": "WITHDRAWN, unreproducible. 28 admissible pairings of R5's checked-in fields span 4.3%-90.8% and NONE lands within 3pp of 52. Third instance after R4 and R5 of the prose fixing the claim and leaving the estimator free. The in-sample half (72.1%, 3.1717 vs 1.2298, 6 cells, 5 distinct floors) reproduces exactly and is now generated",
+      "found_by": "detector_6_after_the_blockquote_hole_was_closed"
+    },
+    {
+      "id": "D37",
+      "round": "repo",
+      "bin": "PROVENANCE",
+      "commit": "3930ba8",
+      "defect": "detector 6's own documented invocation -- the example in its docstring -- crashed on relative_to(ROOT) for any relative path argument",
+      "operation": "BROKEN AND INVISIBLE. make verify passes no arguments and takes the glob branch, whose paths are already absolute, so the only broken path was the one a human would type. Fixed with .resolve()",
+      "found_by": "author_attacking_own_detector"
     }
   ]
 }

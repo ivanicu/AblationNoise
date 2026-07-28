@@ -1,3 +1,6 @@
+<!-- unbacked-ok: 7.5 151.0 -- the VARIANCE-ratio form of a spread this
+ page reports as standard deviations. Stated in the correction to show which number was NOT quoted. -->
+
 # R1 — the ablation noise floor
 
 **Question.** Ablation effects are read as evidence of localisation. What does a *random* component
@@ -51,10 +54,21 @@ L17H7   -0.0352         0.080
 L19H0   +0.0154         0.035
 
 7 of 8 inside the floor · largest clears by 5.7% · base margin 4.477, n=120
-``` Against that, of eight
-previously measured single-head effects, **seven are inside the floor** — including the head an
-earlier experiment had independently proved was the copy head (−0.132, a third of the floor). The
-largest effect in the set clears by 6%.
+```
+
+> **That floor is a 30-draw sample and the exhaustive one is `0.4870`, against which the count is
+> `8 of 8`.** [R10](../R10_exhaustive/) measured all `168` band heads; `make headline` replays this
+> round's `draw_seed 20260727` against that table and returns the sd above with reconstruction
+> error `0`. The two floors are the same measurement to within its own resolution — a 30-draw floor
+> from this population spans `2.7×` between its 5th and 95th percentiles — but the exhaustive one
+> needs no sampling argument, so it is the one the front page uses. `L16H3` and `L19H0` are also
+> **among the thirty draws**, i.e. inside the null that judges them; the leave-both-out control is
+> in `make headline` and moves the count not at all.
+
+Against the sampled floor, of eight previously measured single-head effects, **seven are inside**
+— including the head an earlier experiment had independently proved was the copy head (−0.132, a
+third of the floor). The largest clears by 6%. **Against the exhaustive floor, all eight are
+inside**, and the largest sits at `0.96×`.
 
 ## Two amendments, both committed before the runs they govern
 

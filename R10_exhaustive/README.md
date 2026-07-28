@@ -71,6 +71,35 @@ inside their OWN layer's floor :  8 of 8
 inside the band-pooled floor   :  7 of 8
 ```
 
+> ### The band-pooled floor in that table is a THIRTY-DRAW ESTIMATE, and this round contains the exhaustive one
+>
+> `0.4418` is `2 × sd` of **30 random draws** from a band of **168** heads. R10 measured all 168.
+> Nobody had put the two side by side, so the reference class for the repository's headline was
+> never itself checked. `make headline` now recomputes it — the 30 draws are replayed from
+> `draw_seed 20260727` and looked up in this round's exhaustive table, returning the recorded sd
+> with a **reconstruction error of exactly `0`**.
+>
+> ```
+> sampled floor, 30 draws            0.4418
+> EXHAUSTIVE floor, all 168 heads    0.4870      10.2% higher
+> what a 30-draw floor looks like    p05 0.2595   median 0.4604   p95 0.6967   =  2.7x
+> ```
+>
+> **The sampled floor is not wrong and it is not lucky** — it sits at the `45.1`st percentile of
+> its own sampling distribution. It is *unresolved*: a `2.7×` interval cannot distinguish `0.4418`
+> from `0.4870`. The floor had a noise floor, which is this repository's own thesis pointed at its
+> own instrument.
+>
+> **Against the exhaustive floor the count is `8 of 8`.** `L16H3` — the one effect that cleared,
+> by `5.7%` — sits at `0.96×` and is inside. The pooled column above is kept as measured, and the
+> exhaustive floor is the one the front page now uses.
+>
+> **And two of the eight are inside the null that judges them.** `L16H3` and `L19H0` are among the
+> thirty draws; `L16H3` is that sample's **extreme value**. That is circularity, and its control is
+> in `make headline`: with both removed the floor **shrinks** to `0.4131`, so `L16H3` clears by
+> *more* (`1.13×` rather than `1.06×`) and the count is unchanged. **The direction is conservative,
+> which does not make it acceptable** — it makes it a defect that happened to point the safe way.
+
 **The round was designed expecting the layer-specific floor to rescue some effects. It kills the
 last survivor instead.** `L16H3` clears the pooled floor by 6% and sits at 0.90× of `L16`'s own —
 `L16` is simply a noisy layer.

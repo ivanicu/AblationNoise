@@ -1,12 +1,29 @@
+<!-- unbacked-ok: 2605.24059 2606.05378 2605.29126 2605.00333 2607.01002 2604.01094
+ 2603.11793 2606.09607 2607.04167 2607.18921 -- arXiv identifiers, not measurements: they name the
+ papers that refuted this project's novelty premise and no generator here could emit them.
+ 57.5 18.1 80.5 1.4 -- results QUOTED FROM 2606.05378 section 6, which this repository did not run.
+ 29.0 -- 9/31, arithmetic on two counts already shown in the same sentence.
+ 52.0 3.8 5.2 -- the RETRACTED held-out numbers, kept verbatim so the retraction below can be read
+ against what it retracts. They are unbacked BECAUSE they are unreproducible; that is the finding. -->
+
 # AblationNoise
 
 **An ablation effect is reported as a number, and whether that number is large depends entirely on
 what a *random* component of the same size does. This repository measures that — and then points
 the measurement at its own author's prior work.**
 
-Then it points the measurement at its own author's prior results, and **seven of eight published
+Then it points the measurement at its own author's prior results, and **all eight published
 single-head effects turn out to sit inside the noise floor** — including a head that had been
 independently established as the copy head for that task.
+
+> That count was **seven of eight** until the floor itself was audited. The floor it was measured
+> against is `2 × sd` of **30 random draws** from a band of `168` heads; [R10](R10_exhaustive/)
+> measured all `168`, and the exhaustive floor is `0.4870` rather than `0.4418`. The one effect
+> that cleared now sits at `0.96×`. The sampled floor is neither wrong nor lucky — it is at the
+> `45.1`st percentile of its own sampling distribution — it is **unresolved**, because a 30-draw
+> floor from this population spans `2.7×` from p05 to p95. **The floor had a noise floor.**
+> `make headline` replays the draw from its seed and returns the recorded value with
+> reconstruction error `0`, so the number is now computed rather than stored.
 
 **And "inside the floor" turns out to have two different causes, which the same sentence used to
 cover.** Ablating the *sets* and placing them against a 30-draw set-size null separates them:
@@ -311,38 +328,42 @@ it does not fail, and it does not claim the rows are wrong. There is no reposito
 against, which is a fact about your directory and not about the ledger.
 
 ```
-    PROVENANCE      9      whether the number has a generator at all
-    CONTROL         7      what the control arm actually holds fixed
-    STATISTIC       5      what quantity the number is
-    SCOPE           4      which population the claim covers
-    INTERVENTION    2      what the operation physically writes / where / when
+    PROVENANCE     11      whether the number has a generator at all
+    CONTROL         8      what the control arm actually holds fixed
+    STATISTIC       7      what quantity the number is
+    SCOPE           5      which population the claim covers
     UNCLASSIFIED    4
+    INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 15 · instrument 8 · outside reader 7 · author writing it up 1
+    found by:  author reading the object 18 · instrument 8 · outside reader 7
+               author attacking own detector 2 · author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 22 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 37 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 31 were findable only by an outside reader** — 22%. That fraction was 27% at n=22 and
-fell as the author kept finding more, which is the right direction and also a reminder that a
-ceiling estimated from a small sample moves.
+**7 of 37 were findable only by an outside reader** — `18.9%`. That fraction was 27% at n=22 and
+falls as the author keeps finding more, which is the right direction and also a reminder that a
+ceiling estimated from a small sample moves. **Every count in this section is now generated from
+[`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
+tally on a ledger that grows every session is wrong one commit after it is written.
 
 And the split is not uniform. Cross-tabulating the joint against who found it:
 
 ```
-joint          by an instrument    by an outside reader
-PROVENANCE            5                    0
-STATISTIC             2                    1
-INTERVENTION          1                    0
-CONTROL               0                    3
-SCOPE                 0                    2
+joint            by the author   by an instrument   by an outside reader
+PROVENANCE             4                7                    0
+CONTROL                4                0                    4
+STATISTIC              3                3                    1
+SCOPE                  3                0                    2
+UNCLASSIFIED           4                0                    0
+INTERVENTION           1                1                    0
 ```
 
-**The overlap is one bin.** Six detectors existed and **not one had ever caught a `CONTROL` or
-`SCOPE` defect** — those two joints were found only by another mind. That measurement is what
+**The overlap is one bin, and n=37 has not changed it.** Nine detectors now exist and **not one has
+ever caught a `CONTROL` or `SCOPE` defect** — those two joints were found only by another mind. That measurement is what
 [`arm_contrast`](detectors/arm_contrast.py) was built from: it is aimed at the joint the instruments
 had never reached, and its first selftest case is the real defect that eight rounds inherited.
 
@@ -350,12 +371,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=31 it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
-the pre-registered threshold of ≥8.
+`AMBIGUOUS` by one instance. At n=`37` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+the pre-registered threshold of ≥8 and now stands at `11`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=31 a bin of 9 is 29%, which is not domination
+> ledger; at n=`37` a bin of `11` is `29.7%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The
@@ -373,7 +394,8 @@ again in R8, in the round written to fix R7. The bin set was missing a sixth joi
 
 ## Why R1 and R2 disagreed — and it is none of the three factors R5 was built to test
 
-R1 found 7 of 8 effects inside their floor. R2 found 0 of 4. Same operation, opposite conclusions.
+R1 found 7 of 8 effects inside their sampled floor (8 of 8 against the exhaustive one). R2 found
+0 of 4. Same operation, opposite conclusions.
 [R5](R5_factorial/) spent a 2×2 on *readout*, *site* and *mechanism size* and returned `MIXED`.
 
 Put both rounds on one scale — each readout's **dynamic range**, from the baseline to where the
@@ -395,13 +417,28 @@ R2 qwen2.5-3b                 10.378     8.3%     0.5%     15.10
 91× spread.** These two rounds do not differ in signal. They differ in how noisy single-component
 ablation is on that task, model and readout.
 
-> **And that does not generalise inside one task — checked on held-out cells, and it failed.**
-> Decomposing `log(effect/floor)` into its two terms: across the two rounds the floor carries
-> **72%** of the variance (3.17 vs 1.23). On [R5](R5_factorial/)'s six margin cells, which were
-> never used to build this, it carries **52%** — a coin flip, with effects spanning 3.8× and floors
-> 5.2×. So *across tasks* the floor dominates; *within one task and readout* the two vary
-> comparably and neither decides. n=6 on both sides, and the in-sample six share only five distinct
-> floor values, so this is a scope correction rather than a measurement.
+> **Decomposing `log(effect/floor)` into its two terms: across these six cells the floor carries
+> `72.1%` of the variance (`3.1717` vs `1.2298`).** Six cells sharing only `5` distinct floor
+> values, so it is a description of this pair of rounds, not an estimate of anything.
+>
+> ### RETRACTED 2026-07-28 — the held-out half of this claim cannot be recomputed
+>
+> This paragraph used to continue: *"On R5's six margin cells, which were never used to build this,
+> it carries **52%** — a coin flip, with effects spanning 3.8× and floors 5.2×."* **No pairing of
+> R5's checked-in fields reproduces any of those three numbers.** `make headline` now sweeps every
+> admissible one — `{margin, kl}` × `{final, all, change, stacked}` × `{2sd_final, 2sd_all,
+> w_final, w_all}` — and reports the result: `28` pairings spanning `4.3%` to `90.8%`, with `0`
+> landing within `3` percentage points of `52`.
+>
+> The estimator was a free parameter, which is the **third** time in this project after
+> [R4](R4_predictability/) and [R5](R5_factorial/): the prose fixed the *claim* and left the
+> *computation* unspecified, so the number could not be checked and now cannot be found. A span of
+> `4.3%`–`90.8%` also means the choice **is** the result. It is removed rather than caveated,
+> because a caveat on an unreproducible number still leaves the number on the page.
+>
+> **The in-sample half above survives and is now generated.** What died with the held-out half is
+> the scope sentence it licensed — *"across tasks the floor dominates; within one task the two vary
+> comparably"*. There is no held-out evidence for the second clause.
 
 **And `phi-3.5-mini` is the control that makes this internal.** Same task, same mechanism, same
 readout as the other three R2 cells — its effect is a perfectly ordinary 10.6% of range, and it is

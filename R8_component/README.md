@@ -1,3 +1,6 @@
+<!-- unbacked-ok: 54.0 -- a percentage of the FRONT PAGE's numbers, measured
+ once when the fence exemption was removed and not recomputed since; it describes a past state. -->
+
 # R8 — is it the *direction relative to the data*, or *which component* gets destroyed?
 
 [R7](../R7_norm_matched/) matched the perturbation size to 0.00% and found `mean` far less readable

@@ -158,6 +158,208 @@ def r10():
     return out or None
 
 
+def defect_ledger():
+    """The defect table's own counts, GENERATED -- because every step adds a row and the prose drifts.
+
+    The front page carried a cross-tabulation, an outside-reader fraction and a `n=NN` in four
+    sentences, all maintained by hand. Every one of them was correct when written and wrong one
+    commit later, which is the same failure the provenance stamp exists for, one level up. This
+    reads `defects.json` and emits what the prose asserts.
+    """
+    p = HERE / 'defects.json'
+    if not p.exists():
+        return None
+    d = json.load(open(p))['defects']
+    bins, by = {}, {}
+    for r in d:
+        bins[r['bin']] = bins.get(r['bin'], 0) + 1
+        by[r['found_by']] = by.get(r['found_by'], 0) + 1
+    outside = sum(1 for r in d if r['found_by'] == 'outside_reader')
+    inst = {}
+    for r in d:
+        # An "instrument" find is any found_by naming a detector or the gate, as opposed to the
+        # author reading, or another mind. Grouped by prefix so a new detector does not need a
+        # new branch here -- the failure mode this whole function exists to remove.
+        who = ('outside' if r['found_by'] == 'outside_reader'
+               else 'instrument' if ('instrument' in r['found_by'] or
+                                     'detector' in r['found_by'] or 'gate' in r['found_by'])
+               else 'author')
+        inst.setdefault(r['bin'], {'author': 0, 'instrument': 0, 'outside': 0})[who] += 1
+    largest = max(bins.values())
+    return {'n': len(d), 'bins': dict(sorted(bins.items(), key=lambda kv: -kv[1])),
+            'found_by': dict(sorted(by.items(), key=lambda kv: -kv[1])),
+            'n_outside_reader': outside, 'outside_reader_pct': 100 * outside / len(d),
+            'largest_bin': largest, 'largest_bin_pct': 100 * largest / len(d),
+            'largest_bin_name': max(bins, key=bins.get),
+            'n_unclassified': bins.get('UNCLASSIFIED', 0),
+            'cross_tab': inst}
+
+
+def variance_decomposition():
+    """Across R1 and R2, does the FLOOR or the EFFECT carry more of the variation?
+
+    `log(effect/floor)` splits into `log effect - log floor`, so the two variances say which term
+    drives the ratio. On the six cross-round cells the floor carries most of it -- that is the
+    front page's claim and it reproduces exactly.
+
+    THE HELD-OUT HALF OF THAT CLAIM DID NOT. The page also reported that on R5's six margin cells
+    the floor carries "52% -- a coin flip", with effects spanning 3.8x and floors 5.2x. No pairing
+    of R5's checked-in fields reproduces any of those three numbers. Twenty-six admissible pairings
+    -- {margin, kl} x {final, all, change, stacked} x {2sd_final, 2sd_all, w_final, w_all} -- span
+    4.3% to 90.8%, and none lands near 52. The estimator was free, exactly as in R4, and the swept
+    range is so wide that the CHOICE is the result. The sweep is emitted here so the retraction
+    carries its own evidence rather than a promise.
+    """
+    import itertools
+    cr = cross_round_scale()
+    rows = [r for r in cr['r1'] + cr['r2'] if 'effect_pct' in r]
+    le = [math.log(r['effect_pct']) for r in rows]
+    lf = [math.log(r['noise_pct']) for r in rows]
+
+    def var(xs):
+        m = sum(xs) / len(xs)
+        return sum((x - m) ** 2 for x in xs) / (len(xs) - 1)
+
+    ve, vf = var(le), var(lf)
+    out = {'in_sample': {
+        'n_cells': len(rows), 'var_log_effect': ve, 'var_log_floor': vf,
+        'floor_share_pct': 100 * vf / (ve + vf),
+        'n_distinct_floors': len({round(r['noise_pct'], 6) for r in rows})}}
+
+    R5 = r5()
+    sweep = []
+    EFF = {'final': lambda r: abs(r['effect_final']), 'all': lambda r: abs(r['effect_all']),
+           'change': lambda r: abs(r['effect_change'])}
+    FL = ('read_2sd_final', 'read_2sd_all', 'read_w_final', 'read_w_all')
+    if R5:
+        for ro, (en, ef), fk in itertools.product(('margin', 'kl'), EFF.items(), FL):
+            rs = [r for r in R5['rows'] if r['readout'] == ro]
+            cells = [(ef(r), r[fk]) for r in rs]
+            if len(cells) < 2 or any(e <= 0 or f <= 0 for e, f in cells):
+                continue
+            a, b = var([math.log(e) for e, _ in cells]), var([math.log(f) for _, f in cells])
+            sweep.append({'readout': ro, 'effect': en, 'floor': fk,
+                          'floor_share_pct': 100 * b / (a + b)})
+        for ro, lbl in itertools.product(('margin', 'kl'), ('2sd', 'w')):
+            rs = [r for r in R5['rows'] if r['readout'] == ro]
+            cells = ([(abs(r['effect_final']), r[f'read_{lbl}_final']) for r in rs] +
+                     [(abs(r['effect_all']), r[f'read_{lbl}_all']) for r in rs])
+            if any(e <= 0 or f <= 0 for e, f in cells):
+                continue
+            a, b = var([math.log(e) for e, _ in cells]), var([math.log(f) for _, f in cells])
+            sweep.append({'readout': ro, 'effect': 'stacked', 'floor': lbl,
+                          'floor_share_pct': 100 * b / (a + b)})
+    shares = [s['floor_share_pct'] for s in sweep]
+    out['held_out_sweep'] = {
+        'n_pairings': len(sweep), 'min_pct': min(shares) if shares else None,
+        'max_pct': max(shares) if shares else None,
+        'n_within_3pp_of_52': sum(abs(s - 52) < 3 for s in shares),
+        'rows': sweep}
+    return out
+
+
+def r1_floor_audit():
+    """THE FLOOR HAS ITS OWN NOISE FLOOR, and nobody measured it until the floor was audited.
+
+    R1's pooled floor -- the reference class for this repository's headline -- is `2 x sd` of
+    THIRTY RANDOM DRAWS from a band of 168 heads. R10 later measured ALL 168 exhaustively in the
+    same vocabulary at the same baseline margin. Two facts follow, and neither was noticed:
+
+    1. THE 30-DRAW FLOOR IS RECOMPUTABLE WITHOUT A GPU. The draw is `random.Random(draw_seed)`
+       over an index list, so which heads were drawn depends on nothing but the seed. Replay the
+       seed, look each head up in R10's exhaustive table, and the sd comes back BIT-IDENTICAL to
+       the recorded one. Until this function existed, `0.4418` reached the front page as a stored
+       constant that the gate could only echo -- it passed `prose_numbers` because it was WRITTEN
+       DOWN, not because anything recomputed it.
+
+    2. TWO OF THE EIGHT PUBLISHED EFFECTS ARE INSIDE THE NULL THAT JUDGES THEM. L16H3 -- the
+       largest of the eight, and the only one that cleared -- is one of the thirty draws, and it
+       is that sample's extreme value. That is textbook circularity. It is reported here WITH its
+       leave-two-out control because the direction turns out to be CONSERVATIVE: removing them
+       SHRINKS the null, so L16H3 clears by more, not less. A defect whose sign helps the
+       conclusion is still a defect, and it is still the reader's to check.
+
+    The consequential number is neither of those. It is that a 30-draw floor drawn from this
+    population has a p05-p95 range of roughly 2.7x -- so `0.4418` and the exhaustive `0.4870` are
+    the same measurement to within its own resolution, and the headline should never have rested
+    on the sampled one when the exhaustive one was sitting in the next directory.
+    """
+    import random
+    import re as _re
+    import statistics as _st
+    p = HERE / 'R1_noise_floor' / 'results' / 'original_vocabulary' / \
+        'r1v1_atlas_qwen2.5-1.5b.json'
+    q = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    pe = r1_prior_effects()
+    if not (p.exists() and q.exists() and pe):
+        return None
+    v1, t = json.load(open(p)), json.load(open(q))
+    NH, (lo, hi), (slo, shi) = v1['n_heads'], v1['band'], v1['sham_band']
+    # int(L), NOT L. The JSON keys are strings, so `(L, int(h))` builds ('14', 0) and every
+    # lookup misses. The guard below caught it by returning None instead of a plausible number --
+    # which is the only reason this comment is a note rather than a retraction.
+    per = {(int(L), int(h)): d
+           for L, v in t['layers'].items() for h, d in v['per_head'].items()}
+    if not all((L, h) in per for L in range(lo, hi + 1) for h in range(NH)):
+        return None
+
+    # Replay the runner's draw EXACTLY: same seed, same pools, same call order. The sham draws
+    # are consumed too -- skipping them would leave the RNG in a different state and silently
+    # produce a different, plausible-looking set of heads.
+    rng = random.Random(v1['draw_seed'])
+    bp = [(L, h) for L in range(lo, hi + 1) for h in range(NH)]
+    sp = [(L, h) for L in range(slo, shi + 1) for h in range(NH)]
+    drawn = []
+    for k in (1, 2, 5, 10, 20):
+        if k > len(bp):
+            continue
+        d = [rng.sample(bp, k) for _ in range(v1['n_draws'])]
+        [rng.sample(sp, min(k, len(sp))) for _ in range(v1['n_draws'])]
+        if k == 1:
+            drawn = [x[0] for x in d]
+
+    samp = 2 * _st.stdev([per[x] for x in drawn])
+    pool = [per[(L, h)] for L in range(lo, hi + 1) for h in range(NH)]
+    exh = 2 * _st.stdev(pool)
+
+    eight = {h: e['drop'] for h, e in pe['effects'].items()}
+    hd = {h: (int(m.group(1)), int(m.group(2)))
+          for h in eight if (m := _re.match(r'L(\d+)H(\d+)', h))}
+    contaminating = sorted(h for h, x in hd.items() if x in drawn)
+    loo_pts = [per[x] for x in drawn if x not in {hd[h] for h in contaminating}]
+    loo = 2 * _st.stdev(loo_pts)
+
+    # The sampling distribution of the FLOOR ITSELF -- 30 independent single draws, repeats
+    # allowed, exactly as the runner does it. Fixed seed so the interval is reproducible.
+    rs = random.Random(11)
+    boot = sorted(2 * _st.stdev([rs.choice(pool) for _ in range(len(drawn))])
+                  for _ in range(4000))
+    def pct(v):
+        return 100.0 * sum(b < v for b in boot) / len(boot)
+
+    ins = lambda f: sum(abs(d) < f for d in eight.values())  # noqa: E731
+    return {
+        'model': v1['model'], 'band': [lo, hi], 'n_band_heads': len(pool),
+        'n_draws': len(drawn), 'draw_seed': v1['draw_seed'],
+        'base_margin': abs(v1['base_margin']),
+        'sampled_floor': samp, 'recorded_floor': 2 * v1['cells']['band_k1']['sd'],
+        'reconstruction_error': abs(samp - 2 * v1['cells']['band_k1']['sd']),
+        'exhaustive_floor': exh,
+        'divergence_pct': 100 * abs(exh - samp) / samp,
+        'boot_p05': boot[200], 'boot_median': boot[2000], 'boot_p95': boot[3800],
+        'boot_spread_x': boot[3800] / boot[200],
+        'sampled_floor_percentile': pct(samp),
+        'contaminating_heads': contaminating,
+        'leave_out_floor': loo,
+        'n_inside_sampled': ins(samp), 'n_inside_leave_out': ins(loo),
+        'n_inside_exhaustive': ins(exh), 'n_total': len(eight),
+        'per_effect': [{'head': h, 'drop': d, 'x_sampled': abs(d) / samp,
+                        'x_leave_out': abs(d) / loo, 'x_exhaustive': abs(d) / exh,
+                        'in_the_null': h in contaminating}
+                       for h, d in sorted(eight.items(), key=lambda kv: -abs(kv[1]))],
+    }
+
+
 def r9():
     """Is R1's headline a DEPTH artifact? The per-layer floor, and the estimator that failed twice.
 
@@ -624,11 +826,12 @@ def main() -> int:
     PE, SN = r1_prior_effects(), r1_set_null()
     BS, CR = r1_behavioural_scale(), cross_round_scale()
     SR, TEN, NINE = r1_set_null_range(), r10(), r9()
+    FA, VD, DL = r1_floor_audit(), variance_decomposition(), defect_ledger()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -683,6 +886,52 @@ def main() -> int:
         print(f"      across models the k=1 floor is at most "
               f"{BS['max_pct_to_flip_k1']:.1f}% of the distance to a flip")
         print(f"      -> at k=1 the SIGNAL AND THE NOISE ARE BOTH SUB-BEHAVIOURAL\n")
+
+    if DL:
+        print(f"LDG the defect ledger, generated: n={DL['n']}  "
+              f"largest bin {DL['largest_bin_name']} {DL['largest_bin']} "
+              f"({DL['largest_bin_pct']:.1f}%)  unclassified {DL['n_unclassified']}")
+        print(f"      found by an outside reader: {DL['n_outside_reader']} "
+              f"({DL['outside_reader_pct']:.1f}%)")
+        print(f"      {'joint':<15}{'author':>8}{'instrument':>12}{'outside':>9}")
+        for b, c in sorted(DL['cross_tab'].items(), key=lambda kv: -sum(kv[1].values())):
+            print(f"      {b:<15}{c['author']:>8}{c['instrument']:>12}{c['outside']:>9}")
+        print()
+
+    if VD:
+        i, h = VD['in_sample'], VD['held_out_sweep']
+        print("VAR does the FLOOR or the EFFECT carry the variation in log(effect/floor)?")
+        print(f"      in-sample, {i['n_cells']} cross-round cells: var log effect "
+              f"{i['var_log_effect']:.4f}  var log floor {i['var_log_floor']:.4f}"
+              f"  -> floor carries {i['floor_share_pct']:.1f}%"
+              f"   ({i['n_distinct_floors']} distinct floor values)")
+        print(f"      held-out on R5: {h['n_pairings']} admissible pairings span "
+              f"{h['min_pct']:.1f}%-{h['max_pct']:.1f}%, and "
+              f"{h['n_within_3pp_of_52']} land within 3pp of the retracted 52%")
+        print(f"      -> the ESTIMATOR was free, so the held-out claim is WITHDRAWN, not weakened\n")
+
+    if FA:
+        print("R1* AUDIT OF THE FLOOR ITSELF -- the reference class had never been checked")
+        print(f"      30-draw floor replayed from seed {FA['draw_seed']}: {FA['sampled_floor']:.10f}")
+        print(f"      the value R1 recorded            : {FA['recorded_floor']:.10f}"
+              f"   (reconstruction error {FA['reconstruction_error']:.2e})")
+        print(f"      EXHAUSTIVE over all {FA['n_band_heads']} band heads : "
+              f"{FA['exhaustive_floor']:.4f}   -- {FA['divergence_pct']:.1f}% above the sampled one")
+        print(f"      what a {FA['n_draws']}-draw floor from this population looks like: "
+              f"p05 {FA['boot_p05']:.4f}  median {FA['boot_median']:.4f}  p95 {FA['boot_p95']:.4f}"
+              f"  = {FA['boot_spread_x']:.1f}x")
+        print(f"      -> the headline floor sits at the {FA['sampled_floor_percentile']:.1f}th "
+              f"percentile of ITS OWN sampling distribution: typical, and unresolved")
+        print(f"      circularity: {', '.join(FA['contaminating_heads'])} are IN the null that "
+              f"judges them; leave-them-out floor {FA['leave_out_floor']:.4f}")
+        print(f"      {'head':<9}{'drop':>9}{'x samp':>9}{'x l-o-o':>9}{'x exhaust':>11}")
+        for e in FA['per_effect']:
+            print(f"      {e['head']:<9}{e['drop']:>+9.4f}{e['x_sampled']:>9.2f}"
+                  f"{e['x_leave_out']:>9.2f}{e['x_exhaustive']:>11.2f}"
+                  f"{'   <- in the null' if e['in_the_null'] else ''}")
+        print(f"      inside: sampled {FA['n_inside_sampled']}/{FA['n_total']}  "
+              f"leave-out {FA['n_inside_leave_out']}/{FA['n_total']}  "
+              f"EXHAUSTIVE {FA['n_inside_exhaustive']}/{FA['n_total']}\n")
 
     if NINE:
         print("R9  the floor at every layer -- is R1's band-vs-sham ratio a DEPTH artifact?")
@@ -873,6 +1122,17 @@ def main() -> int:
              list(TEN.values())[0]['n_inside_own'] if TEN else -1, 8, 0),
             ('R10 inside pooled floor',
              list(TEN.values())[0]['n_inside_pooled'] if TEN else -1, 7, 0),
+            # THE FLOOR'S OWN AUDIT. The reconstruction error is asserted at ZERO because it is a
+            # replay of a deterministic draw against an exhaustive table, not an estimate: any
+            # non-zero value means the seed, the pools, the call order or the exhaustive run have
+            # diverged, and the headline floor would no longer be the number R1 measured.
+            ('R1* floor reconstruction error', FA['reconstruction_error'] if FA else -1, 0.0, 0.0),
+            ('R1* exhaustive floor', FA['exhaustive_floor'] if FA else -1, 0.4870, 0.0001),
+            ('R1* divergence pct', FA['divergence_pct'] if FA else -1, 10.246, 0.001),
+            ('R1* sampling spread x', FA['boot_spread_x'] if FA else -1, 2.685, 0.001),
+            ('R1* inside sampled', FA['n_inside_sampled'] if FA else -1, 7, 0),
+            ('R1* inside exhaustive', FA['n_inside_exhaustive'] if FA else -1, 8, 0),
+            ('R1* contaminating heads', len(FA['contaminating_heads']) if FA else -1, 2, 0),
             # THE SCOPE ERROR ASSERTED AS TWO SEPARATE NUMBERS. Both pages read the whole-stack
             # spread and wrote "neighbouring layers"; asserting only one of them would let the
             # confusion come back as soon as either page is edited.
@@ -883,6 +1143,21 @@ def main() -> int:
             ('R9 models with negative predicted sd',
              NINE['n_negative_predicted_sd'] if NINE else -1, 2, 0),
             ('R9 models with rho > 0', NINE['n_rho_positive'] if NINE else -1, 4, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 37, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 11, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 18.92, 0.01),
+            # THE FINDING THE WHOLE DETECTOR SUITE WAS BUILT FROM, asserted so it cannot rot:
+            # at n=37 no instrument has yet caught a CONTROL or a SCOPE defect. If a detector
+            # ever does, this assertion fails and the front page's claim must be rewritten --
+            # which is the correct behaviour, not a nuisance.
+            ('LDG instrument-found CONTROL defects',
+             DL['cross_tab']['CONTROL']['instrument'] if DL else -1, 0, 0),
+            ('LDG instrument-found SCOPE defects',
+             DL['cross_tab']['SCOPE']['instrument'] if DL else -1, 0, 0),
+            ('VAR in-sample floor share', VD['in_sample']['floor_share_pct'] if VD else -1,
+             72.05, 0.01),
+            ('VAR held-out pairings near 52',
+             VD['held_out_sweep']['n_within_3pp_of_52'] if VD else -1, 0, 0),
             ('R2 valid cells', B['n_valid'], 4, 0),
             ('R2 inverted', B['n_inverted'], 0, 0),
             ('R5 cells', E['n_cells'], 6, 0),

@@ -181,11 +181,16 @@ def check_file(path: Path, gen: set) -> Report:
         # Removing it cost five flags and closed a hole that would have grown with every table.
         if False:
             continue
-        if ln.lstrip().startswith('>'):
-            # Blockquotes hold the annotated corrections -- they deliberately restate numbers that
-            # are WRONG. Flagging those would demand deleting the record of the mistake, which is
-            # the opposite of what this repository does with its mistakes.
-            continue
+        # THE BLOCKQUOTE EXEMPTION IS GONE, AND IT WAS MEASURED BEFORE IT WAS REMOVED. It skipped
+        # 97 of 625 numbers -- 15.5% -- and 25 of those were emitted by no generator at all, 18 of
+        # them on the front page. Its premise was sound (a correction block deliberately restates
+        # WRONG numbers, and flagging those would demand deleting the record of the mistake) and
+        # its implementation was a BLANKET: every annotated correction, every retraction, every
+        # cited external result went unchecked, and so did every NEW claim written in that style --
+        # which by then was most of them, because this repository argues in blockquotes.
+        # An exemption that cannot name what it exempts is indistinguishable from a hole. It is
+        # replaced by the per-value `<!-- unbacked-ok: ... -->` marker, which forces each exempt
+        # number to be listed, in the file, next to the sentence that needs it.
         for mo in NUM.finditer(ln):
             tok = mo.group(1)
             if not _checkable(tok, ln, mo.start(1)):
@@ -347,7 +352,11 @@ def main() -> int:
               "  clean report on the x.xx row is worth roughly (1 - that rate) per number.")
         return 0
 
-    files = [Path(f) for f in args.files] or sorted(ROOT.glob('**/README.md'))
+    # .resolve() -- the docstring's own example (`prose_numbers.py README.md ...`) crashed on
+    # `relative_to(ROOT)` because a relative argument is not under the absolute ROOT. `make verify`
+    # passes no arguments and takes the glob branch, whose paths are already absolute, so the
+    # documented invocation was the only broken one and nothing in the build could see it.
+    files = [Path(f).resolve() for f in args.files] or sorted(ROOT.glob('**/README.md'))
     files = [f for f in files if '.git' not in f.parts]
     gen = generator_numbers()
     print(f"  reference set: {len(gen)} distinct values emitted by this repo's generators\n")

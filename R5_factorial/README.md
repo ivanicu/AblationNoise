@@ -1,3 +1,8 @@
+<!-- unbacked-ok: 1.67 2.84 0.76 1.18 0.98 0.31 0.58 1.36 0.28 0.25 0.97
+ -- the SUPERSEDED table, reproduced verbatim inside its own correction. It reproduces under no
+ definition; that is why it is quoted rather than deleted.
+ 88.6 -- the withdrawn pairwise form of a span this page now reports over all three cells. -->
+
 # R5 — site, readout, or mechanism size?
 
 A 2×2 on one task, one mechanism per model identified in-run, **each cell measuring its own null and
