@@ -100,7 +100,11 @@ not an artifact of R1's own code.
 **A floor cannot be looked up.** Changing four English nouns in the answer vocabulary moved it 1.7×
 on a fixed model; across models the exponent spans 0.3–0.8 and the scale spans 8.8× on an identical
 task. But within a model it is a clean power law in set size (R² 0.935–0.985), so **measuring two set
-sizes fixes the whole curve** — two conditions instead of a sweep.
+sizes fixes the whole curve** — two conditions instead of a sweep, **provided the two are widely
+separated and one of them is small**: of the ten possible pairs, six score 12/12 and the narrowest
+high-k pair scores 6/12. And the honest margin is against a **measured** floor — a trivial
+predictor that ignores set size entirely already scores 9/12, while a null that permutes the sd
+values across set sizes reaches 12/12 in **0 of 200** draws.
 
 **And ablating harder makes it worse.** When an ablation shows nothing the reflex is to cut more.
 Across three models and both readouts, moving from one position to every position made the

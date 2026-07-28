@@ -53,15 +53,47 @@ The floor is not noisy — it is highly structured. What does not transfer is *w
 exponent spans 0.30–0.73 and the measured k=1 sd spans **8.8×** across models on an identical task,
 vocabulary and readout.
 
-**So measure two points instead of five.** Fit on k=1 and k=10, predict the rest:
+**So measure two WIDELY SEPARATED points instead of five.** Fit on k=1 and k=10, predict the rest:
 
 ```
 held-out cells 12   median factor error 1.15x   worst 1.68x   12 of 12 within 2x
 ```
 
-This is the deliverable, and note what it does **not** need: no other model, no architecture
-feature, no feature selection at all. It is therefore untouched by the amendment that took the
-across-model verdict down — the two results were never the same claim.
+### The three controls it shipped without
+
+A result with no baseline is a number, not a finding — this repository's own subject, unapplied to
+its own deliverable for as long as the deliverable existed. All three run in `run.py`, no GPU:
+
+```
+real fit (1,10)       12/12 within 2x
+TRIVIAL predictor      9/12 within 2x, median 1.62x     predict the model's MEAN sd, ignore k
+SHUFFLED null    median 6/12, max 10/12                 sd values permuted across k, 200 draws
+                 reaches 12/12 in 0.0% of draws
+```
+
+* **The null refuses the deflationary world.** Permuting the sd values across set sizes never once
+  reaches 12/12 in 200 draws, so the k-ordering carries real information.
+* **But the trivial baseline is 9 of 12, not 0.** Within one model the sd spans only ~2.4×, so
+  simply predicting the mean is already within 2× three quarters of the time. **The rule's headline
+  is 12/12 against a floor of 9/12** — a much smaller margin than "12 of 12" alone suggests, and it
+  was never stated because the floor was never measured.
+
+### "Two points" was too large a claim. It is two **wide** points, one of them small.
+
+Every one of the ten possible fitting pairs:
+
+```
+1+5   1+10   1+20   2+10   2+20   5+20      12/12
+2+5                                         11/12
+1+2                                         10/12
+5+10                                         9/12   worst error 4.01x
+10+20                                        6/12   worst error 5.65x
+```
+
+**A narrow pair at the top of the range fails.** The rule is not "measure any two set sizes" — it is
+*measure two that span the range, and include a small one*. That distinction was absent from the
+claim as shipped, and it is the difference between a procedure that works and one that works only
+if you happen to choose well.
 
 ## The circularity trap was named before the analysis
 

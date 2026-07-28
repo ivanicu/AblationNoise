@@ -108,6 +108,56 @@ def two_point(models, fit_at=(1, 10)):
             'n_within_2x': int((errs < 2).sum()), 'per_model': per}
 
 
+def two_point_controls(models):
+    """THE THREE CONTROLS THE TWO-POINT RULE SHIPPED WITHOUT.
+
+    It reported 12 of 12 within 2x and no baseline at all. A result with no baseline is a number,
+    not a finding -- this repository's own subject, unapplied to its own deliverable.
+
+      TRIVIAL   predict the model's MEAN sd, ignoring k entirely. Within one model the sd range is
+                only ~2.4x, so a constant predictor is already close; if it also scores 12/12 the
+                rule measures nothing.
+      NULL      shuffle the sd values across k, destroying the ordering, and refit. This is the
+                falsifier the claim never had.
+      PAIR      every one of the 10 possible fitting pairs. If the choice does not matter, the
+                rule is "it is a power law"; if it does, the rule must SAY WHICH TWO POINTS.
+    """
+    import itertools, random as _r
+    KS = [1, 2, 5, 10, 20]
+    usable = {n: dict(m['cells']) for n, m in models.items() if len(m['cells']) >= 3}
+
+    def err(sd, fit):
+        a, b = np.polyfit(np.log10(fit), np.log10([sd[k] for k in fit]), 1)
+        return [max(10 ** (a * np.log10(k) + b) / sd[k], sd[k] / 10 ** (a * np.log10(k) + b))
+                for k in KS if k not in fit]
+
+    real = [x for sd in usable.values() for x in err(sd, (1, 10))]
+    triv = [max(np.mean(list(sd.values())) / sd[k], sd[k] / np.mean(list(sd.values())))
+            for sd in usable.values() for k in (2, 5, 20)]
+    rng = _r.Random(7)
+    wins = []
+    for _ in range(200):
+        tot = []
+        for sd in usable.values():
+            v = list(sd.values()); rng.shuffle(v)
+            tot += err(dict(zip(KS, v)), (1, 10))
+        wins.append(sum(x < 2 for x in tot))
+    pairs = {}
+    for fit in itertools.combinations(KS, 2):
+        e = [x for sd in usable.values() for x in err(sd, fit)]
+        pairs[f"{fit[0]}+{fit[1]}"] = {'n_within_2x': int(sum(x < 2 for x in e)), 'n': len(e),
+                                       'median': float(np.median(e)), 'worst': float(max(e))}
+    return {'n_models': len(usable),
+            'real_within_2x': int(sum(x < 2 for x in real)), 'real_n': len(real),
+            'trivial_within_2x': int(sum(x < 2 for x in triv)),
+            'trivial_median': float(np.median(triv)),
+            'null_median_within_2x': int(np.median(wins)),
+            'null_max_within_2x': int(max(wins)),
+            'null_frac_reaching_real': float(np.mean([w >= sum(x < 2 for x in real) for w in wins])),
+            'pairs': pairs,
+            'pairs_at_12': sorted(k for k, v in pairs.items() if v['n_within_2x'] == v['n'])}
+
+
 def loo(models, names, log_target):
     """Leave-one-MODEL-out. A cell split would leak: cells within a model share architecture."""
     out = {}
@@ -174,6 +224,20 @@ def main() -> int:
           f"{tp['median_factor_error']:.2f}x   worst {tp['worst_factor_error']:.2f}x   "
           f"within 2x: {tp['n_within_2x']} of {tp['n_heldout']}\n")
 
+    ctl = two_point_controls(models)
+    print(f"  THE CONTROLS IT SHIPPED WITHOUT")
+    print(f"      real fit (1,10)      {ctl['real_within_2x']}/{ctl['real_n']} within 2x")
+    print(f"      TRIVIAL predictor    {ctl['trivial_within_2x']}/{ctl['real_n']} within 2x "
+          f"(median {ctl['trivial_median']:.2f}x)  <- the baseline the claim never had")
+    print(f"      SHUFFLED null        median {ctl['null_median_within_2x']}/{ctl['real_n']}, "
+          f"max {ctl['null_max_within_2x']}; reaches the real score in "
+          f"{100*ctl['null_frac_reaching_real']:.1f}% of 200 draws")
+    print(f"      pairs scoring {ctl['real_n']}/{ctl['real_n']}: "
+          f"{', '.join(ctl['pairs_at_12'])}")
+    worst = min(ctl['pairs'].items(), key=lambda kv: kv[1]['n_within_2x'])
+    print(f"      worst pair {worst[0]}: {worst[1]['n_within_2x']}/{worst[1]['n']} "
+          f"(worst error {worst[1]['worst']:.2f}x) -> the pair must be WIDE and include a small k\n")
+
     sw = sweep(models)
     met = sum(r['n_within_2x'] >= 3 for r in sw)
     best = max(sw, key=lambda r: r['n_within_2x'])
@@ -188,7 +252,7 @@ def main() -> int:
 
     res = {'n_models': len(models), 'n_cells': n_cells, 'within_model_powerlaw': pl,
            'k1_sd_span': float(k1_span), 'exponent_range': [float(min(exps)), float(max(exps))],
-           'two_point': tp, 'feature_sweep_n': len(sw), 'gate_met_by': met,
+           'two_point': tp, 'two_point_controls': ctl, 'feature_sweep_n': len(sw), 'gate_met_by': met,
            'best_feature_set': best,
            'verdict_across_models': 'UNVERIFIED',
            'verdict_within_model': 'FLOOR-IS-A-POWER-LAW-IN-SET-SIZE',
@@ -208,6 +272,9 @@ def main() -> int:
             ('min R2', min(f['r2'] for f in pl.values()), 0.935, 0.001),
             ('max R2', max(f['r2'] for f in pl.values()), 0.985, 0.001),
             ('gate met by', met, 60, 0),
+            ('trivial baseline within 2x', ctl['trivial_within_2x'], 9, 0),
+            ('shuffled null median', ctl['null_median_within_2x'], 6, 0),
+            ('pairs scoring 12/12', len(ctl['pairs_at_12']), 6, 0),
             ('k=1 sd span', k1_span, 8.77, 0.02),
             ('min exponent', min(exps), 0.295, 0.001),
             ('max exponent', max(exps), 0.733, 0.001),
