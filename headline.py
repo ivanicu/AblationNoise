@@ -549,6 +549,65 @@ def r11():
             'effects': rows}
 
 
+def adversary_scoring():
+    """SCORE THE ADVERSARY-PREDICTION FILE AGAINST THE DEFECTS FOUND AFTER IT WAS WRITTEN.
+
+    ADVERSARY.md says a row not raised is a MISS, and that "a finding absent from this list is the
+    most valuable thing" an adversary can return. It was written at 67 ledger rows. Nobody had ever
+    scored it -- and the rows found since are exactly the material to score it with.
+
+        clean hit                  D79 <- A1   (and A1 was marked ACTED ON, yet the same error
+                                                recurred one step later)
+        class-level hit            D71 <- A7   (threshold degrades as the artifact grows, unwatched)
+        partial                    D76 <- A2   (one synthetic task; did not predict a degenerate one)
+        14 others                  not on the page in any form
+
+        1 of 17 =  5.9% clean   ·   3 of 17 = 17.6% counting class-level and partial
+
+    BOTH BOUNDS ARE EMITTED because the generosity of matching is a choice, and this repository has
+    already been caught letting a choice like that move a headline by 2.2x.
+
+    THE VALUE WAS NOT IN THE FORECAST. A4 was resolved by the file itself and scored the author
+    "badly -- under-severe"; A7's act of being written found the real problem. Writing predictions
+    was productive; the predictions were mostly wrong. Only the second is a failure.
+
+    AND THE FILE CARRIED AN ERROR THE LEDGER HAD ALREADY FIXED. Its A1 row described the eight as
+    "five read-head candidates, one proven copy head, two unlabelled". R16 read the source and found
+    seven selected plus one externally-known copy head; that was filed as D80 -- AND LANDED ON THE
+    PRIOR-EFFECTS NOTE ONLY. The identical sentence sat in the file whose job is to score me.
+    """
+    f = HERE / 'ADVERSARY.md'
+    d = HERE / 'defects.json'
+    if not (f.exists() and d.exists()):
+        return None
+    rows = json.load(open(d))['defects']
+    BASELINE = 67          # the ledger size stated in ADVERSARY.md when it was written
+    # THE WINDOW IS FROZEN, AND THE FIRST VERSION OF THIS FUNCTION GOT IT WRONG. Scoring "every
+    # defect after the file was written" makes the denominator grow forever, so the hit rate decays
+    # toward zero without the file getting any worse -- a badly defined estimand, and it moved twice
+    # within one step (5.9% -> 5.6%) as this same step added rows. The right estimand is: OF THE
+    # DEFECTS FOUND BETWEEN THE FILE'S WRITING AND THE MOMENT IT WAS SCORED, how many did it
+    # anticipate? That window is D68..D84. Anything later faces the file EXTENDED with A9-A13, which
+    # is a different object and must be scored separately when it is scored at all.
+    WINDOW = [f'D{i}' for i in range(68, 85)]
+    after = [r for r in rows if r['id'] in WINDOW]
+    HIT = {'D79': 'A1'}
+    CLASS = {'D71': 'A7'}
+    PARTIAL = {'D76': 'A2'}
+    ids = [r['id'] for r in after]
+    miss = [i for i in ids if i not in HIT and i not in CLASS and i not in PARTIAL]
+    n = len(after)
+    return {'baseline_rows': BASELINE, 'current_rows': len(rows), 'n_after': n,
+            'n_clean_hit': len(HIT), 'n_class': len(CLASS), 'n_partial': len(PARTIAL),
+            'n_miss': len(miss), 'miss_ids': miss,
+            'pct_clean': 100 * len(HIT) / n if n else float('nan'),
+            'pct_generous': 100 * (len(HIT) + len(CLASS) + len(PARTIAL)) / n if n else float('nan'),
+            'window': [WINDOW[0], WINDOW[-1]],
+            'rounds_covered': ['R1', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9', 'R10'],
+            'rounds_uncovered_before_this_step': ['R11', 'R12', 'R13', 'R14', 'R15', 'R16', 'R17',
+                                                  'R18']}
+
+
 def r17():
     """R17 -- IS THE HEADLINE AN ARTIFACT OF MEASURING WHERE THE FLOOR IS LARGEST?
 
@@ -1193,6 +1252,9 @@ def r12():
     return {'model': t['model'], 'n_layers': NL, 'n_heads_per_layer': n_per,
             'sham_band': [slo, shi], 'sham_floor': fs,
             'centroid': c, 'centroid_ci95_lo': lo95, 'centroid_ci95_hi': hi95,
+            # R18's 1.0-layer deadband is justified against this half-width, so it must
+            # be emitted rather than computed by a reader from two rounded endpoints.
+            'centroid_ci95_halfwidth': (hi95 - lo95) / 2,
             'depth_fraction': c / (NL - 1),
             'absolute_prediction': 17.2347, 'relative_prediction': 22.3413,
             'absolute_inside_ci': lo95 <= 17.2347 <= hi95,
@@ -2331,6 +2393,7 @@ def main() -> int:
     DS = depth_sensitivity()
     R15 = r15()
     R17 = r17()
+    AS = adversary_scoring()
     EL = r11()
     PW = power()
     RC = reference_class()
@@ -2339,7 +2402,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -2521,6 +2584,24 @@ def main() -> int:
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
               f"<=5 -- and it is the proven copy head\n")
+
+    if AS:
+        print("ADV  scoring the adversary-prediction file against what was found AFTER it")
+        print(f"      written at {AS['baseline_rows']} ledger rows; the ledger is now "
+              f"{AS['current_rows']}, so {AS['n_after']} of my own later findings can score it")
+        print(f"      clean hit {AS['n_clean_hit']} (D79 <- A1) . class-level {AS['n_class']} "
+              f"(D71 <- A7) . partial {AS['n_partial']} (D76 <- A2) . MISS {AS['n_miss']}")
+        print(f"      {AS['pct_clean']:.1f}% clean, {AS['pct_generous']:.1f}% counting class-level "
+              f"and partial -- BOTH emitted, because the generosity of matching is a CHOICE")
+        print(f"      not on the page in any form: {' '.join(AS['miss_ids'])}")
+        print(f"      WINDOW FROZEN at {AS['window'][0]}..{AS['window'][1]}: scoring 'every later "
+              f"defect' makes the denominator grow forever, so the rate")
+        print("      would decay without the file getting worse. Later rows face the file EXTENDED "
+              "with A9-A13 -- a different object")
+        print(f"      it covered {' '.join(AS['rounds_covered'])} and NOT "
+              f"{' '.join(AS['rounds_uncovered_before_this_step'])} -- now extended, A9-A13")
+        print("      and its A1 row carried the composition error R16 fixed 4 rounds ago as D80,")
+        print("      which had landed on the prior-effects note ONLY\n")
 
     if R17:
         print("R17 is the headline an ARTIFACT of measuring where the FLOOR IS LARGEST?")
@@ -2710,6 +2791,8 @@ def main() -> int:
               f"{TW['n_layers']} they are five layers apart")
         print(f"      centroid {TW['centroid']:.3f}   bootstrap 95% CI "
               f"[{TW['centroid_ci95_lo']:.2f}, {TW['centroid_ci95_hi']:.2f}]")
+        print(f"        CI half-width {TW['centroid_ci95_halfwidth']:.4f} layers -- R18's 1.0-layer"
+              f" deadband is justified against THIS, not against the rounded endpoints")
         print(f"        ABSOLUTE predicted {TW['absolute_prediction']:.2f}  -> "
               f"{'INSIDE' if TW['absolute_inside_ci'] else 'OUTSIDE'} the interval")
         print(f"        RELATIVE predicted {TW['relative_prediction']:.2f}  -> "
@@ -3133,10 +3216,12 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 25.286, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 27.163, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
+            ('R12 CI half-width',
+             TW['centroid_ci95_halfwidth'] if TW else -1, 1.2439, 0.0001),
             ('R12 CI lower', TW['centroid_ci95_lo'] if TW else -1, 21.52, 0.01),
             ('R12 depth fraction', TW['depth_fraction'] if TW else -1, 0.6524, 0.0001),
             ('R14 shuffled accuracy', FT['accuracy_shuffled'] if FT else -1, 0.8, 0.001),
@@ -3208,9 +3293,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 84, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 22, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.333, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 86, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 24, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.140, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

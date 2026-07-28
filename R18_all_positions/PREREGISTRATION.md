@@ -1,3 +1,7 @@
+<!-- unbacked-ok: 1.25 -- the WRONG value, quoted inside the correction that records it being
+ wrong. No generator emits it, and none should: emitting it would put a retracted number into
+ the reference set and back it everywhere else in the repository. -->
+
 # R18 — pre-registration: ablate at **all positions**, not just the final one
 
 **Committed 2026-07-28, before the runner was written and before any GPU time was spent.**
@@ -57,7 +61,15 @@ For each model, `c'` = the new rate-weighted centroid of the sham-clearing profi
 | otherwise | **`UNRESOLVED`** — R12 stays `UNVERIFIED` |
 
 `1.0` layer is chosen because R12's own bootstrap CI on `qwen2.5-3b` is `[21.52, 24.01]`, half-width
-`1.25` layers: a shift under one layer is inside the uncertainty the verdict already carried.
+`1.2439` layers: a shift under one layer is inside the uncertainty the verdict already carried.
+
+> **Corrected after commit `6e8ddac`, and the correction is a defect not a tidy-up.** This line first
+> said `1.25`, computed in my head from two already-rounded endpoints instead of read from the
+> bootstrap. **The `1.0`-layer threshold is untouched** — it is the commitment, and it was never a
+> function of this digit. But the number citing it shipped wrong, and by [R17's own
+> rule](../R17_floor_portability/) — *a pattern caught before shipping is not a defect in the
+> artifact* — this one was caught **after**, so it is filed as `D86`. **The rule cuts against its
+> author one step after he wrote it.**
 
 ### 4 · Does the head **ranking** survive? — and this is the kill
 

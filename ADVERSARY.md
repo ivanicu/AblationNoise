@@ -30,6 +30,15 @@ also a miss — it means effort was spent defending something nobody attacks.
 > proven copy head**, two unlabelled. The front page calls them "eight published single-head
 > effects" and R1's own README calls the candidate framing a strength.
 
+> **⚠ THE SENTENCE ABOVE IS WRONG, AND IT WAS STILL WRONG HERE FOUR ROUNDS AFTER BEING CORRECTED
+> ELSEWHERE.** [R16](R16_selection_vs_effect/) read the source experiment instead of my note about
+> it: `E132b`'s `sel` dict has **seven** keys, plus `L22H7` which `E132` ranked **first** on room
+> attention. So the composition is **seven selected candidates plus one externally-known copy head**,
+> not *five / one / two*. That correction was filed as `D80` — **and it landed on the prior-effects
+> note only.** The identical wrong sentence sat here, in the file whose entire job is to score me
+> when I am wrong. Kept above rather than edited, because a prediction file that silently repairs
+> itself always scores well.
+
 **The attack:** a candidate is a hypothesis, not a result. Finding that five hypotheses fail to clear
 a noise floor is close to tautological — R1's own set-level data says the READ set sits at the
 `46.7`th percentile of the null, i.e. *there was nothing there to find*. **The number of
@@ -147,11 +156,110 @@ Stated so the list can be wrong in both directions:
   unbacked are listed by value with a reason in each file's header.
 * **A hook that does not do what it claims.** Verified exact on four families, `92` heads, three
   module names, one fused-QKV architecture, residual `5.14e-07` to `7.41e-06`.
+
+  > **⚠ THIS BULLET IS A PROXY STATEMENT AND IT WAS USED IN THE WRONG DIRECTION.** Run the ledger
+  > this repository requires of every check:
+  >
+  > | | |
+  > |---|---|
+  > | **PROPERTY** | the intervention measures a head's causal contribution |
+  > | **PROXY** | the hook zeroes exactly the intended slice, residual `~1e-06` |
+  > | **IMPLICATION** | proxy fails ⇒ property fails. **Property fails ⇏ proxy fails.** |
+  > | **WITNESS** | `R10_exhaustive/run.py:213` — `x[0, -1, ...]`, the **final position only** |
+  >
+  > The hook does exactly what its code says and always did. **What it measures is a head's write at
+  > the final position**, not a head — its writes at positions `0..n-2` survive, and the layers that
+  > can read them number `NL−1−L`, zero at the last layer. Filed as `D83`; it is the reason
+  > [R12's verdict is `UNVERIFIED`](R12_cross_model/README.md) and the reason
+  > [R18](R18_all_positions/) exists. **The sound direction was used to certify presence**, which is
+  > the exact failure this repository's proxy ledger was written to prevent.
 * **A verdict quoted without its refusal.** R4, R9 and R10's gates are all refused in place, with
   their numbers still emitted so the refusal itself can be checked.
 
 **If the adversary finds one of these three, the failure is worse than any row above** — it means the
 part of the process I trust most is the part that was broken.
+
+---
+
+## SCORED, 2026-07-28 — against the `17` defects found *after* this file was written
+
+This file was written at **`67`** ledger rows and says a row not raised is a miss, and that *"a
+finding absent from this list is the most valuable thing"* an adversary can return. The ledger is now
+at **`84`**. **So `17` of my own subsequent findings are available to score it, and nobody had.**
+
+| defect | what it was | anticipated? |
+|---|---|---|
+| `D79` | *"magnitude and role are unrelated"* is an `n=1` relationship claim | **`A1`, exactly** — and `A1` was already marked *ACTED ON*, yet I committed the same error again one step later |
+| `D71` | the taxonomy verdict's **reachable set** shrinks as the ledger grows, unwatched | **`A7`, at the level of the class** — *"every generator added to strengthen the gate weakens this detector, and nothing was watching"*. Different instrument, same failure |
+| `D76` | R2's task carries R1's fixed-offset degeneracy | **`A2`, partially** — `A2` predicted *"one synthetic task"*; it did not predict the task was degenerate |
+| `D68` `D69` `D70` `D72` `D73` `D74` `D75` `D77` `D78` `D80` `D81` `D82` `D83` `D84` | fourteen others | **not on this page in any form** |
+
+```
+window                       D68 .. D84        frozen: see below
+clean hit                    1 of 17   =  5.8824%
++ class-level and partial    3 of 17   = 17.6471%
+```
+
+**The window is frozen, and the first version of this scoring got that wrong.** Scoring *"every
+defect found after this file was written"* makes the denominator grow forever, so the hit rate decays
+toward zero **without the file getting any worse** — and it moved twice inside a single step, `5.9%`
+to `5.6%`, as that same step filed `D85` and `D86`. The estimand that means something is: *of the
+defects found between this file's writing and the moment it was scored, how many did it anticipate?*
+Rows after `D84` face this file **extended with `A9`–`A13`**, which is a different object.
+
+**Both bounds are reported because the generosity of matching is a choice, and this repository has
+already been caught letting a choice like that move a headline by `2.2×`.**
+
+**The honest reading: as a forecast of where defects would appear, this file is between `6%` and
+`18%` accurate.** Its value was not in the forecast. It was in `A4`, which the file itself resolved
+and scored *"badly — under-severe"*, and in `A7`, whose act of being written found the real problem.
+**Writing predictions was productive; the predictions were mostly wrong.** Those are different
+claims and only the second one is a failure.
+
+**And `D80` corrects an error inside this file** — see the annotation on `A1`. The scoreboard was
+carrying a factual mistake the ledger had already fixed.
+
+---
+
+## Predictions for `R11`–`R18`, which this file did not cover
+
+Written now, before an adversary runs, and before [R18's](R18_all_positions/PREREGISTRATION.md)
+result files exist.
+
+### A9 · `×floor` is not portable, and the front page still ranks the eight in it — `LANDS`
+
+[R15](R15_shuffled_scan/) measured the floor as a function of the task's headroom: per-line floors
+span `1.66×` and track baseline margin at Spearman `+0.8810`. **So `0.37× the floor` is a statement
+about a configuration, not about a head** — and the front page's headline numbers are in that unit.
+`R17` showed the *count* survives a lower floor; it did not make the unit portable.
+
+### A10 · Every round after `R10` re-analyses the same result file — `LANDS, and I rank this first`
+
+`R11` `R12` `R16` `R17` and half of `R15` all read `r10_exhaustive_qwen2.5-1.5b.json`. Eight rounds
+of findings rest on **one** `16`-minute job. `R11` replicated on disjoint *items* and `R15` on a
+shuffled *task*, but **the exhaustive scan itself has never been re-run from scratch on the same
+configuration**, so run-to-run variance of the whole pipeline is unmeasured. `input_replication()`
+compares R10 against `E132b` and agrees to `3.6e-06` — that is a *cross-implementation* check on
+`8` heads, not a *repeat* of `336`.
+
+### A11 · `R17`'s decision not to add a ledger row is discretionary — `LANDS, and it is aimed at something I felt good about`
+
+`R17` attacked a headline claim, found nothing, and wrote *"a pattern caught before shipping is not
+a defect in the artifact."* **That rule is applied by the author, to the author's own drafts, with no
+written criterion.** An adversary will say the ledger counts what the author chose to file, and that
+the `84` is therefore a lower bound with a discretionary boundary — which is `A8` again, one level up.
+
+### A12 · The `R18` kill, stated before its files exist — `I expect it NOT to fire, which is why it is worth stating`
+
+If the head ranking does not survive all-position ablation (`Spearman ≤ 0.3`), *"a head"* and *"a
+head's write at the final position"* are different objects and every head-level number here is about
+the latter. **I predict it transfers at `≥ 0.7`.** If I am wrong, this row is the record that I was.
+
+### A13 · The centring correction — `MAY LAND, and I do not know`
+
+The null-at-zero defect was found in `R1` and later in `R2` (`D75`). **I have not enumerated every
+place a `2×sd` comparison is made.** `A5` predicted the two *floor definitions* would still be mixed
+somewhere and I never found an instance; this is the same shape of prediction and I rate it the same.
 
 ---
 
