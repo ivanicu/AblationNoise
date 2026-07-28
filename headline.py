@@ -158,6 +158,16 @@ def r10():
     return out or None
 
 
+def _spearman(a, b):
+    rk = lambda v: [sorted(v).index(x) for x in v]  # noqa: E731
+    x, y = rk(a), rk(b)
+    n = len(x)
+    mx, my = sum(x) / n, sum(y) / n
+    num = sum((i - mx) * (j - my) for i, j in zip(x, y))
+    den = math.sqrt(sum((i - mx) ** 2 for i in x) * sum((j - my) ** 2 for j in y))
+    return num / den if den else float('nan')
+
+
 def item_noise_bound():
     """Is the floor HEAD CHOICE, or is it the finite item sample? And the distinction it forces.
 
@@ -172,11 +182,34 @@ def item_noise_bound():
     estimates biases it downward, so the p10 layer is reported as the operative bound and the
     strict minimum beside it. Both are quoted; neither is chosen after the fact.
 
-    THE STRONGEST CONFOUND, STATED: the bound assumes the covariance between a head's true effect
-    and its item-sampling deviation is not strongly negative within a layer. Under strong negative
-    covariance an observed spread could fall BELOW the item-noise term and the bound would be
-    optimistic. The direct measurement -- re-run with a disjoint item set and compare per-head
-    values -- is not done here, so this is a bound, not an estimate, and it is labelled as one.
+    ### RETRACTED 2026-07-28, ONE STEP AFTER IT WAS PUBLISHED. The confound written down before the
+    run was the wrong one. It named the covariance between a head's true effect and its
+    item-sampling deviation. The fatal assumption was cruder and unstated: **that item noise is
+    roughly CONSTANT across layers.** It cannot be. A head's item-sampling deviation has variance
+    `var_over_items(drop_h)/n`, and a head that contributes nothing has `drop == 0` on EVERY item,
+    so its item-to-item variance is ~0 too.
+
+    **A quiet layer has small item noise BECAUSE it is quiet.** Measured, and it is not marginal:
+    Spearman between a layer's mean |drop| and its spread is **+0.962 over 28 layers**. The quiet
+    layers are quiet in both terms, so their spread bounds the item noise only of heads that are
+    equally quiet -- and the eight published effects, at 0.0154 to 0.4668, are not.
+
+    So `bound_pct_of_floor_variance` is a measurement of the item-noise contribution IN A QUIET
+    LAYER, extrapolated to the band, where the quantity is larger. That is an uncertainty compared
+    against a differently-paired uncertainty: the first entry on this project's own overshoot list.
+
+    WHAT SURVIVES AND WHAT DOES NOT:
+      SURVIVES   the raw numbers -- quietest layer 0.00474, band floor 0.10879 -- and the
+                 `distinctive` column, which compares each effect to the EXHAUSTIVE floor and needs
+                 no item-noise argument at all. Still 0 of 8.
+      UNVERIFIED the `measurable` column and `n_measurable`. Its threshold (2x the quiet-layer
+                 bound) has no established relation to the item noise of a LIVE head. It is not
+                 overturned -- the three may well be measurable -- the check was unfit.
+      DEAD       "at most 0.66% of the floor's variance can be item sampling."
+
+    THE DIRECT TEST IS NOW THE ONLY ROUTE, and it is cheap: re-run the same heads on a DISJOINT
+    item set and store `sd_over_items/sqrt(n)` per head. The runner already computes the per-item
+    drops and throws them away.
 
     WHAT FALLS OUT IS SHARPER THAN THE FLOOR ITSELF. Placing the eight published effects against
     the item-noise bound rather than against the floor separates two things the phrase "inside the
@@ -212,6 +245,13 @@ def item_noise_bound():
         'bound_pct_of_floor_sd': 100 * p10[0] / nb,
         'bound_pct_of_floor_variance': 100 * (p10[0] / nb) ** 2,
         'strict_pct_of_floor_variance': 100 * (strict[0] / nb) ** 2,
+        # THE EVIDENCE FOR THE RETRACTION, generated rather than asserted: if a layer's spread
+        # tracks its effect scale, then a quiet layer is quiet in BOTH terms and cannot bound the
+        # item noise of a live head.
+        'spearman_scale_vs_spread': _spearman(
+            [sum(abs(x) for x in L[k]['per_head'].values()) / len(L[k]['per_head'])
+             for k in sorted(L)],
+            [2 * L[k]['sd'] / bm for k in sorted(L)]),
         'effects': [{'head': h, 'drop': e['drop'],
                      'x_item_noise': e['abs'] / (p10[0] * bm),
                      'x_floor': e['abs'] / band_floor,
@@ -221,7 +261,10 @@ def item_noise_bound():
         # THE PRE-REGISTERED READING: >2x the bound = resolvable by this instrument; > the floor =
         # distinguishable from a random head. Two independent predicates, and the whole point is
         # that they DISAGREE on three of the eight.
-        'n_measurable': sum(e['abs'] / (p10[0] * bm) > 2.0 for e in pe['effects'].values()),
+        # UNVERIFIED, not a count. Kept so the retraction on the front page can be checked
+        # against the number it retracts; renamed so no caller can read it as a finding.
+        'n_measurable_UNVERIFIED': sum(e['abs'] / (p10[0] * bm) > 2.0
+                                       for e in pe['effects'].values()),
         'n_distinctive': sum(e['abs'] > band_floor for e in pe['effects'].values()),
         'n_total': len(pe['effects']),
     }
@@ -987,7 +1030,10 @@ def main() -> int:
               f"   strict min of {IN['n_layers']}")
         print(f"      p10 layer     L{IN['p10_layer']:<3}                {IN['p10_bound']:.5f}"
               f"   selection-robust, and the operative bound")
-        print(f"      -> at MOST {IN['bound_pct_of_floor_variance']:.2f}% of the floor's VARIANCE "
+        print(f"      *** RETRACTED: Spearman(layer effect scale, layer spread) = "
+              f"{IN['spearman_scale_vs_spread']:+.3f} over {IN['n_layers']} layers -- a quiet layer "
+              f"is quiet in BOTH terms, so it bounds only the item noise of equally quiet heads")
+        print(f"      -> the withdrawn reading was: at most {IN['bound_pct_of_floor_variance']:.2f}% of the floor's VARIANCE "
               f"can be item sampling ({IN['strict_pct_of_floor_variance']:.2f}% on the strict min)")
         print(f"      the floor is component choice. Which makes the next line the real result:")
         print(f"      {'head':<9}{'drop':>9}{'x item-noise':>14}{'x floor':>9}   measurable / distinctive")
@@ -995,7 +1041,8 @@ def main() -> int:
             print(f"      {e['head']:<9}{e['drop']:>+9.4f}{e['x_item_noise']:>14.1f}"
                   f"{e['x_floor']:>9.2f}   {'YES' if e['measurable'] else 'no ':<4}/ "
                   f"{'YES' if e['distinctive'] else 'no'}")
-        print(f"      {IN['n_measurable']} of {IN['n_total']} are MEASURABLE; "
+        print(f"      {IN['n_measurable_UNVERIFIED']} of {IN['n_total']} would be 'measurable' "
+              f"-- UNVERIFIED, the threshold is a quiet-layer bound applied to live heads; "
               f"{IN['n_distinctive']} of {IN['n_total']} are DISTINCTIVE")
         print(f"      -> 'inside the noise floor' was conflating two different failures\n")
 
@@ -1236,7 +1283,8 @@ def main() -> int:
             # three of the eight effects are many times the instrument's own noise, and NONE of
             # the eight is distinguishable from a random head. If either count moves, the front
             # page's central paragraph is wrong and the build must say so.
-            ('ITM measurable', IN['n_measurable'] if IN else -1, 3, 0),
+            ('ITM measurable (UNVERIFIED, asserted only so the retraction is checkable)',
+             IN['n_measurable_UNVERIFIED'] if IN else -1, 3, 0),
             ('ITM distinctive', IN['n_distinctive'] if IN else -1, 0, 0),
             ('ITM item-noise share of floor variance',
              IN['bound_pct_of_floor_variance'] if IN else -1, 0.659, 0.001),

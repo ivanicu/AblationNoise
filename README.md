@@ -25,55 +25,65 @@ independently established as the copy head for that task.
 > `make headline` replays the draw from its seed and returns the recorded value with
 > reconstruction error `0`, so the number is now computed rather than stored.
 
-### "Inside the noise floor" was hiding the actual finding, and it took a bound on the *other* noise to see it
+### "Inside the noise floor" covers two different failures — and the attempt to separate them failed, in a way worth keeping
 
-The phrase covers two different failures, and this repository spent nine rounds not separating them:
+The phrase hides a distinction this repository spent nine rounds not making:
 
 | | |
 |---|---|
 | **not measurable** | the effect is below what the instrument can resolve on `120` items |
 | **not distinctive** | the effect is resolvable, and a *random* head of the same size does the same thing |
 
-They can be told apart, for free, from data already checked in. Every head's drop is a mean over
-the **same** items, so the item-sampling term is present in **every layer** — and a layer whose
-heads all do nearly nothing exhibits close to that term alone. Since a real effect can only *add*
-to the spread, **the quietest layer bounds the item-noise floor from above**. [R10](R10_exhaustive/)
-measured all `28` layers exhaustively, so the bound costs nothing:
+**One of the two is settled and the other is not, and the difference is instructive.**
+
+`distinctive` needs only the exhaustive floor, which [R10](R10_exhaustive/) measured over all
+`28×12` heads with no sampling and no modelling. **`0` of `8`.** Every published effect, including
+the independently proven copy head at `0.27×`, does what a random head of the same size does.
+
+`measurable` needs the instrument's own noise, and the attempt to get it for free **was wrong**:
+
+> ### RETRACTED 2026-07-28, one step after it was published
+>
+> The argument was: every head's drop is a mean over the *same* items, so the item-sampling term is
+> present in every layer; a quiet layer therefore exhibits close to that term alone and **bounds**
+> it. Measured: quietest layer `0.00474` against a band floor of `0.10879`, giving *"at most
+> `0.66%` of the floor's variance can be item sampling."*
+>
+> **It assumed item noise is roughly constant across layers, and it cannot be.** A head's
+> item-sampling deviation has variance `var_over_items(drop)/n`, and a head that contributes
+> nothing has `drop = 0` on *every* item — so its item-to-item variance is zero too. **A quiet
+> layer has small item noise because it is quiet.**
+>
+> Not marginal, and now generated rather than argued: **Spearman between a layer's mean `|drop|`
+> and its spread is `+0.962` over `28` layers.** The quiet layers are quiet in both terms, so they
+> bound the item noise only of equally quiet heads — and the eight effects, at `0.0154` to
+> `0.4668`, are not those.
+>
+> The confound written down *before* the run named the wrong thing. It named a covariance; the
+> fatal assumption was cruder and was never written at all. **An uncertainty compared against a
+> differently-paired uncertainty — the first entry on this repository's own overshoot list,
+> committed by the round that lists it.**
+>
+> **`measurable` is therefore `UNVERIFIED`, not overturned.** The three large effects may well be
+> resolvable; the check was unfit to say so. `make headline` still prints the column, labelled, so
+> this retraction can be read against the number it retracts.
 
 ```
-band floor (normalised)      0.10879
-p10 of 28 layers  L2         0.00883      selection-robust bound
-strict minimum    L1         0.00474
-
--> at most 0.66% of the floor's VARIANCE can be item sampling (0.19% on the strict minimum)
+head        drop     x floor    distinctive        (the "x item-noise" column is UNVERIFIED)
+L16H3    -0.4668       0.96         no
+L17H0    +0.1336       0.27         no
+L22H7    -0.1317       0.27         no      <- the proven copy head
+L18H9    +0.0410       0.08         no
+L17H11   +0.0379       0.08         no
+L19H5    +0.0373       0.08         no
+L17H7    -0.0352       0.07         no
+L19H0    +0.0154       0.03         no
 ```
 
-**So the floor is component choice, not sample size.** Which makes the next table the result:
-
-```
-head        drop     x item-noise   x floor    measurable   distinctive
-L16H3    -0.4668         11.8         0.96        YES          no
-L17H0    +0.1336          3.4         0.27        YES          no
-L22H7    -0.1317          3.3         0.27        YES          no      <- the proven copy head
-L18H9    +0.0410          1.0         0.08        no           no
-L17H11   +0.0379          1.0         0.08        no           no
-L19H5    +0.0373          0.9         0.08        no           no
-L17H7    -0.0352          0.9         0.07        no           no
-L19H0    +0.0154          0.4         0.03        no           no
-
-3 of 8 are MEASURABLE          0 of 8 are DISTINCTIVE
-```
-
-> **The top three effects are real measurements — `3.3×` to `11.8×` the instrument's own noise —
-> and not one of them is distinguishable from ablating a random head.** The independently proven
-> copy head is `3.3×` above measurement noise and `0.27×` of the floor. It is not that the
-> experiment failed to see it. **The experiment saw it clearly, and what it saw is not special.**
-
-*Scope, because this repository requires it of every claim:* one model (`qwen2.5-1.5b`), one band,
-one task, the original vocabulary, `n=120`, `k=1`, exhaustive over `28×12` heads. The `0.66%` is a
-**bound**, not an estimate — it assumes a head's true effect and its item-sampling deviation are not
-strongly negatively correlated within a layer. The direct test (a disjoint item set, same heads) is
-not run here and is the next thing this repository owes.
+**What is owed, and it is now the only route:** re-run the same heads on a **disjoint item set** and
+store `sd_over_items / sqrt(n)` per head. The runner already computes the per-item drops and
+discards them. That measures the instrument's noise directly instead of inferring it, and it is the
+next thing this repository runs.
 
 **A second, independent split — this one at the SET level.** The measurable/distinctive axis above
 is about one head at a time. Ablating the *sets* and placing them against a 30-draw set-size null
