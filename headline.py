@@ -114,6 +114,50 @@ def cross_round_scale():
     return out
 
 
+def r10():
+    """Every head ablated once, no sampling anywhere, in the ORIGINAL vocabulary.
+
+    At k=1 inside a layer there is nothing to sample -- there are only NH heads -- so thirty draws
+    would be sampling with replacement from twelve objects. This measures all of them, which makes
+    every number here exact and lets each published effect be placed against ITS OWN LAYER's floor
+    rather than one pooled over fourteen.
+    """
+    import re as _re
+    out = {}
+    for name, d in load('R10_exhaustive/results/*.json').items():
+        layers = {int(k): v for k, v in d['layers'].items()}
+        rows = []
+        pe = r1_prior_effects()
+        if pe:
+            pool = pe['floor_2sd_same_vocabulary']
+            for h, e in sorted(pe['effects'].items(), key=lambda kv: -kv[1]['abs']):
+                L = int(_re.match(r'L(\d+)H', h).group(1))
+                if L not in layers:
+                    continue
+                own = 2 * layers[L]['sd']
+                rows.append({'head': h, 'drop': e['drop'], 'layer': L, 'own_floor_2sd': own,
+                             'x_own': e['abs'] / own, 'x_pooled': e['abs'] / pool,
+                             'inside_own': e['abs'] < own, 'inside_pooled': e['abs'] < pool})
+        out[name] = {
+            'n_items': d['n_items'], 'base_margin': abs(d['base_margin']),
+            'sampling': d.get('sampling'), 'rooms': d['rooms'],
+            'layer_sd': {L: layers[L]['sd'] for L in sorted(layers)},
+            'layer_2sd': {L: 2 * layers[L]['sd'] for L in sorted(layers)},
+            'per_head_L22': layers[22]['per_head'] if 22 in layers else None,
+            'effects_vs_own_layer': rows,
+            'n_inside_own': sum(r['inside_own'] for r in rows),
+            'n_inside_pooled': sum(r['inside_pooled'] for r in rows),
+            'spearman_rho_layer_sd': d['spearman_rho_layer_sd'],
+            # Emitted so the number can be QUOTED while being REFUSED. R10's own gate reports
+            # BAND-IS-EXCEPTIONAL from this excess, computed by extrapolating the sham half to the
+            # band's depth -- the estimator R9 established is unfit. A refused verdict still has to
+            # carry its number, or the refusal cannot be checked either.
+            'refused_gate_excess': d.get('band_excess_over_trend'),
+            'refused_gate_verdict': d.get('verdict'),
+        }
+    return out or None
+
+
 def r1_set_null_range():
     """The k=5 null's FULL RANGE, and the COPY set, as fractions of the flip distance.
 
@@ -520,11 +564,11 @@ def main() -> int:
     D, V, S, G, R, E8 = r4(), r1_vocabulary(), r6(), r6_diag(), r7(), r8()
     PE, SN = r1_prior_effects(), r1_set_null()
     BS, CR = r1_behavioural_scale(), cross_round_scale()
-    SR = r1_set_null_range()
+    SR, TEN = r1_set_null_range(), r10()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
-                          'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
+                          'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR, 'r10': TEN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -579,6 +623,24 @@ def main() -> int:
         print(f"      across models the k=1 floor is at most "
               f"{BS['max_pct_to_flip_k1']:.1f}% of the distance to a flip")
         print(f"      -> at k=1 the SIGNAL AND THE NOISE ARE BOTH SUB-BEHAVIOURAL\n")
+
+    if TEN:
+        for nm, r in TEN.items():
+            print(f"R10 {nm}: every head once, {r['sampling']}, {r['rooms']}")
+            if r['per_head_L22']:
+                ph = sorted(r['per_head_L22'].items(), key=lambda kv: -abs(kv[1]))
+                print("      L22 all heads: " +
+                      '  '.join(f"h{h}{v:+.4f}" for h, v in ph[:6]))
+                print("                     " +
+                      '  '.join(f"h{h}{v:+.4f}" for h, v in ph[6:]))
+            print(f"      {'head':<9}{'drop':>9}{'own 2sd':>10}{'x own':>7}{'x pooled':>10}")
+            for e in r['effects_vs_own_layer']:
+                print(f"      {e['head']:<9}{e['drop']:>+9.4f}{e['own_floor_2sd']:>10.4f}"
+                      f"{e['x_own']:>7.2f}{e['x_pooled']:>10.2f}")
+            print(f"      inside their OWN layer's floor {r['n_inside_own']} of "
+                  f"{len(r['effects_vs_own_layer'])}; inside the band-pooled floor "
+                  f"{r['n_inside_pooled']} of {len(r['effects_vs_own_layer'])}   "
+                  f"rho {r['spearman_rho_layer_sd']:+.3f}\n")
 
     if SN:
         n = SN['null']
@@ -727,6 +789,10 @@ def main() -> int:
             ('R1 prior effects total', PE['n_total'] if PE else -1, 8, 0),
             ('R1 COPY set percentile', SN['sets']['COPY']['pct_in_null'] if SN else -1, 0.0, 0.05),
             ('R1 READ set percentile', SN['sets']['READ']['pct_in_null'] if SN else -1, 46.667, 0.01),
+            ('R10 inside own-layer floor',
+             list(TEN.values())[0]['n_inside_own'] if TEN else -1, 8, 0),
+            ('R10 inside pooled floor',
+             list(TEN.values())[0]['n_inside_pooled'] if TEN else -1, 7, 0),
             ('R2 valid cells', B['n_valid'], 4, 0),
             ('R2 inverted', B['n_inverted'], 0, 0),
             ('R5 cells', E['n_cells'], 6, 0),

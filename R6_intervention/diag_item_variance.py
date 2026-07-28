@@ -60,6 +60,7 @@ from task import PERSONS, OBJECTS  # noqa: E402
 # the output could have shown it. Its durable fix -- stamp sha256(source) into every row -- was
 # never carried here, and on 2026-07-28 an audit found 40 result files with zero provenance and
 # 12 of them produced by code that has since been edited.
+_PRODUCER = __import__("pathlib").Path(__file__).name
 _CODE_VERSION = __import__("hashlib").sha256(
     __import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:8]
 
@@ -187,7 +188,7 @@ def main() -> int:
           f"p10 {np.percentile(cv,10):.3f}  p90 {np.percentile(cv,90):.3f}")
     print(f"  -> {world}")
 
-    res = {'code_version': _CODE_VERSION, 'code_version': _CODE_VERSION, 'model': args.tag, 'n_items': n, 'band': [lo, hi], 'n_heads_measured': len(rows),
+    res = {'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'model': args.tag, 'n_items': n, 'band': [lo, hi], 'n_heads_measured': len(rows),
            'displacement_ratio_median': med,
            'displacement_ratio_p10': float(np.percentile(dr, 10)),
            'displacement_ratio_p90': float(np.percentile(dr, 90)),

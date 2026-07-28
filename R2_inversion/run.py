@@ -36,6 +36,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 # the output could have shown it. Its durable fix -- stamp sha256(source) into every row -- was
 # never carried here, and on 2026-07-28 an audit found 40 result files with zero provenance and
 # 12 of them produced by code that has since been edited.
+_PRODUCER = __import__("pathlib").Path(__file__).name
 _CODE_VERSION = __import__("hashlib").sha256(
     __import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:8]
 
@@ -184,7 +185,7 @@ def main() -> int:
     nv = np.array(nulls)
     sd = float(nv.std(ddof=1))
 
-    res = {'code_version': _CODE_VERSION, 'code_version': _CODE_VERSION, 'model': args.tag, 'n_layers': NL, 'n_heads': NH, 'k': K, 'n_seq': N_SEQ, 'T': T,
+    res = {'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'model': args.tag, 'n_layers': NL, 'n_heads': NH, 'k': K, 'n_seq': N_SEQ, 'T': T,
            'dtype': args.dtype, 'ablate_positions': 'all',
            'baseline_logprob': base,
            'induction_top': [list(x) for x in top], 'induction_bottom': [list(x) for x in bot],

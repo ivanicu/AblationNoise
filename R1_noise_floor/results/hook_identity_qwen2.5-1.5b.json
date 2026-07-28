@@ -1,5 +1,6 @@
 {
-  "code_version": "5dd8ca7d",
+  "code_version": "a9d0042b",
+  "producer": "hook_identity.py",
   "model": "qwen2.5-1.5b",
   "layer": 21,
   "module": "self_attn.o_proj",

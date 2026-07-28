@@ -69,10 +69,24 @@ def main() -> int:
         p = Path(f)
         d = json.load(open(p))
         stamp = d.get('code_version') if isinstance(d, dict) else None
-        runner = runner_for(p)
+        # THE PRODUCER IS READ FROM THE FILE, NOT INFERRED FROM ITS DIRECTORY. Inferring it is
+        # how this check convicted three innocent files: hook_identity.py writes into
+        # R1_noise_floor/results/, so the directory heuristic compared its stamp against R1's
+        # runner and found a mismatch it then called impossible. Location is a label; the
+        # producer is the object. Fifth instance today of trusting the first over the second.
+        named = d.get('producer') if isinstance(d, dict) else None
+        runner = None
+        if named:
+            cands = [Path(x) for x in glob.glob(str(HERE / '**' / named), recursive=True)]
+            runner = cands[0] if cands else None
+        guessed = runner is None
+        if runner is None:
+            runner = runner_for(p)
         rel_r = str(runner.relative_to(HERE)) if runner else None
         cur = sha8(runner) if runner else None
-        if stamp and cur and stamp == cur:
+        if stamp and guessed:
+            v = 'UNVERIFIED'
+        elif stamp and cur and stamp == cur:
             v = 'CONFIRMED'
         elif stamp:
             v = 'STALE'
@@ -85,9 +99,17 @@ def main() -> int:
         # and when either timestamp is MISSING (an uncommitted file). Those are different facts,
         # and collapsing them let the IMPOSSIBLE branch fire on a result that simply had not been
         # committed yet. Absent evidence read as positive evidence: the third instance today.
-        older = None if (ts_r is None or ts_f is None) else (ts_r > ts_f)
+        # AND A COMMITTED TIMESTAMP CANNOT SEE AN UNCOMMITTED EDIT. Fourth instance today of
+        # absent evidence read as positive: the runner had been modified in the working tree, git
+        # log still reported its previous commit, ts_r == ts_f, and IMPOSSIBLE fired on a result
+        # that was simply newer than the last commit of a file I had just edited.
+        dirty = subprocess.run(['git', 'diff', '--quiet', '--', rel_r],
+                               cwd=str(HERE)).returncode != 0 if rel_r else False
+        older = (None if (ts_r is None or ts_f is None or dirty)
+                 else (ts_r > ts_f))
         rows.append({'result': str(p.relative_to(HERE)), 'runner': rel_r, 'verdict': v,
-                     'stamp': stamp, 'current': cur, 'runner_committed_after_result': older})
+                     'stamp': stamp, 'current': cur, 'runner_committed_after_result': older,
+                     'runner_dirty': dirty, 'producer_guessed_from_path': guessed})
 
     n = len(rows)
     c = {k: sum(r['verdict'] == k for r in rows) for k in ('CONFIRMED', 'STALE', 'UNVERIFIED')}
@@ -98,8 +120,11 @@ def main() -> int:
     # stamp cannot have come from that runner. That is the only case worth failing the build on.
     # IMPOSSIBLE requires KNOWING the runner has not moved. `is False` -- not `not ...` -- so an
     # uncommitted file, whose timestamps are unknown, cannot be convicted.
+    # A GUESSED PRODUCER CANNOT CONVICT. If the file did not name its own producer, the
+    # comparison is against a script inferred from a directory, and a mismatch says nothing.
     impossible = [r for r in rows if r['verdict'] == 'STALE'
-                  and r['runner_committed_after_result'] is False]
+                  and r['runner_committed_after_result'] is False
+                  and not r['producer_guessed_from_path']]
 
     out = {'n': n, 'counts': c, 'n_unverified_and_older_by_git': len(older),
            'n_timestamps_unknown': len(unknown_ts),

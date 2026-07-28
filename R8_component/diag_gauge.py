@@ -56,6 +56,7 @@ from task import PERSONS, OBJECTS  # noqa: E402
 # the output could have shown it. Its durable fix -- stamp sha256(source) into every row -- was
 # never carried here, and on 2026-07-28 an audit found 40 result files with zero provenance and
 # 12 of them produced by code that has since been edited.
+_PRODUCER = __import__("pathlib").Path(__file__).name
 _CODE_VERSION = __import__("hashlib").sha256(
     __import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:8]
 
@@ -160,7 +161,7 @@ def main() -> int:
     print(f"  PERMITTED by the gauge (median cond(W_O,h)): {permitted:.1f}x")
     print(f"  -> {'matching survives the basis change' if spread < 1.5 else 'MATCHING IS BASIS-DEPENDENT'}")
 
-    out = {'code_version': _CODE_VERSION, 'code_version': _CODE_VERSION, 'model': args.tag, 'n_items': n, 'n_band_heads': len(cond),
+    out = {'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'model': args.tag, 'n_items': n, 'n_band_heads': len(cond),
            'residual_norm_mean': means, 'residual_norm_median': meds,
            'residual_spread': spread, 'permitted_by_gauge_median_cond': permitted,
            'cond_max': float(max(cond)),

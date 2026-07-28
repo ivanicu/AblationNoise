@@ -32,6 +32,7 @@ import numpy as np
 # the output could have shown it. Its durable fix -- stamp sha256(source) into every row -- was
 # never carried here, and on 2026-07-28 an audit found 40 result files with zero provenance and
 # 12 of them produced by code that has since been edited.
+_PRODUCER = __import__("pathlib").Path(__file__).name
 _CODE_VERSION = __import__("hashlib").sha256(
     __import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:8]
 

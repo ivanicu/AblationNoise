@@ -64,6 +64,7 @@ from task import PERSONS, OBJECTS, ROOMS
 # the output could have shown it. Its durable fix -- stamp sha256(source) into every row -- was
 # never carried here, and on 2026-07-28 an audit found 40 result files with zero provenance and
 # 12 of them produced by code that has since been edited.
+_PRODUCER = __import__("pathlib").Path(__file__).name
 _CODE_VERSION = __import__("hashlib").sha256(
     __import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:8]
 
@@ -323,7 +324,7 @@ def main():
                'BAND-IS-EXCEPTIONAL' if excess >= 1.5 else 'AMBIGUOUS')
     cells = {f'L{L}': layers[L] for L in range(NL)}
 
-    res = {'code_version': _CODE_VERSION, 'code_version': _CODE_VERSION, 'model': args.tag, 'n_layers': NL, 'n_heads': NH, 'band': [lo, hi],
+    res = {'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'model': args.tag, 'n_layers': NL, 'n_heads': NH, 'band': [lo, hi],
            'sham_band': [sham_lo, sham_hi], 'n_items': n, 'n_draws': N_DRAWS,
            'draw_seed': DRAW_SEED, 'base_margin': bm, 'rooms': rooms, 'dtype': args.dtype,
            'cells': cells, 'layers': layers,

@@ -32,6 +32,7 @@ from task import PERSONS, OBJECTS, ROOMS
 # the output could have shown it. Its durable fix -- stamp sha256(source) into every row -- was
 # never carried here, and on 2026-07-28 an audit found 40 result files with zero provenance and
 # 12 of them produced by code that has since been edited.
+_PRODUCER = __import__("pathlib").Path(__file__).name
 _CODE_VERSION = __import__("hashlib").sha256(
     __import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:8]
 
@@ -207,7 +208,7 @@ def main() -> int:
                   f"{'CLEARS' if c['clears_p10p90'] else 'inside'}  "
                   f"| PC {pcv:+9.4f} {'ok' if c['pc_clears'] else 'DEAD'}")
 
-    res = {'code_version': _CODE_VERSION, 'code_version': _CODE_VERSION, 'model': args.tag, 'n_items': len(items), 'n_draws': N_DRAWS,
+    res = {'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'model': args.tag, 'n_items': len(items), 'n_draws': N_DRAWS,
            'mechanism': [list(x) for x in mech], 'mechanism_attn': mech_attn,
            'dtype': args.dtype, 'mechanism_identified': 'in-run: max final-position attention to the correct room token', 'rooms': ROOMS4, 'cells': cells}
     Path('results').mkdir(exist_ok=True)

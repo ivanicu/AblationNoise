@@ -23,6 +23,7 @@ from pathlib import Path
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 HERE = Path(__file__).resolve().parent
+_PRODUCER = __import__("pathlib").Path(__file__).name
 _CODE_VERSION = __import__("hashlib").sha256(Path(__file__).read_bytes()).hexdigest()[:8]
 PROMPT = ("Alice owns the pill. The pill is in the pine room.\n"
           "Question: Which room should Alice go to find their object?\nAnswer: The")
@@ -81,7 +82,7 @@ def main() -> int:
                     ('W_O', WO)):
         if not torch.isfinite(tsr).all():
             bad = int((~torch.isfinite(tsr)).sum())
-            res = {'code_version': _CODE_VERSION, 'model': args.tag, 'layer': L, 'module': name,
+            res = {'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'model': args.tag, 'layer': L, 'module': name,
                    'verdict': 'UNRUNNABLE',
                    'why': f"the UNABLATED forward is not finite: {bad} non-finite values in "
                           f"{nm}. Nothing about the hook can be concluded from this run."}
@@ -114,7 +115,7 @@ def main() -> int:
     import math
     if any(math.isnan(e) for e in errs):
         n_nan = sum(math.isnan(e) for e in errs)
-        res = {'code_version': _CODE_VERSION, 'model': args.tag, 'layer': L, 'module': name,
+        res = {'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'model': args.tag, 'layer': L, 'module': name,
                'verdict': 'UNRUNNABLE', 'per_head_rel_err': errs,
                'why': f"{n_nan} of {len(errs)} heads produced a NaN relative error. NaN is not a "
                       f"large error; it is no measurement. UNVERIFIED, not MISLABELLED."}
@@ -128,7 +129,7 @@ def main() -> int:
     print(f"  {args.tag}  layer {L} at .{name}  NH={NH} HD={HD}  W_O {tuple(WO.shape)}")
     print(f"  worst relative error over {NH} heads: {worst:.2e}  (tolerance {args.tol:g})")
     print(f"  -> {'HOOK ADDRESSES THE RIGHT SLICE' if ok else '*** HOOK IS MISLABELLED ***'}")
-    res = {'code_version': _CODE_VERSION, 'model': args.tag, 'layer': L, 'module': name,
+    res = {'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'model': args.tag, 'layer': L, 'module': name,
            'n_heads': NH, 'head_dim': HD, 'worst_rel_err': worst, 'per_head_rel_err': errs,
            'tolerance': args.tol, 'verdict': 'HOOK-CORRECT' if ok else 'HOOK-MISLABELLED'}
     p = f"{args.out}_{args.tag}.json"
