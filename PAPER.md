@@ -370,6 +370,35 @@ was never justified — that is a real robustness and it is stated as such.
 > third of the band's. **Excluding it was not neutral — it removed the only region that could have
 > shown where one regime becomes the other.**
 
+### That window row was `n`-confounded as written — the control it needed, run after the fact
+
+`arm_contrast`, this repository's own detector, asks whether a control arm differs from the studied
+arm **only** in the property it claims to isolate. **The `L14-27` versus all-`28` row changes the
+window *and* the sample size**, `168` against `336`, and a `2σ` estimate's own sampling error depends
+on `n`. I wrote that row without checking.
+
+**The control holds `n` fixed and destroys only the window structure:** resample `168` heads at random
+from all `336`.
+
+```
+observed   L14-27 floor 0.4870        all-28 floor 0.3565        ratio 1.366x
+
+null, 20,000 random 168-head draws
+  median 0.3566    2.5th 0.2648    97.5th 0.4294    MAX 0.4639
+  observed 0.4870  ->  never reached in 20,000 draws
+```
+
+**The window effect is real.** It is not the sample size.
+
+**And the mirror is sharper than the original contrast.** The sham window's floor is `0.0792` on `96`
+heads, while a random `96` of `336` gives a median of `0.3530` — **`4.4576×` below.** So *each* window is
+individually extreme against a size-matched random control, in opposite directions. **That is a
+better statement of the layer effect than "band vs sham `6.15×`"**, because a ratio between two
+extremes says nothing about which of them moved.
+
+> The one-sided `p` here is at the permutation floor `1/20001` and means **"never reached in
+> 20,000 draws"**, not a value resolved to five places — the same floor caveat as the permutation null above.
+
 ### ⚠ The meta-separator, stated once: **there is no ground truth here, and that limits everything above**
 
 Two checks, both cheap, both aimed at the section above rather than at the eight heads.

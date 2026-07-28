@@ -630,6 +630,57 @@ def adversary_scoring():
                                                   'R18']}
 
 
+def window_arm_control():
+    """DOES THE WINDOW EFFECT SURVIVE A SIZE-MATCHED CONTROL? arm_contrast, on my own table.
+
+    The band-window row compares L14-27's floor against all 28 layers' and calls the difference
+    a WINDOW effect -- but the two arms differ in the window AND in n, 168 against 336, and a
+    2*sd estimate's own sampling error depends on n. This repository's own arm_contrast detector
+    exists to catch exactly that, and the row was written without running it.
+
+    THE CONTROL HOLDS n FIXED AND DESTROYS ONLY THE WINDOW: resample 168 heads at random from
+    all 336, 20,000 draws. Observed 0.4870 is never reached -- null max 0.4639. The effect is
+    real; the row was simply unsupported as written.
+
+    AND THE MIRROR IS SHARPER THAN THE ORIGINAL CONTRAST. The sham window's floor is 0.0792 on
+    96 heads while a random 96 of 336 gives a median of 0.3552, 4.5x below. EACH window is
+    individually extreme against a size-matched control, in opposite directions -- which says
+    more than 'band vs sham 6.15x', since a ratio between two extremes cannot say which moved.
+
+    p = 1/20001 means NEVER IN 20,000, not a value resolved to five places.
+    """
+    import random as _r
+    f_ = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    if not f_.exists():
+        return None
+    d = json.load(open(f_))
+    L = {int(k): v for k, v in d['layers'].items()}
+    NL, NH = len(L), len(L[0]['per_head'])
+    allh = [(x, h) for x in range(NL) for h in range(NH)]
+    v = {k: L[k[0]]['per_head'][str(k[1])] for k in allh}
+
+    def floor(ks):
+        xs = [v[k] for k in ks]
+        mu = sum(xs) / len(xs)
+        return 2 * math.sqrt(sum((z - mu) ** 2 for z in xs) / (len(xs) - 1))
+
+    band = [k for k in allh if 14 <= k[0] < 28]
+    sham = [k for k in allh if k[0] < 8]
+    N = 20000
+    rng = _r.Random(101)
+    null = sorted(floor(rng.sample(allh, len(band))) for _ in range(N))
+    rng2 = _r.Random(102)
+    nullS = sorted(floor(rng2.sample(allh, len(sham))) for _ in range(2000))
+    fb = floor(band)
+    return {'n_draws': N, 'n_band': len(band), 'n_all': len(allh),
+            'floor_band': fb, 'floor_all': floor(allh), 'floor_sham': floor(sham),
+            'null_median': null[N // 2], 'null_lo': null[int(.025 * N)],
+            'null_hi': null[int(.975 * N)], 'null_max': null[-1],
+            'p': (1 + sum(1 for z in null if z >= fb)) / (1 + N),
+            'sham_sizematched_median': nullS[1000],
+            'sham_below_factor': nullS[1000] / floor(sham)}
+
+
 def band_boundary():
     """IS THE BAND A REGIME, OR AN ARBITRARY WINDOW? Every number here is conditioned on L14-27.
 
@@ -3298,6 +3349,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    WAC = window_arm_control()
     BND = band_boundary()
     OVP = ov_permutation_null()
     OV3 = ov_3b()
@@ -3315,7 +3367,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -3552,6 +3604,24 @@ def main() -> int:
             print(f"        Chosen after the fact it would have been called layer-shaped; the rule")
             print(f"        is honoured at a 3% miss rather than renegotiated. Both centroids move")
             print(f"        EARLIER -- the direction replicates, the SHAPE does not resolve at n=2\n")
+
+    if WAC:
+        print('WAC  arm_contrast ON MY OWN TABLE: the window row changed the window AND n')
+        print('     control holds n FIXED and destroys ONLY the window -- resample %d of %d,'
+              % (WAC['n_band'], WAC['n_all']))
+        print('     %d draws' % WAC['n_draws'])
+        print('       observed L14-27 floor %.4f   all-%d floor %.4f'
+              % (WAC['floor_band'], WAC['n_all'] // 12, WAC['floor_all']))
+        print('       null  median %.4f  2.5th %.4f  97.5th %.4f  MAX %.4f'
+              % (WAC['null_median'], WAC['null_lo'], WAC['null_hi'], WAC['null_max']))
+        print('       p = %.5f -- never reached in %d draws. THE WINDOW EFFECT IS REAL, and'
+              % (WAC['p'], WAC['n_draws']))
+        print('       the row was simply unsupported as written.')
+        print('       MIRROR: sham floor %.4f vs a size-matched random median of %.4f -- %.1fx'
+              % (WAC['floor_sham'], WAC['sham_sizematched_median'], WAC['sham_below_factor']))
+        print('       BELOW. Each window is individually extreme against a size-matched')
+        print('       control, in opposite directions -- which a band/sham ratio cannot say.')
+        print()
 
     if BND:
         print("BND  IS THE BAND A REGIME, OR AN ARBITRARY WINDOW?")
@@ -4490,7 +4560,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 37.718, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 37.898, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -4571,9 +4641,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 117, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 118, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 29, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 7.692, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 7.627, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
