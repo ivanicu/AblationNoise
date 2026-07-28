@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+"""Which code produced each result file? Three-valued, because two of the answers are not failures.
+
+THE DEFECT THIS EXISTS FOR was recorded in a sibling project and never carried here: a fix was
+announced while the running workers kept executing the pre-edit file, and **nothing in the output
+could have shown it**. Its durable repair was to stamp `sha256(source)[:8]` into every row, so
+"did that fix actually run" becomes a query instead of a memory.
+
+Audited 2026-07-28: **40 result files, zero provenance**, and by git timestamps **12 of them were
+produced by code that has since been edited** — R5's three (before `--dtype` was added), R7's four
+and R8's five (before `control_fitness` was wired into the runners). Every one of those edits is,
+on inspection, additive rather than behaviour-changing. *On inspection* is the evidence standard
+this repository refuses everywhere else.
+
+    CONFIRMED   the file carries a stamp and it matches its runner's current source
+    STALE       it carries a stamp that does not match -- the runner has changed since
+    UNVERIFIED  it carries no stamp at all. Falls back to git timestamps, which are weaker
+                evidence and are reported as such, never as a verdict about the numbers
+
+    python3 validate_provenance.py [--json]
+"""
+from __future__ import annotations
+
+import argparse
+import glob
+import hashlib
+import json
+import subprocess
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+
+
+def sha8(p: Path) -> str:
+    return hashlib.sha256(p.read_bytes()).hexdigest()[:8]
+
+
+def last_commit_ts(rel: str):
+    r = subprocess.run(['git', 'log', '-1', '--format=%ct', '--', rel],
+                       cwd=str(HERE), capture_output=True, text=True)
+    return int(r.stdout.strip()) if r.returncode == 0 and r.stdout.strip() else None
+
+
+def runner_for(result_path: Path):
+    """The runner that owns a result file: the .py in its round whose name matches its prefix."""
+    round_dir = result_path.parent
+    while round_dir != HERE and round_dir.name != 'results':
+        round_dir = round_dir.parent
+    round_dir = round_dir.parent
+    stem = result_path.stem
+    cands = sorted(round_dir.glob('*.py'))
+    # diag results are produced by diag_*.py; everything else by run.py
+    for c in cands:
+        if c.name.startswith('diag_') and 'diag' in stem:
+            return c
+    for c in cands:
+        if c.name == 'run.py':
+            return c
+    return cands[0] if cands else None
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--json', action='store_true')
+    args = ap.parse_args()
+
+    rows = []
+    for f in sorted(glob.glob(str(HERE / 'R*/results/**/*.json'), recursive=True)):
+        p = Path(f)
+        d = json.load(open(p))
+        stamp = d.get('code_version') if isinstance(d, dict) else None
+        runner = runner_for(p)
+        rel_r = str(runner.relative_to(HERE)) if runner else None
+        cur = sha8(runner) if runner else None
+        if stamp and cur and stamp == cur:
+            v = 'CONFIRMED'
+        elif stamp:
+            v = 'STALE'
+        else:
+            v = 'UNVERIFIED'
+        ts_r = last_commit_ts(rel_r) if rel_r else None
+        ts_f = last_commit_ts(str(p.relative_to(HERE)))
+        older = bool(ts_r and ts_f and ts_r > ts_f)
+        rows.append({'result': str(p.relative_to(HERE)), 'runner': rel_r, 'verdict': v,
+                     'stamp': stamp, 'current': cur, 'runner_committed_after_result': older})
+
+    n = len(rows)
+    c = {k: sum(r['verdict'] == k for r in rows) for k in ('CONFIRMED', 'STALE', 'UNVERIFIED')}
+    older = [r for r in rows if r['verdict'] == 'UNVERIFIED' and r['runner_committed_after_result']]
+    # A stamp that matches nothing AND a result newer than every edit of its runner means the
+    # stamp cannot have come from that runner. That is the only case worth failing the build on.
+    impossible = [r for r in rows if r['verdict'] == 'STALE'
+                  and not r['runner_committed_after_result']]
+
+    out = {'n': n, 'counts': c, 'n_unverified_and_older_by_git': len(older),
+           'impossible': [r['result'] for r in impossible], 'rows': rows}
+    if args.json:
+        print(json.dumps(out, indent=2))
+        return 1 if impossible else 0
+
+    print(f"  {n} result files:  {c['CONFIRMED']} CONFIRMED  {c['STALE']} STALE  "
+          f"{c['UNVERIFIED']} UNVERIFIED (no stamp)")
+    if c['UNVERIFIED']:
+        print(f"  of the unstamped, git timestamps show {len(older)} whose runner was committed "
+              f"AFTER them:")
+        for r in older:
+            print(f"    {r['result']}")
+        print(f"  that is weaker evidence than a stamp and it is not a verdict about the numbers "
+              f"-- it says the code moved, not that the result is wrong.")
+    for r in impossible:
+        print(f"  IMPOSSIBLE {r['result']}: carries stamp {r['stamp']} but its runner has not "
+              f"been edited since -- the stamp cannot have come from that runner")
+    return 1 if impossible else 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

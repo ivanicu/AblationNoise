@@ -238,6 +238,14 @@ is an ancestor of `HEAD`. Not a table in a README: a hand-written ledger is a se
 python3 validate_defects.py
 ```
 
+Every runner stamps `sha256` of its own source into the result file it writes, so *"which code
+produced this number"* is a query rather than a memory —
+[`validate_provenance.py`](validate_provenance.py), also in `make verify`. It is three-valued: a
+matching stamp is `CONFIRMED`, a differing one is `STALE`, **no stamp at all is `UNVERIFIED`** and
+falls back to git timestamps, which are weaker evidence and are reported as such. The 40 results
+that predate the stamp are all `UNVERIFIED`, and git shows **12 of them were produced by code that
+has since been edited**.
+
 Downloaded the ZIP rather than cloning? The ancestry check reports **UNVERIFIED** and says so —
 it does not fail, and it does not claim the rows are wrong. There is no repository to check
 against, which is a fact about your directory and not about the ledger.

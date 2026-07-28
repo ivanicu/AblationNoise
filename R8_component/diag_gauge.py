@@ -51,6 +51,14 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from task import PERSONS, OBJECTS  # noqa: E402
 
+# THE RESULT FILE MUST KNOW WHICH CODE PRODUCED IT. A sibling project recorded this exact defect:
+# a fix was announced while the running workers kept executing the pre-edit file, and nothing in
+# the output could have shown it. Its durable fix -- stamp sha256(source) into every row -- was
+# never carried here, and on 2026-07-28 an audit found 40 result files with zero provenance and
+# 12 of them produced by code that has since been edited.
+_CODE_VERSION = __import__("hashlib").sha256(
+    __import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:8]
+
 torch.set_num_threads(20)
 ARMS = ('mean', 'constant_only', 'shrink', 'randdir')
 
@@ -152,7 +160,7 @@ def main() -> int:
     print(f"  PERMITTED by the gauge (median cond(W_O,h)): {permitted:.1f}x")
     print(f"  -> {'matching survives the basis change' if spread < 1.5 else 'MATCHING IS BASIS-DEPENDENT'}")
 
-    out = {'model': args.tag, 'n_items': n, 'n_band_heads': len(cond),
+    out = {'code_version': _CODE_VERSION, 'code_version': _CODE_VERSION, 'model': args.tag, 'n_items': n, 'n_band_heads': len(cond),
            'residual_norm_mean': means, 'residual_norm_median': meds,
            'residual_spread': spread, 'permitted_by_gauge_median_cond': permitted,
            'cond_max': float(max(cond)),

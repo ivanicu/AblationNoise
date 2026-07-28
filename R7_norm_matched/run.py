@@ -34,6 +34,14 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from task import PERSONS, OBJECTS  # noqa: E402
 
+# THE RESULT FILE MUST KNOW WHICH CODE PRODUCED IT. A sibling project recorded this exact defect:
+# a fix was announced while the running workers kept executing the pre-edit file, and nothing in
+# the output could have shown it. Its durable fix -- stamp sha256(source) into every row -- was
+# never carried here, and on 2026-07-28 an audit found 40 result files with zero provenance and
+# 12 of them produced by code that has since been edited.
+_CODE_VERSION = __import__("hashlib").sha256(
+    __import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:8]
+
 torch.set_num_threads(20)
 
 K = 1
@@ -319,7 +327,7 @@ def main() -> int:
     # The two inclusion properties R6 conflated, reported separately with which one failed.
     inc_ratio = bool(arms['zero']['ratio_k1'] > 1.5)
     inc_pc = bool(arms['zero']['pc_clears_own_floor'])
-    res = {'model': args.tag, 'n_items': n, 'n_draws': N_DRAWS, 'k': K, 'dtype': args.dtype,
+    res = {'code_version': _CODE_VERSION, 'code_version': _CODE_VERSION, 'model': args.tag, 'n_items': n, 'n_draws': N_DRAWS, 'k': K, 'dtype': args.dtype,
            'band': [lo, hi], 'sham_band': [sham_lo, sham_hi], 'pc_layer': PC_LAYER,
            'rooms': rooms, 'draw_seed': DRAW_SEED, 'randdir_seed': RANDDIR_SEED,
            'base_margin': bm, 'arms': arms, 'rr': rr,

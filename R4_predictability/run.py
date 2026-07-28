@@ -27,6 +27,14 @@ from pathlib import Path
 
 import numpy as np
 
+# THE RESULT FILE MUST KNOW WHICH CODE PRODUCED IT. A sibling project recorded this exact defect:
+# a fix was announced while the running workers kept executing the pre-edit file, and nothing in
+# the output could have shown it. Its durable fix -- stamp sha256(source) into every row -- was
+# never carried here, and on 2026-07-28 an audit found 40 result files with zero provenance and
+# 12 of them produced by code that has since been edited.
+_CODE_VERSION = __import__("hashlib").sha256(
+    __import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:8]
+
 HERE = Path(__file__).resolve().parent
 R1 = HERE.parent / 'R1_noise_floor' / 'results'
 

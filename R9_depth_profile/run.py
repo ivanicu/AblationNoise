@@ -59,6 +59,14 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from task import PERSONS, OBJECTS, ROOMS
 
+# THE RESULT FILE MUST KNOW WHICH CODE PRODUCED IT. A sibling project recorded this exact defect:
+# a fix was announced while the running workers kept executing the pre-edit file, and nothing in
+# the output could have shown it. Its durable fix -- stamp sha256(source) into every row -- was
+# never carried here, and on 2026-07-28 an audit found 40 result files with zero provenance and
+# 12 of them produced by code that has since been edited.
+_CODE_VERSION = __import__("hashlib").sha256(
+    __import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:8]
+
 torch.set_num_threads(20)
 
 SET_SIZES = [1]   # R9 sweeps DEPTH, not set size
@@ -315,7 +323,7 @@ def main():
                'BAND-IS-EXCEPTIONAL' if excess >= 1.5 else 'AMBIGUOUS')
     cells = {f'L{L}': layers[L] for L in range(NL)}
 
-    res = {'model': args.tag, 'n_layers': NL, 'n_heads': NH, 'band': [lo, hi],
+    res = {'code_version': _CODE_VERSION, 'code_version': _CODE_VERSION, 'model': args.tag, 'n_layers': NL, 'n_heads': NH, 'band': [lo, hi],
            'sham_band': [sham_lo, sham_hi], 'n_items': n, 'n_draws': N_DRAWS,
            'draw_seed': DRAW_SEED, 'base_margin': bm, 'rooms': rooms, 'dtype': args.dtype,
            'cells': cells, 'layers': layers,

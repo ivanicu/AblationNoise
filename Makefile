@@ -29,6 +29,7 @@ selftest:
 ## stack is not a path a reader will take.
 verify: selftest
 	@$(PY) validate_defects.py
+	@$(PY) validate_provenance.py
 	@$(PY) headline.py --check
 	@$(PY) detectors/prose_numbers.py
 

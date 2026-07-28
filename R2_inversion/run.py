@@ -31,6 +31,14 @@ import numpy as np
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+# THE RESULT FILE MUST KNOW WHICH CODE PRODUCED IT. A sibling project recorded this exact defect:
+# a fix was announced while the running workers kept executing the pre-edit file, and nothing in
+# the output could have shown it. Its durable fix -- stamp sha256(source) into every row -- was
+# never carried here, and on 2026-07-28 an audit found 40 result files with zero provenance and
+# 12 of them produced by code that has since been edited.
+_CODE_VERSION = __import__("hashlib").sha256(
+    __import__("pathlib").Path(__file__).read_bytes()).hexdigest()[:8]
+
 torch.set_num_threads(20)
 
 T = 64              # length of one copy; the sequence is 2T
@@ -176,7 +184,7 @@ def main() -> int:
     nv = np.array(nulls)
     sd = float(nv.std(ddof=1))
 
-    res = {'model': args.tag, 'n_layers': NL, 'n_heads': NH, 'k': K, 'n_seq': N_SEQ, 'T': T,
+    res = {'code_version': _CODE_VERSION, 'code_version': _CODE_VERSION, 'model': args.tag, 'n_layers': NL, 'n_heads': NH, 'k': K, 'n_seq': N_SEQ, 'T': T,
            'dtype': args.dtype, 'ablate_positions': 'all',
            'baseline_logprob': base,
            'induction_top': [list(x) for x in top], 'induction_bottom': [list(x) for x in bot],
