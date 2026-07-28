@@ -157,6 +157,15 @@ def check_file(path: Path, gen: set) -> Report:
     for mk in MARKER.findall(text):
         for tok in NUM.findall(mk):
             exempt.add(float(tok))
+    # AN UNCLOSED FENCE SILENTLY DISABLES THIS CHECK FOR THE REST OF THE FILE. Attacked
+    # 2026-07-28: a file whose first line is ``` returns BACKED having examined zero numbers,
+    # because everything after it is treated as quoted generator output. One character turns
+    # Detector 6 off for that file. Refuse loudly instead of reporting clean.
+    if sum(1 for ln in text.splitlines() if ln.lstrip().startswith('```')) % 2:
+        return Report('UNRUNNABLE', unbacked=[{'line': 0, 'value': -1.0,
+                      'text': 'odd number of code fences: everything after the last unmatched ``` '
+                              'would be skipped as quoted output, and this file would report '
+                              'BACKED having checked nothing'}])
     lines, unbacked, n = text.splitlines(), [], 0
     in_code = False
     for i, ln in enumerate(lines, 1):

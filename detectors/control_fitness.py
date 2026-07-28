@@ -59,6 +59,24 @@ def check_control(hypothesis_predictions: dict[str, str] | None = None,
                   positive_control: float | None = None,
                   positive_control_expected_sign: int | None = None) -> Report:
     """hypothesis_predictions: {hypothesis name -> predicted direction, e.g. 'down'/'up'/'zero'}."""
+    # THREE CLEAN PASSES ON GARBAGE, found by attacking this file on 2026-07-28 with inputs
+    # derived from its own assumptions. It returned CONTROL-FIT for: an EMPTY readings list, a
+    # scale of ZERO, and a NaN reading. The scale argument was made REQUIRED precisely because a
+    # tolerance that scales with the span is self-defeating -- and zero defeats it again. NaN is
+    # worse: every comparison against it is False, so every check silently passes.
+    import math as _m
+    if readings is not None:
+        if len(readings) == 0:
+            return Report('UNRUNNABLE', why=["readings is empty. No data is not a fit control."])
+        if any(not _m.isfinite(float(x)) for x in readings):
+            return Report('UNRUNNABLE', why=["a reading is NaN or infinite; every comparison "
+                                             "against it is False, so every check would pass."])
+    if scale is not None and (not _m.isfinite(float(scale)) or float(scale) <= 0):
+        return Report('UNDECIDABLE', why=[f"scale={scale!r} is not a positive finite number. The "
+                                          f"scale exists to stop the tolerance scaling with the "
+                                          f"span; zero reopens exactly that hole."])
+    if reported_reading is not None and not _m.isfinite(float(reported_reading)):
+        return Report('UNRUNNABLE', why=["reported_reading is NaN or infinite."])
     r = Report()
     fired: list[str] = []
 

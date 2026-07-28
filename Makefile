@@ -21,6 +21,7 @@ selftest:
 	@$(PY) detectors/control_fitness.py --selftest
 	@$(PY) detectors/prose_numbers.py   --selftest
 	@$(PY) detectors/arm_contrast.py    --selftest
+	@$(PY) detectors/attack_detectors.py
 
 ## selftest + headline, and a non-zero exit if any README number is stale.
 ## STANDARD LIBRARY ONLY -- no numpy, no torch, no network. Checked by cloning the repo and

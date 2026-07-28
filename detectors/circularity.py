@@ -86,6 +86,20 @@ def check_circularity(answers, predictor_choices,
                       baseline_err: float | None = None,
                       predictor_values=None) -> Report:
     """answers / predictor_choices: per-item labels. predictor_err / baseline_err: held-out error."""
+    # A PREDICTION THAT IS NONE IS NOT A PREDICTION. Attacked 2026-07-28 with an all-None
+    # predictor and this function returned NON-CIRCULAR -- certifying an extractor that produced
+    # nothing. Same shape as the defaulting-.get failure already in this repository's ledger:
+    # absent data made to look like agreement.
+    for _nm, _seq in (('answers', answers), ('predictor_choices', predictor_choices)):
+        if _seq is not None and any(x is None for x in _seq):
+            _k = sum(x is None for x in _seq)
+            # KEYWORD, NOT POSITIONAL. The first attempt at this guard passed the verdict
+            # positionally and `verdict` is not this dataclass's first field, so it landed in `n`
+            # and the report came back with the DEFAULT verdict "UNRUN" -- a silent wrong-field
+            # write, inside the fix for silent wrong answers.
+            return Report(verdict='UNRUNNABLE', n=len(_seq),
+                          why=[f"{_k} of {len(_seq)} {_nm} are None. Absent labels are UNKNOWN, "
+                               f"not agreement and not non-circularity."])
     r = Report()
     if len(answers) != len(predictor_choices):
         r.verdict = "UNRUNNABLE"
