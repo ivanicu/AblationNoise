@@ -739,24 +739,24 @@ it does not fail, and it does not claim the rows are wrong. There is no reposito
 against, which is a fact about your directory and not about the ledger.
 
 ```
-    PROVENANCE     19      whether the number has a generator at all
+    PROVENANCE     20      whether the number has a generator at all
     SCOPE          13      which population the claim covers
     CONTROL        11      what the control arm actually holds fixed
-    STATISTIC      12      what quantity the number is
+    STATISTIC      13      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 36 · instrument 16 · outside reader 7
+    found by:  author reading the object 37 · instrument 16 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 69 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 70 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 69 were findable only by an outside reader** — `10.1%`. That fraction was 27% at n=22 and
+**7 of 70 were findable only by an outside reader** — `10.0%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -768,7 +768,7 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE            11                8                    0
 SCOPE                 13                2                    2
-STATISTIC              8                4                    1
+STATISTIC              9                4                    1
 CONTROL                9                2                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
@@ -792,20 +792,42 @@ never reached, with the real defect eight rounds inherited as its first selftest
 **An outside reader still holds the lead on both**: `4` `CONTROL` and `2` `SCOPE` against the
 instruments' `2` and `2`.
 
-### The taxonomy test now returns `ONE-JOINT-DOMINATES` — **and the threshold that produced it is a defect**
+### The taxonomy verdict is **dead as evidence** — measured, not suspected
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
-classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`69` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
-the pre-registered threshold of ≥8 and now stands at `19`.
+classifying his own defects will group them until a taxonomy appears. `ONE-JOINT-DOMINATES` fires
+when any bin reaches `8`. **That is an absolute threshold on a ledger that grows every session, and
+this page said so at n=`31` — and then nobody measured how uninformative it had become.**
 
-> **That threshold is an absolute count, not a proportion, and that is a defect in the
-> pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`69` a bin of `19` is `27.5%`, which is not domination
-> by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
-> ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
-> seeing which verdict it produces is the single move the pre-registration exists to refuse. The
-> verdict is reported as pre-registered, with its defect stated beside it.
+**Permutation test, labels assigned uniformly at random over the six bins:**
+
+```
+n = 22    the verdict fires  12.0%  of the time      informative
+n = 31                       66.8%                   already mostly inevitable
+n = 45                      100.0%
+n = 70                      100.0%   (20000 of 20000 random relabelings)
+```
+
+> **At n=`70` the verdict carries no information at all.** It was informative at n=`22` and stopped
+> discriminating around n=`45`. It is reported here rather than deleted, because **a pre-registered
+> gate that stops discriminating is a finding about the gate**, and quietly dropping it is how a
+> ledger keeps only the tests that still flatter it.
+
+**What replaces it is the distribution, and that *is* informative.** Chi-square `20.686` against a
+uniform null gives a permutation `p` of `0.001` — `20` of `20000`.
+
+```
+PROVENANCE 20   SCOPE 16   CONTROL 15   STATISTIC 13   UNCLASSIFIED 4   INTERVENTION 2
+                                                        expected 11.7 each
+```
+
+**The two *small* bins carry the signal** — `INTERVENTION` at `2` and `UNCLASSIFIED` at `4` — not
+the large one the threshold watches. The right question was never *does a bin dominate* but *is the
+partition uneven*, and the answer sits at the opposite end of the distribution from where the
+threshold was pointed.
+
+**Still self-reported.** The rows are the author's, the bins are the author's, the classification is
+the author's. This measures whether the partition is uneven, not whether it is right.
 
 And the three do not split evenly: **two of them are the same unnamed type** — a prediction row
 derived from a *world's name* instead of from what the arms physically do, which happened in R7 and

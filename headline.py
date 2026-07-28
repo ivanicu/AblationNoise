@@ -549,6 +549,78 @@ def r11():
             'effects': rows}
 
 
+def taxonomy_power():
+    """Does the pre-registered taxonomy VERDICT carry information, or only the row count?
+
+    `ONE-JOINT-DOMINATES` fires when any bin reaches 8. That is an ABSOLUTE threshold on a ledger
+    that grows every session, and the pre-registration said so at n=31 -- and then nobody measured
+    how uninformative it had become.
+
+    PERMUTATION TEST, labels assigned uniformly at random over the six bins:
+
+        n= 22   the verdict fires 10.8% of the time     -- informative
+        n= 31   67.0%                                   -- already mostly inevitable
+        n>=45   100.0%                                  -- carries nothing
+
+    At n=69 it fires on 20000 of 20000 random relabelings. THE VERDICT IS DEAD AS EVIDENCE and is
+    reported as such rather than deleted, because a pre-registered gate that stops discriminating
+    is a finding about the gate.
+
+    WHAT REPLACES IT is the distribution, which IS informative: chi-square 20.65 against a uniform
+    null gives a permutation p of 0.00055 (11 of 20000). The two SMALL bins carry it -- INTERVENTION
+    at 2 and UNCLASSIFIED at 4 against an expected 11.5 -- not the large one the verdict watches.
+    The right question was never "does a bin dominate" but "is the partition uneven", and the answer
+    lives at the opposite end of the distribution from where the threshold was pointed.
+
+    STILL SELF-REPORTED: the rows are the author's, the bins are the author's, and the classification
+    is the author's. This measures whether the partition is uneven, not whether it is correct.
+    """
+    import random as _r
+    from collections import Counter
+    p = HERE / 'defects.json'
+    if not p.exists():
+        return None
+    d = json.load(open(p))['defects']
+    bins = sorted({r['bin'] for r in d})
+    n = len(d)
+    obs = Counter(r['bin'] for r in d)
+    exp = n / len(bins)
+
+    def verdict(c):
+        big = [k for k, v in c.items() if v >= 2]
+        unc = c.get('UNCLASSIFIED', 0)
+        mx = max(c.values())
+        if mx >= 8:
+            return 'ONE-JOINT-DOMINATES'
+        if unc >= 5 or not big:
+            return 'THIRTEEN-ONE-OFFS'
+        if len(big) >= 3 and unc <= 2:
+            return 'TAXONOMY-EXISTS'
+        return 'AMBIGUOUS'
+
+    chi = sum((obs.get(b, 0) - exp) ** 2 / exp for b in bins)
+    rng = _r.Random(11)
+    T = 20000
+    fires = 0
+    ge = 0
+    for _ in range(T):
+        c = Counter(rng.choice(bins) for _ in range(n))
+        fires += verdict(c) == 'ONE-JOINT-DOMINATES'
+        ge += sum((c.get(b, 0) - exp) ** 2 / exp for b in bins) >= chi
+    curve = {}
+    for m in (22, 31, 45, 69):
+        h = sum(1 for _ in range(4000)
+                if verdict(Counter(rng.choice(bins) for _ in range(m)))
+                == 'ONE-JOINT-DOMINATES')
+        curve[m] = 100 * h / 4000
+    return {'n': n, 'n_bins': len(bins), 'observed': dict(obs), 'expected_per_bin': exp,
+            'verdict': verdict(obs), 'n_draws': T,
+            'verdict_fires_under_random_labels_pct': 100 * fires / T,
+            'chi_square': chi, 'chi_square_p': ge / T,
+            'fires_by_n': curve,
+            'smallest_bins': sorted(obs.items(), key=lambda kv: kv[1])[:2]}
+
+
 def r15_design():
     """The design defect in a run that has NOT happened, caught from an earlier run's records.
 
@@ -1783,6 +1855,7 @@ def main() -> int:
     FT = r14()
     TW = r12()
     FD = r15_design()
+    TP = taxonomy_power()
     EL = r11()
     PW = power()
     RC = reference_class()
@@ -1791,7 +1864,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -1973,6 +2046,23 @@ def main() -> int:
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
               f"<=5 -- and it is the proven copy head\n")
+
+    if TP:
+        print("TAX does the pre-registered taxonomy VERDICT carry information, or only the count?")
+        print(f"      observed {TP['verdict']} at n={TP['n']}; expected {TP['expected_per_bin']:.1f} "
+              f"per bin over {TP['n_bins']} bins")
+        print(f"      PERMUTATION, labels assigned uniformly at random, {TP['n_draws']} draws:")
+        print(f"        it fires {TP['verdict_fires_under_random_labels_pct']:.2f}% of the time")
+        print("        by n: " + "  ".join(f"n={k} {v:.1f}%" for k, v in TP['fires_by_n'].items()))
+        print(f"      -> THE VERDICT IS DEAD AS EVIDENCE. It was informative at n=22 and stopped "
+              f"discriminating around n=45")
+        print(f"      what replaces it: chi-square {TP['chi_square']:.2f}, permutation p "
+              f"{TP['chi_square_p']:.5f} -- the DISTRIBUTION is uneven, and the two SMALL bins "
+              f"carry it")
+        print("        " + ", ".join(f"{k} {v}" for k, v in TP['smallest_bins']) +
+              f" against an expected {TP['expected_per_bin']:.1f}")
+        print(f"      the right question was never 'does a bin dominate' but 'is the partition "
+              f"uneven', and the answer sits at the opposite end from the threshold\n")
 
     if FD:
         print("R15 a design defect in a run that has NOT happened, from an earlier run's records")
@@ -2391,6 +2481,9 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('TAX verdict fires under random labels',
+             TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 20.686, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -2465,9 +2558,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 69, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 70, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 19, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 10.145, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 10.0, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

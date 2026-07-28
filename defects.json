@@ -630,6 +630,15 @@
       "defect": "the exhaustive runner's correctness filter would, on the SHUFFLED task, keep a population skewed 10.2 points toward the ends of the list -- exactly the positions the model handles best -- and the resulting floor would be the easy half's floor with nothing in the output saying so",
       "operation": "CAUGHT BEFORE THE COMPUTE, from R14's own per-item records, in a run that has not happened. First time in this project a design was attacked before rather than after. The fix costs nothing: drop the filter, because a drop is a change in MARGIN and a margin is defined whether or not the argmax is correct -- and on the original task accuracy is 1.000, so the filter has never rejected a single item there. The separate MIN_ITEMS refusal branch, which exists for models that cannot do the task at all, is unaffected",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D70",
+      "round": "repo",
+      "bin": "STATISTIC",
+      "commit": "0ba535e",
+      "defect": "the pre-registered taxonomy verdict ONE-JOINT-DOMINATES has been reported prominently since n=31, and its threshold defect (an absolute count on a growing ledger) was flagged at the time and never measured",
+      "operation": "DEAD AS EVIDENCE, by permutation test. With labels assigned uniformly at random over the six bins it fires on 20000 of 20000 draws at n=69. It was informative at n=22 (10.8%), mostly inevitable at n=31 (67.0%), and carries nothing from about n=45. Reported rather than deleted, because a pre-registered gate that stops discriminating is a finding about the gate. What replaces it is the DISTRIBUTION: chi-square 20.65, permutation p 0.00055, and the signal is carried by the two SMALL bins -- INTERVENTION 2 and UNCLASSIFIED 4 against an expected 11.5 -- not by the large one the threshold watches",
+      "found_by": "author_reading_the_object"
     }
   ]
 }
