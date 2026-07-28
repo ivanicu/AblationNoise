@@ -128,6 +128,32 @@ on that model, and records any scope reduction in its own output rather than in 
 * R5's readout axis is withdrawn: each model cleared on a different column, and the mechanism
   strengths were not matched across models, so that axis is confounded rather than null.
 
+## Two rounds returned `NOT MET`. A separator run on the existing files says the gate was wrong, not the instrument.
+
+R6 and R7 both stopped short of their gates because the `mean` arm's positive control failed to
+clear its own floor and the cell was declared invalid. **That reading is now withdrawn.** The
+separator cost zero compute — every number was already in the checked-in results:
+
+```
+by displacement ratio   qwen2.5-1.5b 0.141 < qwen2.5-3b 0.148 < phi 0.232 < internlm2 0.272
+by mean-arm readability phi 0.64 < qwen2.5-1.5b 1.03 < internlm2 2.06 < qwen2.5-3b 2.38
+                                                              -> different orders
+```
+
+**The `mean` arm's failure does not track how small its perturbation is.** It tracks how readable
+that *model* is at all: the mean arm sits at a stable **0.23–0.44** of the same model's zero arm on
+every one of the four, and it crosses the `|PC| > 1 band sd` line only where the model's zero arm is
+itself low. That is a threshold crossing a smooth quantity — not an instrument failing.
+
+So the honest restatement: **R6's and R7's `NOT MET` were produced by an exclusion rule, not by a
+broken measurement.** The rounds' numbers were well defined in every cell the rule discarded. R8
+already stopped using `mean` as a denominator and moved to a within-cell ordering; this is the
+evidence that the change was necessary rather than convenient.
+
+*(The 0.23–0.44 fraction is **not** a matched comparison — `zero` displaces by ‖x‖ and `mean` by
+`d`, which R6 measured at 14–27% of it. It says nothing about direction. What it says is that the
+fraction is stable, which is the whole point.)*
+
 ## What is open
 
 Not a roadmap — the questions this instrument raised and cannot yet answer, each tied to the round

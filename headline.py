@@ -248,6 +248,12 @@ def r7():
             r[f'floor_{arm}'] = a[arm]['band_floor']
         r['rr_shrink'] = d['rr']['shrink']
         r['rr_randdir'] = d['rr']['randdir']
+        # THE QUANTITY THAT DECIDED WHY TWO ROUNDS RETURNED `NOT MET`. The mean arm's readability
+        # as a fraction of the SAME model's zero arm. Not a matched comparison -- zero displaces
+        # by ||x|| and mean by d -- so it says nothing about direction. What it does say is that
+        # the fraction is STABLE across models, which is what makes the |PC| > 1 band-sd exclusion
+        # a threshold crossing a smooth quantity rather than an instrument failing.
+        r['mean_over_zero'] = a['mean']['readability'] / a['zero']['readability']
         rows.append(r)
     if not rows:
         return None
@@ -255,7 +261,12 @@ def r7():
     def med(xs):
         xs = sorted(xs); n = len(xs)
         return None if not n else (xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2)
+    mz = [r['mean_over_zero'] for r in rows]
     out = {'rows': rows, 'n_included': len(inc), 'n_valid': sum(r['round_valid'] for r in rows),
+           'mean_over_zero_min': min(mz), 'mean_over_zero_max': max(mz),
+           'mean_arm_readability_deficit_min': 1 / max(mz),
+           'mean_arm_readability_deficit_max': 1 / min(mz),
+           'n_mean_arm_died': sum(r['read_mean'] < 1 for r in rows),
            'worst_match_spread_pct': 100 * max(r['match_spread'] for r in rows),
            'total_overshoot': sum(r['overshoot'] for r in rows),
            'median_rr_shrink': med([r['rr_shrink'] for r in inc]),
@@ -288,6 +299,10 @@ def r7():
                 sorted(('mean', 'shrink', 'randdir'), key=lambda a: r[f'read_{a}']) == order
                 for r in rows)
     return out
+
+
+def out_mz(R):
+    return '  '.join(f"{r['model'].split('-')[0]} {r['mean_over_zero']:.2f}" for r in R['rows'])
 
 
 def r6_diag():
@@ -443,6 +458,8 @@ def main() -> int:
                   f"{r['rr_shrink']:>7.2f}{r['rr_randdir']:>8.2f}   "
                   f"{100*r['match_spread']:>4.2f}%  {ck}")
         print(f"      readability = |positive control| / band sd; rr is vs the `mean` arm")
+        print(f"      mean arm as a fraction of the SAME model's zero arm: "
+              f"{out_mz(R)}  -> the exclusion threshold crosses a smooth quantity")
         print(f"      displacement matching worst spread {R['worst_match_spread_pct']:.2f}% "
               f"across all cells; shrink overshoot past origin: {R['total_overshoot']}")
         if R.get('gate'):
