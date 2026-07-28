@@ -549,6 +549,64 @@ def r11():
             'effects': rows}
 
 
+def selection_vs_effect():
+    """The eight audited heads were selected by ATTENTION and measured by ABLATION. Do those agree?
+
+    Reading the source experiment rather than my own note about it: E132 scored `room_att` and
+    `name_att` over ALL 336 heads and took the top by an attention ratio; E132b then causally tested
+    seven of those plus L22H7, which ranked FIRST on room attention. So the audited set is
+    "the heads attention picked", and the audit measures them with ablation.
+
+    Over the 168 band heads, same model, same items, same vocabulary:
+
+        Spearman(|centred ablation|, room attention) = -0.19
+        Spearman(|centred ablation|, name attention) = -0.40
+
+    BOTH NEGATIVE. The two instruments do not merely fail to agree; they mildly anti-correlate. The
+    head ablation ranks 9th (L15H7) is 168th of 168 on BOTH attention criteria.
+
+    THIS IS NOT A DISCOVERY AND THE PAGE SAYS SO. That attention is an unreliable proxy for causal
+    importance is established background -- arXiv 2504.13752 (Cohen-Wang, Chuang, Madry) states it
+    as such in its abstract. What is measured here is the MAGNITUDE on this task, and why it matters
+    for this audit: the eight heads under audit were selected by exactly the proxy known to fail,
+    which turns "the loudest heads were never identified" from a curiosity into a consequence with a
+    named cause.
+
+    POSITIVE CONTROL ON THAT LITERATURE QUERY: it returned one squarely relevant paper, so it was
+    not silent -- but it also returned cloud removal and Boltzmann attention, so it is noisy and NO
+    COMPLETENESS IS CLAIMED. The last time novelty was judged from memory here, one query refuted it.
+    """
+    a = HERE / 'R16_selection_vs_effect' / 'results' / 'e132_attention_scores.json'
+    p10 = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    if not (a.exists() and p10.exists()):
+        return None
+    e = json.load(open(a))
+    t = json.load(open(p10))
+    L = {int(k): v for k, v in t['layers'].items()}
+    NH = e['NH']
+    band = [(x, h) for x in range(14, 28) for h in range(NH)]
+    vals = [L[x]['per_head'][str(h)] for x, h in band]
+    mu = sum(vals) / len(vals)
+    abl = {k: abs(L[k[0]]['per_head'][str(k[1])] - mu) for k in band}
+    ra = {k: e['room_att'][k[0]][k[1]] for k in band}
+    na = {k: e['name_att'][k[0]][k[1]] for k in band}
+    A = [abl[k] for k in band]
+    r_abl = sorted(band, key=lambda k: -abl[k])
+    r_room = sorted(band, key=lambda k: -ra[k])
+    r_name = sorted(band, key=lambda k: -na[k])
+    return {'n_band': len(band),
+            'spearman_room': _spearman(A, [ra[k] for k in band]),
+            'spearman_name': _spearman(A, [na[k] for k in band]),
+            'top_ablation': [{'head': f'L{x}H{h}', 'abl': abl[(x, h)],
+                              'room_rank': r_room.index((x, h)) + 1,
+                              'name_rank': r_name.index((x, h)) + 1}
+                             for x, h in r_abl[:10]],
+            'top5_room_ablation_ranks': [r_abl.index(k) + 1 for k in r_room[:5]],
+            'top5_name_ablation_ranks': [r_abl.index(k) + 1 for k in r_name[:5]],
+            'L22H7_room_rank_source': e['pc_L22H7_room_rank'],
+            'n_selected_by_E132b': 7, 'n_added_externally': 1}
+
+
 def r2_task_audit():
     """R2's task has R1's degeneracy, and its head-selection criterion is defined BY the degeneracy.
 
@@ -1999,6 +2057,7 @@ def main() -> int:
     TP = taxonomy_power()
     TC = r2_centred()
     TA2 = r2_task_audit()
+    SV = selection_vs_effect()
     EL = r11()
     PW = power()
     RC = reference_class()
@@ -2007,7 +2066,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -2189,6 +2248,23 @@ def main() -> int:
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
               f"<=5 -- and it is the proven copy head\n")
+
+    if SV:
+        print("R16 the audited heads were SELECTED by attention and MEASURED by ablation -- agree?")
+        print(f"      over {SV['n_band']} band heads, same model, same items, same vocabulary:")
+        print(f"        Spearman(|centred ablation|, room attention) = {SV['spearman_room']:+.4f}")
+        print(f"        Spearman(|centred ablation|, name attention) = {SV['spearman_name']:+.4f}")
+        print(f"      BOTH NEGATIVE -- the instruments mildly ANTI-correlate")
+        print(f"      {'head':<9}{'ablation':>10}{'room rank':>11}{'name rank':>11}")
+        for r in SV['top_ablation']:
+            print(f"      {r['head']:<9}{r['abl']:>10.4f}{r['room_rank']:>11}{r['name_rank']:>11}")
+        print(f"      reverse: top-5 by room-att -> ablation ranks "
+              f"{SV['top5_room_ablation_ranks']}")
+        print(f"               top-5 by name-att -> ablation ranks "
+              f"{SV['top5_name_ablation_ranks']}")
+        print(f"      NOT A DISCOVERY: attention as an unreliable proxy for causal importance is "
+              f"established background (arXiv 2504.13752 states it in its abstract). What is new "
+              f"here is that THIS audit's eight heads were picked by exactly that proxy\n")
 
     if TA2:
         print("R2T what does R2's task require? -- R13's audit, transferred at last")
@@ -2664,6 +2740,8 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('R16 spearman room', SV['spearman_room'] if SV else -1, -0.1885, 0.0001),
+            ('R16 spearman name', SV['spearman_name'] if SV else -1, -0.3952, 0.0001),
             ('R2T fixed offset', TA2['offset_to_answer'] if TA2 else -1, 64, 0),
             ('R2* clears centred', TC['n_clear_centred'] if TC else -1, 4, 0),
             ('R2* clears uncentred', TC['n_clear_uncentred'] if TC else -1, 4, 0),
@@ -2673,7 +2751,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 25.430, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 26.630, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -2748,9 +2826,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 79, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 21, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.861, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 81, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 22, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.642, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

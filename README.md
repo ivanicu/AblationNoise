@@ -67,7 +67,7 @@ line `0`.
 > shows only its current claim cannot be checked against the ones it abandoned.
 >
 > **The corrections are the substance of this project, not its errata.** They start immediately
-> below and run to the `79`-row defect ledger at the end.
+> below and run to the `81`-row defect ledger at the end.
 
 ---
 
@@ -798,24 +798,24 @@ it does not fail, and it does not claim the rows are wrong. There is no reposito
 against, which is a fact about your directory and not about the ledger.
 
 ```
-    PROVENANCE     21      whether the number has a generator at all
+    PROVENANCE     22      whether the number has a generator at all
     SCOPE          20      which population the claim covers
-    CONTROL        13      what the control arm actually holds fixed
+    CONTROL        18      what the control arm actually holds fixed
     STATISTIC      14      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 44 · instrument 17 · outside reader 7
+    found by:  author reading the object 46 · instrument 17 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 79 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 81 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 79 were findable only by an outside reader** — `8.9%`. That fraction was 27% at n=22 and
+**7 of 81 were findable only by an outside reader** — `8.6%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -825,10 +825,10 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 
 ```
 joint            by the author   by an instrument   by an outside reader
-PROVENANCE            12                9                    0
+PROVENANCE            13                9                    0
 SCOPE                 16                2                    2
 STATISTIC             10                4                    1
-CONTROL               11                2                    4
+CONTROL               12                2                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
@@ -864,10 +864,10 @@ this page said so at n=`31` — and then nobody measured how uninformative it ha
 n = 22    the verdict fires  12.65% of the time      informative
 n = 31                       66.975%                  already mostly inevitable
 n = 45                      100.0%
-n = 79                      100.0%   (20000 of 20000 random relabelings)
+n = 81                      100.0%   (20000 of 20000 random relabelings)
 ```
 
-> **At n=`79` the verdict carries no information at all.** It was informative at n=`22` and stopped
+> **At n=`81` the verdict carries no information at all.** It was informative at n=`22` and stopped
 > discriminating around n=`45`. It is reported here rather than deleted, because **a pre-registered
 > gate that stops discriminating is a finding about the gate**, and quietly dropping it is how a
 > ledger keeps only the tests that still flatter it.
@@ -886,12 +886,12 @@ unreachable at n=`22`.** `THIRTEEN-ONE-OFFS` needs `≥5`, and even then the `�
 first and masks it. **One reachable outcome is not a test**, and `validate_defects.py` now prints
 the reachable set on every run so the collapse is stated rather than discovered.
 
-**What replaces it is the distribution, and that *is* informative.** Chi-square `25.430` against a
+**What replaces it is the distribution, and that *is* informative.** Chi-square `26.630` against a
 uniform null gives a permutation `p` of `0.0002` — `4` of `20000`.
 
 ```
-PROVENANCE 21   SCOPE 20   CONTROL 17   STATISTIC 14   UNCLASSIFIED 4   INTERVENTION 2
-                                                        expected 13.2 each
+PROVENANCE 22   SCOPE 20   CONTROL 18   STATISTIC 14   UNCLASSIFIED 4   INTERVENTION 2
+                                                        expected 13.5 each
 ```
 
 **The two *small* bins carry the signal** — `INTERVENTION` at `2` and `UNCLASSIFIED` at `4` — not

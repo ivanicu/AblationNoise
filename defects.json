@@ -720,6 +720,24 @@
       "defect": "'ablation magnitude and mechanistic role are close to unrelated on this task' -- a claim about a RELATIONSHIP between two variables, promoted to the top of the front page one step earlier, resting on exactly ONE head with an independently established role",
       "operation": "n=1 ON THE ROLE AXIS. L22H7 is the only established mechanism here; five of the other seven were read-head CANDIDATES, and a candidate is a hypothesis, so finding hypotheses fail to clear a floor is close to tautological (already conceded as ADVERSARY.md row A1). One point is an anecdote, not a relationship. THE REVERSE DIRECTION IS SUPPORTED AND IS NOW WHAT THE PAGE SAYS: of the 10 heads that clear the exhaustive floor, the first published one is the 10th, and 7 of the 10 clear by HELPING the model -- that rests on 10 points and needs no second known mechanism. The asymmetry is the honest finding and is stronger than the symmetric claim it replaces",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D80",
+      "round": "R16",
+      "bin": "PROVENANCE",
+      "commit": "5275a7d",
+      "defect": "the prior-effects file's note -- written by me -- said the eight were 'five read-head CANDIDATES, one independently proven copy head' and two unlabelled. I had never opened the source experiment to check",
+      "operation": "WRONG COMPOSITION. E132b's `sel` dict has SEVEN keys and its `drop` dict has eight: seven selected read-head candidates plus L22H7, which E132 ranked FIRST on room attention and which was added externally. Self-report about a source experiment, believed for fifteen rounds because the file it lived in was mine",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D81",
+      "round": "R16",
+      "bin": "CONTROL",
+      "commit": "5275a7d",
+      "defect": "fifteen rounds treated 'the eight published effects' as a given set without asking how it was chosen -- the set is the heads ATTENTION picked, and the audit measures them with ABLATION, a two-instrument comparison that had never been run",
+      "operation": "THE INSTRUMENTS ANTI-CORRELATE. Over 168 band heads: Spearman(|centred ablation|, room attention) = -0.1885 and (name attention) = -0.3952. L15H7 is 168th of 168 on BOTH attention criteria and 9th by ablation. Top-5 by name attention land at ablation ranks 129, 137, 157, 88, 167. NOT A DISCOVERY -- attention as an unreliable proxy for causal importance is established background, stated as such in arXiv 2504.13752's abstract, and the literature query's positive control is reported (one relevant hit, noisy, no completeness claimed). What R16 adds is the consequence for this audit: the eight were selected by exactly the proxy known to fail, which gives 'the loudest heads were never identified' a named cause",
+      "found_by": "author_reading_the_object"
     }
   ]
 }
