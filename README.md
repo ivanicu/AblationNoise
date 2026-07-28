@@ -10,8 +10,8 @@ independently established as the copy head for that task. Its apparent "redundan
 limit, and the limit is now a number.
 
 Everything here runs on one consumer GPU. Every round is pre-registered with a kill condition
-committed **before** the run, and three of the five rounds killed the hypothesis their author
-preferred.
+committed **before** the run, and **four of the five completed rounds killed the hypothesis their
+author preferred** — including one whose own verdict was later withdrawn by the round after it.
 
 ```bash
 make headline   # every number below, recomputed from the checked-in results. No GPU, ~2s
@@ -37,6 +37,21 @@ Each round is a folder: its pre-registration, its amendments, its runner, its re
 | **[R3](R3_withdrawn/)** | is a sibling project's specificity control a single draw? | **withdrawn before spending compute** — its own records refuted the premise |
 | **[R4](R4_predictability/)** | can readability be predicted from cheap observables? | across models **UNVERIFIED** — the pre-registered gate is met by 60 of 324 admissible estimators, so its own first verdict was withdrawn. Within a model the floor is a power law and **two measured points fix the curve** (12/12 held-out within 2×) |
 | **[R5](R5_factorial/)** | which factor decides readability: site, readout, or mechanism size? | ablating at **every** position instead of one made the effect-to-floor ratio **worse in 6 of 6** model × readout cells |
+| **[R6](R6_intervention/)** | is the floor a property of ablation, or of *zeroing*? | **pre-registered, running.** See below — this one can retract the sentence at the top of this page |
+
+### R6 is the round that can break this repository, and it is pre-registered in public
+
+Every number above came from setting a component's output to **zero**. A head's output is never
+zero in normal operation, so zeroing hands the downstream layers an input they never see — which
+would produce a large floor for every random component *without any of it being a fact about
+ablation*. R1's sham arm does not cover this: the sham ablates and restores, so it controls for
+*that a hook fired*, not for *what the hook wrote*. **Both arms zero.**
+
+R6 runs the same measurement under `zero`, `mean` and `resample` interventions.
+[Its pre-registration](R6_intervention/PREREGISTRATION.md) commits, before any result exists, to
+rewriting the first sentence of this README **in the same commit as the result** if the floor turns
+out to be a zeroing artifact — because then this work would be a restatement of advice the field
+already publishes, and would deserve to be described that way.
 
 ## The result that is most useful to someone else
 
