@@ -688,11 +688,21 @@ def floor_transport():
             ref = (mu, fl)
         own = sum(1 for z in v if abs(z - mu) > fl)
         transported = sum(1 for z in v if abs(z - ref[0]) > ref[1])
+        # WHICH KNOB FAILS? Transporting both at once cannot say whether the CENTRE or the SCALE is
+        # the thing that does not travel, and the two have completely different remedies: a local
+        # re-centring is cheap, a local scale means the floor is not a number you can carry.
+        scale_only = sum(1 for z in v if abs(z - mu) > ref[1])      # local centre, A's scale
+        centre_only = sum(1 for z in v if abs(z - ref[0]) > fl)     # A's centre, local scale
         rows.append({'config': name, 'differs_by': why, 'n': len(v),
                      'own_floor': fl, 'own_mu': mu,
                      'own_n': own, 'own_pct': 100 * own / len(v),
                      'transported_n': transported, 'transported_pct': 100 * transported / len(v),
-                     'ratio': transported / own if own else float('nan')})
+                     'ratio': transported / own if own else float('nan'),
+                     'scale_only_n': scale_only, 'centre_only_n': centre_only,
+                     'scale_only_ratio': scale_only / own if own else float('nan'),
+                     'centre_only_ratio': centre_only / own if own else float('nan'),
+                     'mu_ratio': mu / ref[0] if ref[0] else float('nan'),
+                     'floor_ratio': fl / ref[1]})
     return {'reference_mu': ref[0], 'reference_floor': ref[1], 'rows': rows}
 
 
@@ -3053,6 +3063,19 @@ def main() -> int:
         print(f"     task deflates it to {FTR['rows'][3]['ratio']:.2f}x. A scalar floor is not merely "
               f"imprecise: its BIAS")
         print(f"     DEPENDS ON WHICH WAY THE CONFIGURATION MOVED, so no safety factor fixes it.")
+        print(f"     WHICH KNOB FAILS -- the centre or the scale? Transporting both at once cannot")
+        print(f"     say, and the remedies differ: a local re-centring is cheap, a local SCALE means")
+        print(f"     the floor is not a number you can carry.")
+        print(f"     {'configuration':<26}{'own':>6}{'both':>7}{'scale only':>12}{'centre only':>13}"
+              f"{'mu x':>7}{'floor x':>9}")
+        for r in FTR['rows']:
+            print(f"     {r['config']:<26}{r['own_n']:>6}{r['transported_n']:>7}"
+                  f"{r['scale_only_n']:>12}{r['centre_only_n']:>13}"
+                  f"{r['mu_ratio']:>7.2f}{r['floor_ratio']:>9.2f}")
+        print(f"     -> RE-CENTRING FIXES NOTHING and the local SCALE fixes almost everything. The")
+        print(f"     centre moves by about the SAME factor as the scale and it does not matter,")
+        print(f"     because the centre is ~10% of the half-width: shifting it barely moves a")
+        print(f"     threshold sitting at +-floor. THE SCALE IS THE ESTIMAND.")
         print(f"     NOT a calibration against a nominal alpha -- the `own` column is the same 2*sd")
         print(f"     rule on a heavy-tailed distribution, so this compares two APPLICATIONS of one")
         print(f"     rule. That is the transportability question, which is the one being asked\n")
@@ -3770,7 +3793,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 31.125, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 31.598, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -3851,9 +3874,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 96, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 97, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 25, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.333, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.247, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

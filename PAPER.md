@@ -41,6 +41,36 @@ on sampling noise.**
 > **A scalar floor is not merely imprecise. Its bias depends on which way the configuration moved,
 > so no safety factor fixes it.**
 
+### It is the **scale** that fails to transport, not the centre
+
+Transporting `mu_A` and `floor_A` together cannot say *which* of them fails to travel — and the two
+have completely different remedies. A local re-centring is cheap; a local **scale** means the floor
+is not a number you can carry at all.
+
+```
+configuration              own   both   scale only   centre only    mu ×   floor ×
+A  I_final @ unshuffled     10     10           10            10    1.00      1.00
+D  I_final @ new items      10     10           10            10    1.01      1.00
+C  I_all   @ unshuffled     14     33           32            12    1.98      2.01
+B  I_final @ SHUFFLED       12      6            5            13    0.82      0.83
+```
+
+**`scale only`** = re-centre on the configuration's own `mu`, keep `A`'s floor.
+**`centre only`** = keep `A`'s `mu`, use the configuration's own floor.
+
+> **Re-centring fixes nothing** — `C` stays at `32` against its own `14`, `B` at `5` against `12`.
+> **Using the local scale fixes almost everything** — `C` lands at `12` against `14`, `B` at `13`
+> against `12`.
+
+**And the confound written before the test is refuted in the useful direction.** `mu` and `floor` are
+not independent, so a "centre-driven" verdict could have been a spread effect wearing a location
+mask. Here it is the reverse: **the centre moves by almost exactly the same factor as the scale**
+(`1.98×` against `2.01×` for `C`) **and it does not matter**, because the centre is roughly `10%` of
+the half-width (`0.0946` against `0.9766`). Shifting it barely moves a threshold sitting at `±floor`.
+
+**The scale is the estimand.** That is a sharper claim than *"a scalar floor does not transport"* and
+it is the one the data supports.
+
 **What this is not:** the `own` column is the same `2σ` rule on a heavy-tailed distribution, so this
 compares **two applications of one rule**, not a calibration against a nominal `α`. That is exactly
 the transportability question — which is the one being asked — but it is not a `5%` false-positive

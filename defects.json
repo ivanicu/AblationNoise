@@ -873,6 +873,15 @@
       "defect": "the repository measured four separate floors -- across items, across intervention support, across task position, across layer band -- and never once asked the question that makes them a claim rather than a list: DOES A SCALAR FLOOR TRANSPORT? Every verdict here applies a floor measured in one configuration as though the decision rule it defines means the same thing in another",
       "operation": "MEASURED, WITH A POSITIVE CONTROL THAT IS ALSO THE DISCRIMINATOR. Transport A's whole rule |x - mu_A| > floor_A into three configurations each differing in exactly one factor. Item sample only: 10/168 both ways, ratio 1.00 -- so the instrument IS stable across draws and a failure elsewhere is not sampling noise. Intervention support only: own reference says 14/168, the transported rule says 33/168, ratio 2.36. Task/answer position only: own says 12/168, transported says 6/168, ratio 0.50. THE TWO FAILURES POINT IN OPPOSITE DIRECTIONS, so a scalar floor is not merely imprecise -- its bias depends on which way the configuration moved and no safety factor fixes it. This is the one result in the repository that is about the METHOD rather than about the eight heads, and it is what survives D94's finding that seven of the eight carried no positive claim to deflate. HONEST LIMIT: the `own` column is the same 2-sigma rule on a heavy-tailed distribution, so this compares two applications of one rule rather than calibrating against a nominal alpha; one model, one band, one task family, k=1, one contrast per axis",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D97",
+      "round": "repo",
+      "bin": "STATISTIC",
+      "commit": "e08df7b",
+      "defect": "the transport result committed one step earlier moved mu_A and floor_A together, so its 2.36x and 0.50x conflated two different failures with two different remedies: the CENTRE of the reference distribution not travelling, which a local re-centring fixes cheaply, and the SCALE not travelling, which means the floor is not a number that can be carried at all",
+      "operation": "DECOMPOSED, AND IT SHARPENS THE CLAIM RATHER THAN WEAKENING IT. Transporting the SCALE only, with a local re-centring, leaves the miscalibration almost untouched: I_all 32 against its own 14, shuffled 5 against its own 12. Transporting the CENTRE only, with the local scale, is nearly calibrated: 12 against 14 and 13 against 12. SO RE-CENTRING FIXES NOTHING AND THE LOCAL SCALE FIXES ALMOST EVERYTHING. The confound written before the test -- that mu and floor are not independent, so a centre-driven verdict could be spread wearing a location mask -- is refuted in the useful direction: the centre moves by almost exactly the same factor as the scale (1.98x against 2.01x for I_all) AND IT DOES NOT MATTER, because the centre is about 10% of the half-width (0.0946 against 0.9766) and shifting it barely moves a threshold sitting at +-floor. THE SCALE IS THE ESTIMAND, which is a sharper statement than 'a scalar floor does not transport'. World B -- centre-driven, cheap fix -- is killed",
+      "found_by": "author_reading_the_object"
     }
   ]
 }
