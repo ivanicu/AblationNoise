@@ -630,6 +630,77 @@ def adversary_scoring():
                                                   'R18']}
 
 
+def band_boundary():
+    """IS THE BAND A REGIME, OR AN ARBITRARY WINDOW? Every number here is conditioned on L14-27.
+
+    L14 was never chosen -- it is mechanically "the upper half of 28" -- and the sham is L0-7, which
+    is NOT its complement: L8-13, seventy-two heads, is in neither region and is silently excluded
+    from every contrast in the repository.
+
+        per-layer sd of raw drops   L12 0.0891  L13 0.0913  L14 0.0882  L15 0.2231
+
+    THE JUMP IS L14->L15. Ranking all 25 possible boundaries by the ratio of mean sd above to below,
+    L14 comes 11th; the best cut is L8, exactly where the SHAM band ends. The sham boundary is well
+    placed and the band boundary is not.
+
+    THE HEADLINE COUNT IS INVARIANT: 1 of 8 clears in L14-27, L15-27, L8-27 and all 28 layers alike.
+    THE FLOOR IS NOT: 0.3565 to 0.5032, which is 1.41x FROM THE WINDOW ALONE at fixed model, task,
+    intervention and k -- a FIFTH transport axis, and the widest available without changing anything
+    about the experiment. The eight's ranks move even as percentiles: the last goes from the 96.4th
+    to the 87.8th.
+
+    AND THE DISCARDED MIDDLE IS THE TRANSITION. L8-13's floor is 0.1560, twice the sham's and a third
+    of the band's, so excluding it removed the only region that could show where one regime becomes
+    the other.
+    """
+    p_ = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    pe = r1_prior_effects()
+    if not (p_.exists() and pe):
+        return None
+    d = json.load(open(p_))
+    L = {int(k): v for k, v in d['layers'].items()}
+    NL, NH = len(L), len(L[0]['per_head'])
+    eight = sorted((int(k[1:k.index('H')]), int(k[k.index('H') + 1:])) for k in pe['effects'])
+
+    def sd(xs):
+        m = sum(xs) / len(xs)
+        return math.sqrt(sum((z - m) ** 2 for z in xs) / (len(xs) - 1))
+
+    prof = [sd([L[x]['per_head'][str(h)] for h in range(NH)]) for x in range(NL)]
+    ratios = sorted(((sum(prof[b:]) / (NL - b)) / (sum(prof[:b]) / b), b)
+                    for b in range(2, NL - 1))[::-1]
+    rank14 = [b for _, b in ratios].index(14) + 1
+
+    def region(lo, hi):
+        b = [(x, h) for x in range(lo, hi) for h in range(NH)]
+        v = [L[x]['per_head'][str(h)] for x, h in b]
+        mu = sum(v) / len(v)
+        f = 2 * math.sqrt(sum((z - mu) ** 2 for z in v) / (len(v) - 1))
+        e = [k for k in eight if lo <= k[0] < hi]
+        o = sorted(b, key=lambda k: -abs(L[k[0]]['per_head'][str(k[1])] - mu))
+        return {'n': len(b), 'mu': mu, 'floor': f,
+                'clear': sum(1 for z in v if abs(z - mu) > f),
+                'published_clear': sum(1 for k in e
+                                       if abs(L[k[0]]['per_head'][str(k[1])] - mu) > f),
+                'published_n': len(e),
+                'ranks': sorted(o.index(k) + 1 for k in e),
+                # NOT a percentile. This is the FRACTION OF THE REFERENCE CLASS RANKED
+                # ABOVE the worst published head -- 162/168. Calling it a percentile inverts it:
+                # rank 162 of 168 is the 3.6th percentile by magnitude, not the 96.4th.
+                'worst_rank_fraction': ((max(o.index(k) for k in e) + 1) / len(b)) if e else None}
+
+    regs = {'L14-27 published': region(14, 28), 'L15-27': region(15, 28),
+            'L8-27': region(8, 28), 'L0-27 all': region(0, 28),
+            'L0-7 sham': region(0, 8), 'L8-13 discarded': region(8, 14)}
+    fl = [r['floor'] for k, r in regs.items() if 'sham' not in k and 'discarded' not in k]
+    return {'per_layer_sd': prof, 'L14_boundary_rank': rank14, 'n_boundaries': len(ratios),
+            'best_boundary': ratios[0][1], 'best_ratio': ratios[0][0],
+            'L14_ratio': [r for r, b in ratios if b == 14][0],
+            'regions': regs, 'floor_range_from_window': max(fl) / min(fl),
+            'count_invariant': len({r['published_clear'] for k, r in regs.items()
+                                    if r['published_n'] == 8}) == 1}
+
+
 def ov_permutation_null():
     """IS THE POSITIVE CONTROL ITSELF REAL? Four steps rested on it and none had tested it.
 
@@ -3227,6 +3298,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    BND = band_boundary()
     OVP = ov_permutation_null()
     OV3 = ov_3b()
     TRI = instrument_triangle()
@@ -3243,7 +3315,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -3480,6 +3552,28 @@ def main() -> int:
             print(f"        Chosen after the fact it would have been called layer-shaped; the rule")
             print(f"        is honoured at a 3% miss rather than renegotiated. Both centroids move")
             print(f"        EARLIER -- the direction replicates, the SHAPE does not resolve at n=2\n")
+
+    if BND:
+        print("BND  IS THE BAND A REGIME, OR AN ARBITRARY WINDOW?")
+        print(f"     per-layer sd  L12 {BND['per_layer_sd'][12]:.4f}  L13 {BND['per_layer_sd'][13]:.4f}"
+              f"  L14 {BND['per_layer_sd'][14]:.4f}  L15 {BND['per_layer_sd'][15]:.4f}  "
+              f"-> the jump is L14->L15")
+        print(f"     L14 ranks {BND['L14_boundary_rank']} of {BND['n_boundaries']} possible "
+              f"boundaries ({BND['L14_ratio']:.3f}x); the best cut is L{BND['best_boundary']} "
+              f"({BND['best_ratio']:.3f}x) -- where the SHAM ends")
+        print(f"     {'region':<20}{'n':>5}{'mu':>10}{'floor':>9}{'clear':>7}{'published':>11}")
+        for k, r in BND['regions'].items():
+            pc = f"{r['published_clear']}/{r['published_n']}" if r['published_n'] else '-'
+            print(f"     {k:<20}{r['n']:>5}{r['mu']:>+10.4f}{r['floor']:>9.4f}{r['clear']:>7}{pc:>11}")
+        print(f"     fraction of the reference class ranked ABOVE the worst published head "
+              f"(NOT a percentile): "
+              f"{BND['regions']['L14-27 published']['worst_rank_fraction']:.4f} in the published "
+              f"band -> {BND['regions']['L0-27 all']['worst_rank_fraction']:.4f} over all 28")
+        print(f"     COUNT INVARIANT: {BND['count_invariant']} -- 1 of 8 clears in every window.")
+        print(f"     FLOOR IS NOT: {BND['floor_range_from_window']:.2f}x from the WINDOW ALONE, at")
+        print(f"     fixed model, task, intervention and k -- a FIFTH transport axis.")
+        print(f"     And L8-13, the discarded middle, has the TRANSITIONAL floor: excluding it")
+        print(f"     removed the only region that could show where one regime becomes the other\n")
 
     if OVP:
         print("OVN  IS THE POSITIVE CONTROL ITSELF REAL? Four steps rested on it, none had tested it")
@@ -4396,7 +4490,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 36.565, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 37.103, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -4477,9 +4571,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 115, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 116, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 28, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 7.826, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 7.759, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

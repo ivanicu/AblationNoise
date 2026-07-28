@@ -330,6 +330,46 @@ ablation flags.**
 > replicated at all, because `E132`'s attention scores exist only for `1.5b`. **What replicates is the
 > `OV × ablation` null; the `attention` edges remain `n=1`.**
 
+### The band boundary is arbitrary — the count survives it, the floor does not
+
+Every number in this repository is conditioned on `L14`–`27`, and the sham is `L0`–`7`. **Those are
+not complementary: `L8`–`13`, seventy-two heads, is in neither region and is silently excluded from
+every contrast.** And `L14` was never chosen — it is "the upper half of `28`".
+
+```
+per-layer sd of raw drops     L12 0.0891   L13 0.0913   L14 0.0882   L15 0.2231
+```
+
+**The jump is `L14 → L15`, not `L13 → L14`.** Ranking all `25` possible boundaries by the ratio of
+mean `sd` above to below, **`L14` comes `11th`. The best cut is `L8`** — which is exactly where the
+*sham* band ends. **The sham boundary is well placed and the band boundary is not.**
+
+```
+region                        n      mu      floor   clear   published clearing   the eight's ranks
+BAND L14-27                 168   +0.0479   0.4870    10          1/8         10 41 77 79 129 157 158 162
+L15-27  (drop L14)          156   +0.0495   0.5032    10          1/8         10 40 75 76 123 144 145 149
+L8-27   (include middle)    240   +0.0347   0.4179    11          1/8         10 50 78 110 200 229 233 236
+ALL 28 layers               336   +0.0259   0.3565    14          1/8         10 55 75 129 276 290 293 295
+SHAM L0-7                    96   +0.0040   0.0792     4           -
+L8-13   (discarded middle)   72   +0.0038   0.1560     6           -
+```
+
+**`1 of 8` clears in every one of the four windows.** The headline count is invariant to a choice that
+was never justified — that is a real robustness and it is stated as such.
+
+> **What is *not* invariant.** The floor runs `0.3565` to `0.5032` — **`1.41×` from the window alone,
+> at fixed model, task, intervention and `k`.** That is a **fifth axis** for the transport result
+> above, and the widest one available without changing anything about the experiment.
+>
+> **And the eight's ranks move materially even after normalising for `n`.** The fraction of the
+> reference class ranked *above* the worst published head is `0.9643` in the published band and
+> `0.8780` over all `28` layers. **That is not a percentile** — rank `162` of `168` is the `3.6`th
+> percentile by magnitude, and calling the fraction a percentile inverts the direction.
+>
+> **The discarded middle is the transition.** `L8`–`13`'s floor is `0.1560`: twice the sham's and a
+> third of the band's. **Excluding it was not neutral — it removed the only region that could have
+> shown where one regime becomes the other.**
+
 ### ⚠ The meta-separator, stated once: **there is no ground truth here, and that limits everything above**
 
 Two checks, both cheap, both aimed at the section above rather than at the eight heads.
