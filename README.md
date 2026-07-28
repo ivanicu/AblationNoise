@@ -140,6 +140,46 @@ sham L0-7  (layer axis)                  55.5%                        2.00
 trend: a threshold sitting at `±f` is insensitive to a shift that is small relative to `f`, and stops
 being insensitive when it is not.
 
+### ⚠ The meta-separator, stated once: **there is no ground truth here, and that limits everything above**
+
+Two checks, both cheap, both aimed at the section above rather than at the eight heads.
+
+**1 · The failure is not about `2σ`.** Transporting an *absolute* cutoff gives a count that depends
+only on the destination's distribution, so two source rules that agree on `A` must agree everywhere.
+They do:
+
+```
+config              by 2sd_A   by A's 5.95th-percentile cutoff   own 2sd
+D  new items              10                                 8        10
+C  I_all                  33                                32        14
+B  SHUFFLED                6                                 5        12
+```
+
+**So *"a scalar floor does not transport"* is trivially true of any absolute cutoff whenever the
+destination distribution differs.** The section above was written more dramatically than that. What
+is *not* trivial, and is what the table actually shows:
+
+* it transports **perfectly across item samples** (`10` against `10`, ratio `1.00`) — **that is not
+  automatic**, and it is what makes the other rows interpretable;
+* the **magnitudes and directions** — `2.36×` inflate, `0.50×` deflate, `7.80×` and `0.00` on the
+  layer axis;
+* the **scale/centre decomposition** and the `|Δmu| / floor_dest` predictor.
+
+**2 · And the question presupposes something this repository cannot supply.** *"Does the floor
+transport"* assumes there is a right answer to *"how many heads are real."* **There is none here.**
+Transport a **procedure** instead of a **number** — *"take the top `5.95%` of the local band"* — and
+it returns `5.95%` in every configuration by construction. **It cannot fail, and it cannot be
+validated either.**
+
+> **"Calibration" in this repository means self-consistency, not correctness.** Nothing on disk
+> separates *the floor is conditional* from *we have no way to know what the floor should be.* Those
+> are different worlds and this design cannot tell them apart.
+>
+> **What would:** a case where the causal set is known — a synthetic model with a constructed
+> ground-truth circuit, or heads whose role is established by an independent method (path patching,
+> transduction, causal scrubbing) rather than by the same magnitude statistic being audited.
+> **That experiment is not in this repository and is not scheduled.**
+
 **What this is not:** the `own` column is the same `2σ` rule on a heavy-tailed distribution, so this
 compares **two applications of one rule**, not a calibration against a nominal `α`. That is exactly
 the transportability question — which is the one being asked — but it is not a `5%` false-positive
