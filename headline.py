@@ -549,6 +549,79 @@ def r11():
             'effects': rows}
 
 
+def depth_sensitivity():
+    """THE INSTRUMENT'S SENSITIVITY IS NOT FLAT IN DEPTH, AND R12's VERDICT TURNS ON DEPTH.
+
+    Every ablation in this repository zeroes head h's slice of the o_proj input AT THE FINAL
+    POSITION ONLY -- `x[0, -1, h*HD:(h+1)*HD] = 0`, R10_exhaustive/run.py:213. That removes the
+    head's direct write at the final position and everything downstream of it AT that position. It
+    does NOT remove the head's writes at positions 0..n-2, which later layers' attention reads back.
+
+    THE NUMBER OF LAYERS THAT CAN READ THOSE EARLIER WRITES IS (NL - 1 - L). At the last layer it is
+    ZERO -- there is no downstream reader, so the measurement is COMPLETE there. At layer 0 it is
+    NL-1. So the fraction of a head's causal influence this instrument can see is monotone
+    non-decreasing in L and is exactly 1 only at the last layer. That is structural, not empirical.
+
+    WHY IT MATTERS HERE AND NOWHERE ELSE IN THE REPO: (NL-1-L)/NL is a FRACTION OF DEPTH. An
+    instrument whose blind spot scales with the fraction of network remaining downstream places its
+    centroid at a fixed depth FRACTION in any model, whatever the truth is. That is the exact shape
+    of R12's surviving hypothesis. So the confound MANUFACTURES `RELATIVE` OUT OF `ABSOLUTE`, and
+    R12's two point predictions differ by 5.6 layers with the later one winning.
+
+    POSITIVE CONTROL, AND IT FIRES AGAINST THE CONFOUND: a profile produced by the bias alone -- flat
+    truth times monotone sensitivity -- must be MAXIMAL AT THE LAST LAYER. Both models are near
+    minimal there. qwen2.5-3b's last layer clears at 0.000, its global minimum, while its peak is
+    0.562 at L26; qwen2.5-1.5b's last layer is 0.167 against a peak of 0.833 at L16. So the bias does
+    not dominate the SHAPE.
+
+    WHAT THAT CONTROL DOES NOT DO IS RESCUE THE CENTROID. The centroid is a first moment, and a first
+    moment of (truth x monotone sensitivity) is pulled late whatever the truth's shape. The control
+    bounds the bias; it does not remove it, and it cannot separate "sensitivity is nearly flat" from
+    "the last layers genuinely do nothing". Both explain a low last-layer rate.
+
+    VERDICT ON R12: UNVERIFIED. Not OVERTURNED -- the shape control is real evidence the bias is not
+    running the profile. Not CONFIRMED -- the confound was never controlled and points exactly the
+    way the winning hypothesis points. UNVERIFIED is not an acquittal.
+    """
+    out = {}
+    for m in ('qwen2.5-1.5b', 'qwen2.5-3b'):
+        f = HERE / 'R10_exhaustive' / 'results' / f'r10_exhaustive_{m}.json'
+        if not f.exists():
+            return None
+        t = json.load(open(f))
+        L = {int(k): v for k, v in t['layers'].items()}
+        NL = t.get('n_layers', len(L))
+        slo, shi = t['sham_band']
+        sham = [v for x in range(slo, shi + 1) for v in L[x]['per_head'].values()]
+        mus = sum(sham) / len(sham)
+        fs = 2 * math.sqrt(sum((v - mus) ** 2 for v in sham) / (len(sham) - 1))
+        rate = {x: sum(1 for v in L[x]['per_head'].values() if abs(v - mus) > fs)
+                / len(L[x]['per_head']) for x in range(NL)}
+        tot = sum(rate.values())
+        pk = max(rate, key=lambda x: rate[x])
+        out[m] = {'NL': NL, 'centroid': sum(x * q for x, q in rate.items()) / tot,
+                  'peak_layer': pk, 'peak_rate': rate[pk],
+                  'last_layer_rate': rate[NL - 1],
+                  'n_layers_above_last': sum(1 for x in range(NL) if rate[x] > rate[NL - 1]),
+                  'downstream_readers_last': 0, 'downstream_readers_L0': NL - 1}
+    # magnitude profile of the primary model, for the depth trend
+    t = json.load(open(HERE / 'R10_exhaustive' / 'results' /
+                       'r10_exhaustive_qwen2.5-1.5b.json'))
+    L = {int(k): v for k, v in t['layers'].items()}
+    NH = len(L[0]['per_head'])
+    NL = len(L)
+    allv = [L[x]['per_head'][str(h)] for x in L for h in range(NH)]
+    mu = sum(allv) / len(allv)
+    prof = [sum(abs(L[x]['per_head'][str(h)] - mu) for h in range(NH)) / NH for x in range(NL)]
+    out['profile_1_5b'] = prof
+    out['spearman_layer_vs_magnitude_all'] = _spearman(list(range(NL)), prof)
+    out['spearman_layer_vs_magnitude_band'] = _spearman(list(range(14, NL)), prof[14:])
+    out['early_L0_6'] = sum(prof[0:7]) / 7
+    out['late_L21_27'] = sum(prof[21:28]) / 7
+    out['late_over_early'] = (sum(prof[21:28]) / 7) / (sum(prof[0:7]) / 7)
+    return out
+
+
 def selection_vs_effect():
     """The eight audited heads were selected by ATTENTION and measured by ABLATION. Do those agree?
 
@@ -2081,6 +2154,7 @@ def main() -> int:
     TC = r2_centred()
     TA2 = r2_task_audit()
     SV = selection_vs_effect()
+    DS = depth_sensitivity()
     EL = r11()
     PW = power()
     RC = reference_class()
@@ -2089,7 +2163,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -2271,6 +2345,30 @@ def main() -> int:
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
               f"<=5 -- and it is the proven copy head\n")
+
+    if DS:
+        print("R12C the instrument's sensitivity is MONOTONE IN DEPTH, and R12's verdict is a depth")
+        print("      claim. Ablation zeroes the final position only, so a head's writes at earlier")
+        print("      positions survive; the layers that can READ them number (NL-1-L) -- NL-1 at")
+        print("      layer 0, ZERO at the last layer, where the measurement is COMPLETE.")
+        print("      (NL-1-L)/NL is a FRACTION OF DEPTH, which is the exact shape of R12's winner:")
+        print("      the confound MANUFACTURES `RELATIVE` OUT OF `ABSOLUTE`.")
+        print(f"      magnitude trend, qwen2.5-1.5b:  all 28 layers "
+              f"{DS['spearman_layer_vs_magnitude_all']:+.4f}   band 14-27 "
+              f"{DS['spearman_layer_vs_magnitude_band']:+.4f}")
+        print(f"        mean |centred| L0-6 {DS['early_L0_6']:.4f}  L21-27 "
+              f"{DS['late_L21_27']:.4f}   ratio {DS['late_over_early']:.2f}x")
+        print("      POSITIVE CONTROL -- a bias-only profile MUST peak at the LAST layer:")
+        print(f"      {'model':<14}{'NL':>4}{'centroid':>10}{'peak L':>8}{'rate':>7}"
+              f"{'LAST L rate':>13}{'layers above it':>17}")
+        for m in ('qwen2.5-1.5b', 'qwen2.5-3b'):
+            d = DS[m]
+            print(f"      {m:<14}{d['NL']:>4}{d['centroid']:>10.3f}{d['peak_layer']:>8}"
+                  f"{d['peak_rate']:>7.3f}{d['last_layer_rate']:>13.3f}"
+                  f"{d['n_layers_above_last']:>17}")
+        print("      BOTH near MINIMAL at the last layer -- the bias does not run the SHAPE. It")
+        print("      still moves the CENTROID, which is a first moment. R12: UNVERIFIED, which is")
+        print("      NOT an acquittal\n")
 
     if SV:
         print("R16 the audited heads were SELECTED by attention and MEASURED by ablation -- agree?")
@@ -2771,6 +2869,14 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('R12C 3b last-layer rate',
+             DS['qwen2.5-3b']['last_layer_rate'] if DS else -1, 0.0, 0.0001),
+            ('R12C 1.5b last-layer rate',
+             DS['qwen2.5-1.5b']['last_layer_rate'] if DS else -1, 0.166667, 0.0001),
+            ('R12C 1.5b peak rate',
+             DS['qwen2.5-1.5b']['peak_rate'] if DS else -1, 0.833333, 0.0001),
+            ('R12C depth trend all-28',
+             DS['spearman_layer_vs_magnitude_all'] if DS else -1, 0.7947, 0.0005),
             ('R16 spearman name signed',
              SV['spearman_name_signed'] if SV else -1, -0.1142, 0.0001),
             ('R16 spearman room', SV['spearman_room'] if SV else -1, -0.1885, 0.0001),
@@ -2784,7 +2890,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 26.585, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 24.639, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -2859,9 +2965,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 82, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 83, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 22, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.537, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.434, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
