@@ -62,11 +62,13 @@ replays the real incident that produced it.
 | [`readout_tokens`](detectors/readout_tokens.py) | does your readout distinguish the answers you are scoring? | a run reported `n=0` because a SentencePiece tokenizer gave all four answers the same first token |
 | [`circularity`](detectors/circularity.py) | is your predictor already the answer? | a prospective law validated out-of-sample to 0.02, retracted 15 minutes later as a copy-head tautology |
 | [`control_fitness`](detectors/control_fitness.py) | can your control fail, and is your positive control the right sign? | a control whose two hypotheses both predicted the same reading, and a positive control that fired inverted |
+| [`prose_numbers`](detectors/prose_numbers.py) | does any code in this repository actually emit the number you wrote? | R4's fold errors and R5's whole results table, both quoted from commit messages, neither regenerable |
 
 ```bash
 python3 detectors/readout_tokens.py --selftest
 python3 detectors/circularity.py    --selftest
 python3 detectors/control_fitness.py --selftest
+python3 detectors/prose_numbers.py   --selftest
 ```
 
 ## Running a round

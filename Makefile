@@ -19,7 +19,9 @@ selftest:
 	@$(PY) detectors/readout_tokens.py  --selftest
 	@$(PY) detectors/circularity.py     --selftest
 	@$(PY) detectors/control_fitness.py --selftest
+	@$(PY) detectors/prose_numbers.py   --selftest
 
 ## selftest + headline, and a non-zero exit if any README number is stale
 verify: selftest
 	@$(PY) headline.py --check
+	@$(PY) detectors/prose_numbers.py

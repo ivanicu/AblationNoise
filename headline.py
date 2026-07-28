@@ -41,6 +41,7 @@ def r1():
         c = d['cells']
         rows.append({'model': name, 'ratio_k1': c['band_k1']['floor'] / c['sham_k1']['floor'],
                      'band_floor': c['band_k1']['floor'], 'sham_floor': c['sham_k1']['floor'],
+                     'base_margin': d['base_margin'],
                      'verdict': d['verdict'], 'n_items': d['n_items'],
                      'replicate': name.endswith('-bf16')})
     # internlm2's sham floor is as large as its band floor: on that model the instrument does not
@@ -55,6 +56,32 @@ def r1():
             'ratio_max': max(r['ratio_k1'] for r in inf)}
 
 
+def r1_vocabulary():
+    """AMENDMENT 2's measurement: the dimensionless floor moves for two reasons.
+
+    The same model, the same draws, the same set sizes -- only the four answer nouns change. The
+    raw noise and the floor can move in OPPOSITE directions, because the baseline margin is the
+    floor's denominator and the vocabulary moves that too. This is why the repository's transferable
+    quantity is a RATIO of two floors rather than a floor.
+    """
+    old = load('R1_noise_floor/results/original_vocabulary/*.json')
+    new = load('R1_noise_floor/results/*.json')
+    rows = []
+    for name, o in old.items():
+        n = new.get(name)
+        if n is None:
+            continue
+        for k in (1, 5):
+            ck, nk = f'band_k{k}', f'band_k{k}'
+            if ck not in o['cells'] or nk not in n['cells']:
+                continue
+            rows.append({'model': name, 'k': k,
+                         'sd_pct': 100 * (n['cells'][nk]['sd'] / o['cells'][ck]['sd'] - 1),
+                         'floor_pct': 100 * (n['cells'][nk]['floor'] / o['cells'][ck]['floor'] - 1),
+                         'base_old': o['base_margin'], 'base_new': n['base_margin']})
+    return rows
+
+
 def r2():
     rows = []
     for name, d in load('R2_inversion/results/*.json').items():
@@ -62,7 +89,12 @@ def r2():
         # defaulting it keeps a missing key from silently reading as 'valid'.
         bp = d.get('baseline_prob', math.exp(d['baseline_logprob']))
         rows.append({'model': name, 'baseline_prob': bp, 'valid': bp > 0.1,
-                     'sign_correct': bool(d['sign_correct']), 'd_top': d['d_top']})
+                     'sign_correct': bool(d['sign_correct']), 'd_top': d['d_top'],
+                     # The heavy-tailed null R2's docstring is about: one draw of thirty at -13.66
+                     # while the other 29 sat inside +-1.0. Emitted so the prose that cites it has
+                     # a generator behind it.
+                     'null_min': d['null']['min'], 'null_max': d['null']['max'],
+                     'null_sd': d['null']['sd'], 'null_median': d.get('null_median')})
     valid = [r for r in rows if r['valid']]
     return {'rows': rows, 'n_valid': len(valid),
             'n_inverted': sum(not r['sign_correct'] for r in valid)}
@@ -89,8 +121,16 @@ def r5():
                 'floor_widen_sd': A['null_sd'] / F['null_sd'], 'floor_widen_w': wA / wF,
                 'effect_change': abs(A['effect']) / abs(F['effect']),
                 'mech_attn': d['mechanism_attn'], 'mechanism': d['mechanism'],
+                'effect_final': F['effect'], 'effect_all': A['effect'],
+                'baseline_final': F['baseline'],
             })
+    # THE ~100x SCALE CLAIM, computed rather than characterised. Readability is a ratio, so a cell
+    # can clear its null with an effect two orders of magnitude smaller than another cell's.
+    eff = [abs(r['effect_final']) for r in rows]
+    kle = [abs(r['effect_final']) for r in rows if r['readout'] == 'kl']
     return {'rows': rows, 'n_cells': len(rows),
+            'effect_scale_span': max(eff) / min(eff),
+            'kl_effect_span': max(kle) / min(kle),
             'n_worse_2sd': sum(r['read_2sd_all'] < r['read_2sd_final'] for r in rows),
             'n_worse_w': sum(r['read_w_all'] < r['read_w_final'] for r in rows),
             'widen_sd': (min(r['floor_widen_sd'] for r in rows),
@@ -115,10 +155,11 @@ def main() -> int:
     args = ap.parse_args()
 
     A, B, E = r1(), r2(), r5()
-    D = r4()
+    D, V = r4(), r1_vocabulary()
 
     if args.json:
-        print(json.dumps({'r1': A, 'r2': B, 'r4': D, 'r5': E}, indent=2, default=float))
+        print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E},
+                         indent=2, default=float))
         return 0
 
     print("R1  how much of an ablation effect is WHICH component rather than THAT one?")
@@ -128,14 +169,26 @@ def main() -> int:
         print(f"      {r['model']:<20} band {r['band_floor']:.4f} / sham {r['sham_floor']:.4f}"
               f" = {r['ratio_k1']:6.2f}x  {tag}")
     print(f"      -> {A['ratio_min']:.1f}x-{A['ratio_max']:.1f}x over "
-          f"{A['n_informative']} informative models\n")
+          f"{A['n_informative']} informative models")
+    print(f"      baseline margins: " +
+          '  '.join(f"{r['model']} {r['base_margin']:.3f}" for r in A['rows']) + "\n")
+    if V:
+        print("R1' changing ONLY the four answer nouns (Amendment 2)")
+        for r in V:
+            print(f"      {r['model']:<16} k={r['k']:<3} raw sd {r['sd_pct']:+6.1f}%   "
+                  f"floor {r['floor_pct']:+6.1f}%   baseline {r['base_old']:.3f}"
+                  f" -> {r['base_new']:.3f}")
+        print("      -> raw noise and the dimensionless floor can move in OPPOSITE directions\n")
 
     print("R2  how often does ablating a KNOWN mechanism move the outcome the wrong way?")
     for r in sorted(B['rows'], key=lambda r: -r['baseline_prob']):
         print(f"      {r['model']:<20} baseline p {r['baseline_prob']:.5f}  "
               f"{'valid  ' if r['valid'] else 'INVALID'}  effect {r['d_top']:+7.3f}  "
               f"sign {'correct' if r['sign_correct'] else '*** INVERTED ***'}")
-    print(f"      -> {B['n_inverted']} of {B['n_valid']} valid cells inverted\n")
+    print(f"      -> {B['n_inverted']} of {B['n_valid']} valid cells inverted")
+    hv = max(B['rows'], key=lambda r: abs(r['null_min']))
+    print(f"      heaviest null tail: {hv['model']} min {hv['null_min']:.2f} "
+          f"vs sd {hv['null_sd']:.3f} -- why percentiles, not sd\n")
 
     if D:
         t = D['two_point']
@@ -158,6 +211,9 @@ def main() -> int:
               f"{'WORSE' if r['read_2sd_all'] < r['read_2sd_final'] else 'better'}")
     print(f"      -> worse in {E['n_worse_2sd']} of {E['n_cells']} cells on the 2sd floor and "
           f"{E['n_worse_w']} of {E['n_cells']} on the p10-p90 floor")
+    print(f"      |effect| at the final position spans {E['effect_scale_span']:.0f}x across "
+          f"cells ({E['kl_effect_span']:.1f}x within the KL readout alone) -- "
+          f"readability is a RATIO, not a size")
     print(f"      floor widens {E['widen_sd'][0]:.2f}-{E['widen_sd'][1]:.2f}x (2sd) / "
           f"{E['widen_w'][0]:.2f}-{E['widen_w'][1]:.2f}x (p10-p90); "
           f"|effect| changes {E['effect_change'][0]:.2f}-{E['effect_change'][1]:.2f}x")

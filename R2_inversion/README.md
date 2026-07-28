@@ -1,8 +1,11 @@
 # R2 — how often does ablating a *known* mechanism go the wrong way?
 
+<!-- unbacked-ok: 32 -- see the note below: this figure is from work not included here -->
 **Why it was asked.** A positive control in earlier work fired **inverted**: ablating a set containing
 an independently proven copy head *raised* the correct-answer margin by 32%, more extreme than all
-thirty draws of its null. A wrong-signed positive control is worse than a dead one, because its
+thirty draws of its null. **That 32% is the one number on this page a reader cannot check** — it
+comes from the private research log this round was cut from, and the run is not included. It is
+stated as motivation, not as evidence, and nothing in R2's verdict rests on it. A wrong-signed positive control is worse than a dead one, because its
 magnitude reads as calibration. But n=1.
 
 **Verdict.** `INVERSION-IS-RARE` — 0 of 4 valid cells. **The attractive hypothesis died.** Ablating a
