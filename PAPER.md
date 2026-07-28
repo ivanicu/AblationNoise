@@ -1,6 +1,9 @@
-<!-- unbacked-ok: 2.62 24 27.58 17.2 35 -- the fresh-clone verification's wall time, peak memory and
- false-pass rate, plus the earlier rate and the ceiling. Measured once on 2026-07-28 against a clone of the published remote; they
- describe that run and cannot be regenerated from checked-in data.
+<!-- unbacked-ok: 2.62 24 41.3 41.26 38 16 27.58 17.2 35 -- the fresh-clone verification's wall
+ time and peak memory, at two dates. 2.62 s / 24 MB was measured 2026-07-28 before the
+ randomization tests existed; 41.26 s / 38 MB is the same handle after them, a 16x growth
+ (D106). A runtime cannot be emitted by the thing being timed without circularity, so these
+ are dated measurements rather than regenerable values. Also: the detector's own
+ false-pass rate, plus the earlier rate and the ceiling.
  2605.24059 2606.05378 2605.29126 2605.00333 2607.01002 2604.01094
  2603.11793 2606.09607 2607.04167 2607.18921 -- arXiv identifiers, not measurements: they name the
  papers that refuted this project's novelty premise and no generator here could emit them.
@@ -361,6 +364,15 @@ I_all        0.3196            0.3991            0.6817         6.67
 
 **Not enriched under either intervention — and `T_pub` is *below* the null median in both.** The
 eight published heads are, on average, **less** extreme than random heads from the same layers.
+
+> **⚠ `D105`: the null draws *with replacement* and the observed set cannot.** The eight sit in layer
+> multiset `{16:1, 17:3, 18:1, 19:2, 22:1}` — **three of them in `L17`** — so a with-replacement draw
+> can pick the same `L17` head twice while the published set has eight *distinct* heads. Sampling
+> with replacement gives the set mean a larger variance (no finite-population correction), so **the
+> null is wider than the correct one and the test is conservative.** Measured: `sd` ratio `1.031` and
+> `1.045`; drawing distinct-per-layer moves `p` from `0.7994` to `0.8069` and from `0.6817` to
+> `0.6917` — **both away from significance.** Both are emitted; the distinct version is correct and
+> the difference changes no conclusion.
 
 > **The instrument was checked before the null was believed.** Positive control: the actual top-`8`
 > by `|centred|` is reached by only `0` of `50000` matched sets, so the test can separate. Null calibration: `200`
@@ -954,6 +966,7 @@ git clone https://github.com/ivanicu/AblationNoise.git && cd AblationNoise && ma
 5 detector selftests    PASS          provenance      49 result files audited
 attack suite            6 of 6 refuse recomputed      73 numbers
 markdown files          28 of 28 fully backed         2.62 s, 24 MB
+(that 2.62 s is the 2026-07-28 fresh-clone measurement; the handle now takes 41.26 s -- D106)
 ```
 
 > **That run also shows `0 CONFIRMED` on provenance, and that is the honest state rather than a

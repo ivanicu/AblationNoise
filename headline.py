@@ -1011,6 +1011,25 @@ def set_enrichment():
 
         t = T(eight)
         null = sorted(T([rng.choice(by_layer[k[0]]) for k in eight]) for _ in range(N))
+        # THE NULL DRAWS WITH REPLACEMENT AND THE OBSERVED SET CANNOT. The eight sit in layer
+        # multiset {16:1, 17:3, 18:1, 19:2, 22:1}, so a with-replacement draw can pick the same L17
+        # head twice while the published set has eight DISTINCT heads. Sampling with replacement
+        # gives the set mean a larger variance -- no finite-population correction -- so the null is
+        # WIDER than the correct one and the test is CONSERVATIVE. Measured: sd ratio 1.031 and
+        # 1.045, p moving 0.7994 -> 0.8069 and 0.6817 -> 0.6917, i.e. AWAY from significance. Both
+        # are emitted; the distinct-per-layer version is the correct one and the difference changes
+        # no conclusion.
+        import collections as _c
+        cnt = _c.Counter(k[0] for k in eight)
+        rng2 = _r.Random(19 if tag == 'I_final' else 20)
+
+        def draw_distinct():
+            st = []
+            for lay, c in cnt.items():
+                st += rng2.sample(by_layer[lay], c)
+            return st
+
+        nulld = sorted(T(draw_distinct()) for _ in range(N))
         # SIGNED AS WELL, because |.| discards the sign and R19's own pre-registration says so:
         # "if each head had a signed mechanistic claim, do not take the absolute value". The eight
         # were selected as read heads plus one copy head, so the pre-specified direction is HURT --
@@ -1019,6 +1038,14 @@ def set_enrichment():
         nulls = sorted(Ts([rng.choice(by_layer[k[0]]) for k in eight]) for _ in range(N))
         out[tag] = {'T_pub': t, 'null_median': null[N // 2],
                     'p': (1 + sum(1 for z in null if z >= t)) / (1 + N),
+                    'p_distinct_per_layer': (1 + sum(1 for z in nulld if z >= t)) / (1 + N),
+                    'null_median_distinct': nulld[N // 2],
+                    # the sd ratio is quoted on the pages, so it must be EMITTED rather
+                    # than recomputed by a reader from two medians
+                    'null_sd_ratio_repl_over_distinct':
+                        math.sqrt(sum((z - sum(null) / N) ** 2 for z in null) / N)
+                        / math.sqrt(sum((z - sum(nulld) / N) ** 2 for z in nulld) / N),
+                    'layer_multiset': dict(cnt),
                     'excess_kurtosis': kurt, 'sd': sd,
                     'below_null_median': t < null[N // 2],
                     'T_pub_signed': ts, 'null_median_signed': nulls[N // 2],
@@ -3336,6 +3363,14 @@ def main() -> int:
               f"{SE['arms']['I_final']['n_above_mu']} above / "
               f"{SE['arms']['I_final']['n_below_mu']} below the mean "
               f"{SE['arms']['I_final']['mu']:+.4f}, which is the statistic every verdict uses")
+        print(f"     the null draws WITH REPLACEMENT and the observed set cannot -- layer multiset "
+              f"{SE['arms']['I_final']['layer_multiset']},")
+        print(f"     so L17 can be drawn twice. That makes the null WIDER and the test CONSERVATIVE. "
+              f"Distinct-per-layer:")
+        print(f"       I_final p {SE['arms']['I_final']['p_distinct_per_layer']:.4f} "
+              f"(against {SE['arms']['I_final']['p']:.4f})   "
+              f"I_all p {SE['arms']['I_all']['p_distinct_per_layer']:.4f} "
+              f"(against {SE['arms']['I_all']['p']:.4f}) -- both move AWAY from significance")
         print(f"     NOT ENRICHED under either -- and T_pub is BELOW the null median in both. The")
         print(f"     eight are on average LESS extreme than random heads from the SAME LAYERS.")
         print(f"     instrument checked before the null was believed: positive control (the actual")
@@ -3996,7 +4031,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 35.269, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 35.849, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -4077,9 +4112,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 104, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 26, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.654, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 106, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 27, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.491, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

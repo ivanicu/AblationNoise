@@ -117,7 +117,7 @@ unreachable at n=`22`.** `THIRTEEN-ONE-OFFS` needs `≥5`, and even then the `�
 first and masks it. **One reachable outcome is not a test**, and `validate_defects.py` now prints
 the reachable set on every run so the collapse is stated rather than discovered.
 
-**What replaces it is the distribution, and that *is* informative.** Chi-square `35.269` against a
+**What replaces it is the distribution, and that *is* informative.** Chi-square `35.849` against a
 uniform null gives a permutation `p` of `0.0002` — `4` of `20000`.
 
 ```
