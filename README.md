@@ -172,6 +172,39 @@ sham L0-7  (layer axis)                  55.5%                        2.00
 trend: a threshold sitting at `±f` is insensitive to a shift that is small relative to `f`, and stops
 being insensitive when it is not.
 
+### Is the conditionality an artifact of **off-manifold zeroing**? — no, and the on-manifold arms are *more* conditional
+
+`D101` established that zeroing is roughly `4×` off-manifold. That threatens everything above: if the
+floor's conditionality is a property of *zeroing* rather than of *ablation*, the headline is a claim
+about one intervention, not about ablation baselines. **`R6` already has the on-manifold arms on four
+models**, so the layer axis can be re-run under all three.
+
+```
+band_floor / sham_floor         zero        mean     resample
+internlm2-1.8b                  0.98        2.81         2.64
+phi-3.5-mini                   12.27     2132.73      2046.29
+qwen2.5-1.5b                    4.31      815.46      1144.26
+qwen2.5-3b                      6.73      125.10       113.21
+```
+
+**On `4` of `4` models the on-manifold arms are *more* layer-dependent than zeroing, not less.** The
+conditional-reference-distribution claim **survives the off-manifold objection.**
+
+> **But the mechanism is not established, and it must be named.** The on-manifold sham floors collapse
+> to `1e-5`–`4e-6`, which [R6](R6_intervention/) already flagged as `DEGENERATE`. So *"early-layer
+> heads contribute nothing recoverable and only zeroing's shock produces a signal there"* and *"the
+> on-manifold arms lack the dynamic range to resolve early layers"* **are the same observation stated
+> with different attitude, and nothing here separates them.** `UNVERIFIED`, not confirmed.
+
+**And one model dissents on the zero arm.** `internlm2-1.8b`'s ratio is `0.98` — band and sham floors
+are the *same* under zeroing. **So "the floor varies with layer" is `3` of `4` models, not `4` of
+`4`**, and internlm2 is the model whose sham region was already flagged as non-inert.
+
+**Two estimators of the same quantity disagree and both are reported.** `R6`'s `4.31` for
+`qwen2.5-1.5b` is a `k=1` estimate from `30` draws over `12` heads; the `6.15` used earlier on this
+page is **exhaustive** over every head in each region. Same intended quantity, different sampling —
+which is the `R1`→`R10` story again, and neither is presented as the number.
+
 ### ⚠ The meta-separator, stated once: **there is no ground truth here, and that limits everything above**
 
 Two checks, both cheap, both aimed at the section above rather than at the eight heads.
