@@ -205,6 +205,47 @@ are the *same* under zeroing. **So "the floor varies with layer" is `3` of `4` m
 page is **exhaustive** over every head in each region. Same intended quantity, different sampling —
 which is the `R1`→`R10` story again, and neither is presented as the number.
 
+### An outside critique of `R6`, **measured** rather than accepted — one half refuted, the other bounded
+
+The critique: *`displacement_ratio` = `‖x−x̄‖ / ‖x‖` cannot say whether mean-ablation is near-identity,
+because a small displacement can lie along an extremely high-gain direction of `W_O`, and a large one
+can land in its approximate nullspace.* **Both halves are checkable from the weights alone — no GPU,
+no activations.**
+
+For a per-head displacement `d`, the functional version is `r_out = ‖W_h d‖ / ‖W_h x‖`, and since
+numerator and denominator pass through the same block,
+
+```
+r_out / r  ∈  [ 1/κ_h , κ_h ]        κ_h = cond(W_h),  W_h = W_O[:, h·128:(h+1)·128]
+```
+
+```
+168 band heads, each block 1536 × 128
+
+condition number   min 2.82   p25 4.31   median 5.86   p75 7.61   max 17.67  (L27H10)
+stable rank        (Σσ)² / (Σσ²)   median 117.2 of 128 dimensions
+```
+
+| the critique's two halves | verdict |
+|---|---|
+| *"the displacement may land in `W_O`'s approximate nullspace"* | **refuted, measured** — stable rank `117.2` of `128`; there is essentially no nullspace to land in |
+| *"a small displacement may lie along a very high-gain direction"* | **bounded, measured** — the error is at most `5.86×` at the median and `17.67×` at worst |
+
+**So `displacement_ratio` is not a sufficient statistic for functional displacement, and the critique
+is right about that — but the magnitude is bounded at roughly `6×` rather than unbounded.** `R6`'s
+own verdict was already `UNDECIDABLE`; this does not change it, **it explains part of why.**
+
+> **`[1/κ, κ]` is a worst case over *arbitrary* directions and is therefore loose.** The real
+> displacement is item-to-item variation of a live activation, which most likely lies in the
+> high-variance directions rather than an adversarial one. **Tightening it needs the activations,
+> which were never stored** — `R6`'s diagnostic file keeps `mean_norm`, `sd_norm`, `cv` and
+> `displacement_ratio` only, over `L14`–`27`.
+>
+> **The same absence closes a question from the section above:** whether the on-manifold arms' sham
+> collapse means *"no contribution"* or *"no resolution"* cannot be settled from disk either, because
+> that diagnostic never covered `L0`–`7`. `UNVERIFIED` there is now **checked** as unverifiable from
+> current data, not merely asserted.
+
 ### ⚠ The meta-separator, stated once: **there is no ground truth here, and that limits everything above**
 
 Two checks, both cheap, both aimed at the section above rather than at the eight heads.

@@ -630,6 +630,49 @@ def adversary_scoring():
                                                   'R18']}
 
 
+def wo_conditioning():
+    """AN OUTSIDE CRITIQUE OF R6, MEASURED FROM THE WEIGHTS RATHER THAN ACCEPTED IN PROSE.
+
+    The critique: displacement_ratio = ||x - xbar|| / ||x|| cannot say whether mean-ablation is
+    near-identity, because a small displacement can lie along a very high-gain direction of W_O and a
+    large one can land in its approximate nullspace. Both halves are computable from the weights
+    alone -- no GPU, no activations.
+
+    For a per-head displacement d the functional version is r_out = ||W_h d|| / ||W_h x||, and since
+    numerator and denominator pass through the SAME block, r_out / r is bounded in [1/kappa, kappa]
+    with kappa = cond(W_h).
+
+        168 band heads, each block 1536 x 128
+        condition number  min 2.82  p25 4.31  MEDIAN 5.86  p75 7.61  max 17.67 (L27H10)
+        stable rank       (sum s)^2 / (sum s^2)   MEDIAN 117.2 of 128
+
+    THE NULLSPACE HALF IS REFUTED: at stable rank 117 of 128 there is essentially no nullspace to
+    land in. THE HIGH-GAIN HALF IS BOUNDED at about 6x median rather than unbounded. So the critique
+    is right that displacement_ratio is not a sufficient statistic, and the magnitude of its error is
+    finite and measured. R6's verdict was already UNDECIDABLE; this does not change it, it explains
+    part of why.
+
+    THE BOUND IS LOOSE. [1/kappa, kappa] is a worst case over ARBITRARY directions, while the real
+    displacement is item-to-item variation of a live activation and most likely lies in the
+    high-variance directions. Tightening needs the activations, which were never stored.
+    """
+    f = HERE / 'R6_intervention' / 'results' / 'wo_block_conditioning_qwen2.5-1.5b.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    rows = d['per_head']
+    c = sorted(r['cond'] for r in rows)
+    sr = sorted(r['srank'] for r in rows)
+    w = max(rows, key=lambda r: r['cond'])
+    n = len(c)
+    return {'n_heads': n, 'block_shape': d['block_shape'], 'head_dim': d['head_dim'],
+            'cond_min': c[0], 'cond_p25': c[n // 4], 'cond_median': c[n // 2],
+            'cond_p75': c[3 * n // 4], 'cond_max': c[-1],
+            'worst_head': f"L{w['layer']}H{w['head']}",
+            'srank_median': sr[n // 2],
+            'srank_of_dims': d['head_dim']}
+
+
 def floor_transport():
     """DOES A SCALAR FLOOR TRANSPORT? Out-of-sample calibration across four configurations.
 
@@ -2610,7 +2653,11 @@ def r6():
     the pre-registration named and hiding it would be a quieter kind of revision.
     """
     rows = []
-    for name, d in load('R6_intervention/results/*.json').items():
+    # NOT `*.json`. That glob's population was IMPLICIT: it matched whatever happened to be in
+    # the directory, so adding wo_block_conditioning_*.json -- a file about a different
+    # question entirely -- crashed this function on a missing 'arms' key. A loader whose
+    # population is 'everything here' silently changes meaning every time a sibling is added.
+    for name, d in load('R6_intervention/results/r6_intervention_*.json').items():
         a = d['arms']
         r = {'model': name, 'informative': d['informative'],
              'check1': d['check1_zero_reproduces_r1'].get('reproduces'),
@@ -2855,6 +2902,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    WOC = wo_conditioning()
     FTR = floor_transport()
     AS = adversary_scoring()
     EL = r11()
@@ -2865,7 +2913,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -3081,6 +3129,20 @@ def main() -> int:
               f"{' '.join(AS['rounds_uncovered_before_this_step'])} -- now extended, A9-A13")
         print("      and its A1 row carried the composition error R16 fixed 4 rounds ago as D80,")
         print("      which had landed on the prior-effects note ONLY\n")
+
+    if WOC:
+        print("W_O  an outside critique of R6, MEASURED from the weights rather than accepted")
+        print(f"     r_out/r is bounded in [1/cond, cond] over the {WOC['n_heads']} band heads, each "
+              f"block {WOC['block_shape'][0]}x{WOC['block_shape'][1]}")
+        print(f"       condition number  min {WOC['cond_min']:.2f}  p25 {WOC['cond_p25']:.2f}  "
+              f"MEDIAN {WOC['cond_median']:.2f}  p75 {WOC['cond_p75']:.2f}  max "
+              f"{WOC['cond_max']:.2f} ({WOC['worst_head']})")
+        print(f"       stable rank       MEDIAN {WOC['srank_median']:.1f} of "
+              f"{WOC['srank_of_dims']} dimensions")
+        print("     NULLSPACE HALF REFUTED -- at stable rank 117 of 128 there is essentially no")
+        print("     nullspace to land in. HIGH-GAIN HALF BOUNDED at ~6x median, not unbounded.")
+        print("     The bound is a WORST CASE over arbitrary directions and is therefore loose;")
+        print("     tightening needs the activations, which were never stored\n")
 
     if FTR:
         print("FLR  DOES A SCALAR FLOOR TRANSPORT? -- the one result here that is about the METHOD")
@@ -3854,7 +3916,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 34.118, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 34.650, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -3935,9 +3997,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 102, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 103, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 26, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 7.843, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.738, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
