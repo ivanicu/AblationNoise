@@ -188,6 +188,62 @@ def r6():
             'all_check1_pass': all(r['check1'] for r in rows if r['check1'] is not None)}
 
 
+def r7():
+    """At a FIXED displacement size, does the direction change readability?
+
+    R6 could not answer this because its arms differed in size by 4-7x. R7's three matched arms
+    write a point exactly d = ||x - mu|| away from x and differ only in which way; `zero` is the
+    unmatched anchor that must reproduce R1. AMENDMENT 1 merges two of the three pre-registered
+    worlds -- they had identical rows -- so the gate turns on S (size is all) alone.
+    """
+    rows = []
+    for name, d in load('R7_norm_matched/results/*.json').items():
+        a = d['arms']
+        r = {'model': name, 'include': d['include'], 'include_fail': d['include_fail'],
+             'round_valid': d['round_valid'], 'matched': d['check1_matched'],
+             'match_spread': d['check1_spread'],
+             'check2': d['check2_zero_reproduces_r1'].get('reproduces'),
+             'check2_rel_diff': d['check2_zero_reproduces_r1'].get('rel_diff'),
+             'dead_arms': d['check3_dead_arms'],
+             'anchor_ratio': a['zero']['realized_disp_rms'] / a['mean']['realized_disp_rms'],
+             'overshoot': a['shrink'].get('n_overshoot_past_origin', 0)}
+        for arm in ('zero', 'mean', 'shrink', 'randdir'):
+            r[f'read_{arm}'] = a[arm]['readability']
+            r[f'floor_{arm}'] = a[arm]['band_floor']
+        r['rr_shrink'] = d['rr']['shrink']
+        r['rr_randdir'] = d['rr']['randdir']
+        rows.append(r)
+    if not rows:
+        return None
+    inc = [r for r in rows if r['include'] and r['round_valid']]
+    def med(xs):
+        xs = sorted(xs); n = len(xs)
+        return None if not n else (xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2)
+    out = {'rows': rows, 'n_included': len(inc), 'n_valid': sum(r['round_valid'] for r in rows),
+           'worst_match_spread_pct': 100 * max(r['match_spread'] for r in rows),
+           'total_overshoot': sum(r['overshoot'] for r in rows),
+           'median_rr_shrink': med([r['rr_shrink'] for r in inc]),
+           'median_rr_randdir': med([r['rr_randdir'] for r in inc])}
+    if out['median_rr_shrink'] is not None:
+        # The gate turns on S alone (AMENDMENT 1). S is refused as soon as either matched arm's
+        # median lands outside the pre-registered band; it is not confirmed by one arm.
+        s_ok = (0.67 <= out['median_rr_shrink'] <= 1.5 and
+                0.67 <= out['median_rr_randdir'] <= 1.5)
+        d_ok = (not (0.5 <= out['median_rr_shrink'] <= 2.0) or
+                not (0.5 <= out['median_rr_randdir'] <= 2.0))
+        out['gate'] = ('SIZE-IS-ALL' if s_ok else
+                       'DIRECTION-MATTERS' if d_ok else 'AMBIGUOUS')
+        # The ordering is reported as an ORDERING because AMENDMENT 1 forbids saying why.
+        if inc:
+            order = sorted(('mean', 'shrink', 'randdir'),
+                           key=lambda a: med([r[f'read_{a}'] for r in inc]))
+            out['readability_order_low_to_high'] = order
+            out['order_consistent'] = all(
+                sorted(('mean', 'shrink', 'randdir'), key=lambda a: r[f'read_{a}']) == order
+                for r in inc)
+    return out
+
+
 def r6_diag():
     """The pre-registered separator between 'gentler intervention' and 'nearly the identity'.
 
@@ -226,10 +282,10 @@ def main() -> int:
     args = ap.parse_args()
 
     A, B, E = r1(), r2(), r5()
-    D, V, S, G = r4(), r1_vocabulary(), r6(), r6_diag()
+    D, V, S, G, R = r4(), r1_vocabulary(), r6(), r6_diag(), r7()
 
     if args.json:
-        print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G},
+        print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R},
                          indent=2, default=float))
         return 0
 
@@ -322,6 +378,29 @@ def main() -> int:
               f"{G['item_independent_pct_max']:.0f}% item-independent")
         print(f"      {G['n_reaching_world_G']} of {len(G['rows'])} models reach the "
               f"pre-registered threshold for 'gentler' -- so that world is refused")
+
+    if R:
+        print("\nR7  at a FIXED displacement size, does the DIRECTION change readability?")
+        print(f"      {'model':<16}{'zero':>7}{'mean':>7}{'shrink':>8}{'randdir':>9}   "
+              f"{'rr shr':>7}{'rr rnd':>8}   match  checks")
+        for r in R['rows']:
+            ck = ('ok' if r['check2'] else 'CHECK2 FAIL') + \
+                 ('' if not r['dead_arms'] else f" dead:{','.join(r['dead_arms'])}") + \
+                 ('' if r['include'] else f" EXCLUDED:{','.join(r['include_fail'])}")
+            print(f"      {r['model']:<16}{r['read_zero']:>7.2f}{r['read_mean']:>7.2f}"
+                  f"{r['read_shrink']:>8.2f}{r['read_randdir']:>9.2f}   "
+                  f"{r['rr_shrink']:>7.2f}{r['rr_randdir']:>8.2f}   "
+                  f"{100*r['match_spread']:>4.2f}%  {ck}")
+        print(f"      readability = |positive control| / band sd; rr is vs the `mean` arm")
+        print(f"      displacement matching worst spread {R['worst_match_spread_pct']:.2f}% "
+              f"across all cells; shrink overshoot past origin: {R['total_overshoot']}")
+        if R.get('gate'):
+            print(f"      median rr: shrink {R['median_rr_shrink']:.2f}x  "
+                  f"randdir {R['median_rr_randdir']:.2f}x  over {R['n_included']} included cells"
+                  f"  -> {R['gate']}")
+            print(f"      readability order low->high: "
+                  f"{' < '.join(R['readability_order_low_to_high'])}"
+                  f"  (same order in every included cell: {R['order_consistent']})")
 
     if args.check:
         claims = [
