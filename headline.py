@@ -70,6 +70,50 @@ def r1_prior_effects():
     return json.load(open(p)) if p.exists() else None
 
 
+def cross_round_scale():
+    """R1 and R2 on ONE scale, matched at k=5: why did the two rounds disagree?
+
+    R5 was built to answer this and returned MIXED over three candidate factors -- readout, site,
+    mechanism size. None of them is the answer. Put both rounds on the readout's DYNAMIC RANGE
+    (baseline -> where the model sits with the mechanism gone) and the effects are comparable while
+    the FLOORS differ by 5-50x.
+
+    The floor for margin is exactly 0 (indifference among the four rooms). For induction logprob it
+    is uniform chance over the sampled id range -- an ASSUMPTION, stated, because R2 draws tokens
+    uniformly from ~39k ids so that is where a model with no induction sits.
+    """
+    import math
+    CH = math.log(1 / 39000)
+    out = {'chance_logprob': CH, 'r1': [], 'r2': []}
+    for name, d in load('R1_noise_floor/results/*.json').items():
+        c = d['cells'].get('band_k5')
+        if not c:
+            continue
+        rng = abs(d['base_margin'])
+        out['r1'].append({'model': name, 'range': rng, 'noise_pct': 100 * 2 * c['sd'] / rng})
+    sn = r1_set_null()
+    if sn:
+        rng = sn['base_margin']; sd2 = 2 * sn['null']['sd']
+        for k in ('COPY', 'READ'):
+            e = abs(sn['sets'][k]['drop'])
+            out['r1'].append({'model': f'qwen2.5-1.5b {k} set (orig vocab)', 'range': rng,
+                              'effect_pct': 100 * e / rng, 'noise_pct': 100 * sd2 / rng,
+                              'eff_over_noise': e / sd2})
+    for name, d in load('R2_inversion/results/*.json').items():
+        b = d['baseline_logprob']
+        if math.exp(b) <= 0.1:
+            continue
+        rng = b - CH; e = abs(d['d_top']); sd2 = 2 * d['null']['sd']
+        out['r2'].append({'model': name, 'range': rng, 'effect_pct': 100 * e / rng,
+                          'noise_pct': 100 * sd2 / rng, 'eff_over_noise': e / sd2})
+    eff = [r['effect_pct'] for r in out['r1'] + out['r2'] if 'effect_pct' in r]
+    noi = [r['noise_pct'] for r in out['r1'] + out['r2']]
+    out['effect_pct_range'] = [min(eff), max(eff)]
+    out['noise_pct_range'] = [min(noi), max(noi)]
+    out['noise_spread_x'] = max(noi) / min(noi)
+    return out
+
+
 def r1_behavioural_scale():
     """How far is any of this from the model actually answering differently?
 
@@ -455,12 +499,12 @@ def main() -> int:
     A, B, E = r1(), r2(), r5()
     D, V, S, G, R, E8 = r4(), r1_vocabulary(), r6(), r6_diag(), r7(), r8()
     PE, SN = r1_prior_effects(), r1_set_null()
-    BS = r1_behavioural_scale()
+    BS, CR = r1_behavioural_scale(), cross_round_scale()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN,
-                          'r1_behavioural_scale': BS},
+                          'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
 
@@ -488,6 +532,20 @@ def main() -> int:
         print(f"      -> {PE['n_inside']} of {PE['n_total']} inside a floor of "
               f"{PE['floor_2sd_same_vocabulary']:.4f}; the largest clears by "
               f"{PE['largest']['clears_floor_by_pct']:.1f}%\n")
+
+    if CR:
+        print("R1+R2  on ONE scale, matched at k=5 -- why the two rounds disagreed")
+        print(f"      {'round / model':<34}{'range':>9}{'effect%':>9}{'2sd%':>8}{'eff/noise':>11}")
+        for tag, rows_ in (('R1', CR['r1']), ('R2', CR['r2'])):
+            for r in rows_:
+                e = f"{r['effect_pct']:>8.1f}%" if 'effect_pct' in r else f"{'-':>9}"
+                q = f"{r['eff_over_noise']:>11.2f}" if 'eff_over_noise' in r else f"{'-':>11}"
+                print(f"      {tag + ' ' + r['model']:<34}{r['range']:>9.3f}{e}"
+                      f"{r['noise_pct']:>7.1f}%{q}")
+        print(f"      effects span {CR['effect_pct_range'][0]:.1f}-{CR['effect_pct_range'][1]:.1f}% "
+              f"of range; FLOORS span {CR['noise_pct_range'][0]:.1f}-"
+              f"{CR['noise_pct_range'][1]:.1f}%, a {CR['noise_spread_x']:.0f}x spread")
+        print(f"      -> the rounds differ in the FLOOR, not in the effect\n")
 
     if BS and BS['original_vocabulary']:
         o = BS['original_vocabulary']

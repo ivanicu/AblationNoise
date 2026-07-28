@@ -292,6 +292,39 @@ again in R8, in the round written to fix R7. The bin set was missing a sixth joi
 > the test. The two rows stay `UNCLASSIFIED`: moving them into a new bin after seeing them is how
 > `AMBIGUOUS` becomes `TAXONOMY-EXISTS` without any evidence changing.
 
+## Why R1 and R2 disagreed — and it is none of the three factors R5 was built to test
+
+R1 found 7 of 8 effects inside their floor. R2 found 0 of 4. Same operation, opposite conclusions.
+[R5](R5_factorial/) spent a 2×2 on *readout*, *site* and *mechanism size* and returned `MIXED`.
+
+Put both rounds on one scale — each readout's **dynamic range**, from the baseline to where the
+model sits with the mechanism gone (margin → 0; induction logprob → uniform chance over the ~39k
+sampled ids) — and match them at k=5, since R2 ablates the top-5 induction heads:
+
+```
+round / model                  range   effect%    2sd%   eff/noise
+R1 qwen2.5-1.5b COPY set       4.477    31.9%    21.9%      1.45
+R1 qwen2.5-1.5b READ set       4.477     2.0%    21.9%      0.09
+R1 internlm2 / phi / qwen3b        —        —   18.9 / 8.2 / 12.7%
+R2 llama-3.1-8b               10.118    12.1%     1.8%      6.76
+R2 phi-3.5-mini                9.967    10.6%    50.0%      0.21
+R2 qwen2.5-1.5b               10.362    45.6%     2.4%     18.86
+R2 qwen2.5-3b                 10.378     8.3%     0.5%     15.10
+```
+
+**The effects are comparable across both tasks — 2–46% of range. The floors span 0.5% to 50%, a
+91× spread.** The two rounds do not differ in signal. They differ in how noisy single-component
+ablation is on that task, model and readout.
+
+**And `phi-3.5-mini` is the control that makes this internal.** Same task, same mechanism, same
+readout as the other three R2 cells — its effect is a perfectly ordinary 10.6% of range, and it is
+**unreadable** (`eff/noise` 0.21) purely because its floor is 50%. That floor is driven by one draw
+of thirty at −13.66, which is why R2 reports percentiles rather than a standard deviation.
+
+*Not claimed:* that the floor for induction logprob is exactly uniform chance. It is where a model
+with no induction sits given uniformly drawn tokens, and it is an assumption, stated. The k=5
+matching is exact; the "no mechanism" endpoint is not.
+
 ## What is open
 
 Not a roadmap — the questions this instrument raised and cannot yet answer, each tied to the round
