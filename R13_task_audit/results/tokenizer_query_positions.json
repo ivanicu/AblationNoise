@@ -1,0 +1,77 @@
+{
+  "code_version": "a08191f8",
+  "producer": "R13_task_audit/probe_query_position.py",
+  "model": "ALL",
+  "rows": [
+    {
+      "model": "qwen2.5-1.5b",
+      "vocabulary": "original",
+      "prefix_len": 0,
+      "n_single_token_persons": 8,
+      "query_person": "Alice",
+      "query_line_index": 0
+    },
+    {
+      "model": "qwen2.5-1.5b",
+      "vocabulary": "shared",
+      "prefix_len": 0,
+      "n_single_token_persons": 8,
+      "query_person": "Alice",
+      "query_line_index": 0
+    },
+    {
+      "model": "qwen2.5-3b",
+      "vocabulary": "original",
+      "prefix_len": 0,
+      "n_single_token_persons": 8,
+      "query_person": "Alice",
+      "query_line_index": 0
+    },
+    {
+      "model": "qwen2.5-3b",
+      "vocabulary": "shared",
+      "prefix_len": 0,
+      "n_single_token_persons": 8,
+      "query_person": "Alice",
+      "query_line_index": 0
+    },
+    {
+      "model": "phi-3.5-mini",
+      "vocabulary": "original",
+      "prefix_len": 1,
+      "n_single_token_persons": 6,
+      "query_person": "Alice",
+      "query_line_index": 0
+    },
+    {
+      "model": "phi-3.5-mini",
+      "vocabulary": "shared",
+      "prefix_len": 1,
+      "n_single_token_persons": 6,
+      "query_person": "Alice",
+      "query_line_index": 0
+    },
+    {
+      "model": "internlm2-1.8b",
+      "vocabulary": "original",
+      "prefix_len": 0,
+      "n_single_token_persons": 4,
+      "query_person": "Alice",
+      "query_line_index": 0
+    },
+    {
+      "model": "internlm2-1.8b",
+      "vocabulary": "shared",
+      "prefix_len": 0,
+      "n_single_token_persons": 4,
+      "query_person": "Alice",
+      "query_line_index": 0
+    }
+  ],
+  "n_cells": 8,
+  "distinct_query_lines": [
+    0
+  ],
+  "uniform_across_models": true,
+  "the_line": 0
+}

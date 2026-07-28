@@ -588,7 +588,27 @@ def task_audit():
             'answer_room_counts_over_400_seeds': counts,
             'answer_min_share_pct': 100 * min(counts.values()) / sum(counts.values()),
             'answer_max_share_pct': 100 * max(counts.values()) / sum(counts.values()),
-            'trivial_strategy_accuracy_pct': 100.0}
+            'trivial_strategy_accuracy_pct': 100.0,
+            # IS THE DEGENERACY UNIFORM ACROSS MODELS? The query is `single[0]`, which depends on
+            # the TOKENIZER -- so a model where Alice is not a single content token would be asked
+            # about a different person at a different LINE, and R1's cross-model ratio would be
+            # comparing two different fixed-position tasks. Probed with the runners' own convention
+            # (R13_task_audit/probe_query_position.py, tokenizers only, no weights): all four
+            # models, both vocabularies, query Alice at line 0. The degeneracy is UNIFORM, so the
+            # cross-model comparisons stay commensurable -- and the degeneracy is everywhere.
+            'cross_model': _query_positions()}
+
+
+def _query_positions():
+    p = HERE / 'R13_task_audit' / 'results' / 'tokenizer_query_positions.json'
+    if not p.exists():
+        return None
+    d = json.load(open(p))
+    return {'n_cells': d['n_cells'], 'distinct_query_lines': d['distinct_query_lines'],
+            'uniform_across_models': d['uniform_across_models'], 'the_line': d['the_line'],
+            'n_single_by_model': {r['model']: r['n_single_token_persons']
+                                  for r in d['rows'] if r['vocabulary'] == 'original'},
+            'rows': d['rows']}
 
 
 def input_replication():
@@ -1772,7 +1792,17 @@ def main() -> int:
         print(f"      'copy the room from line 0' scores "
               f"{TA['trivial_strategy_accuracy_pct']:.0f}% without matching a single name")
         print(f"      a FIXED-POSITION RETRIEVAL task, and it cannot distinguish position-copying "
-              f"from name-binding: they agree on every item it contains\n")
+              f"from name-binding: they agree on every item it contains")
+        cm = TA.get('cross_model')
+        if cm:
+            print(f"      UNIFORM ACROSS MODELS? probed with the runners' own convention over "
+                  f"{cm['n_cells']} model x vocabulary cells:")
+            print(f"        single-token persons vary -- " +
+                  '  '.join(f"{k} {v}/8" for k, v in cm['n_single_by_model'].items()))
+            print(f"        distinct query LINE indices: {cm['distinct_query_lines']} -- "
+                  f"{'UNIFORM' if cm['uniform_across_models'] else 'NOT UNIFORM'}, so the "
+                  f"cross-model comparisons stay commensurable")
+        print()
 
     if IR:
         print("REP do the eight numbers this project is ABOUT reproduce under a different runner?")
@@ -2111,6 +2141,10 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('TSK cross-model cells probed',
+             TA['cross_model']['n_cells'] if (TA and TA.get('cross_model')) else -1, 8, 0),
+            ('TSK cross-model query line',
+             TA['cross_model']['the_line'] if (TA and TA.get('cross_model')) else -1, 0, 0),
             ('TSK query line index', TA['query_line_index'] if TA else -1, 0, 0),
             ('TSK answer share min pct', TA['answer_min_share_pct'] if TA else -1, 23.5, 0.05),
             ('TSK answer share max pct', TA['answer_max_share_pct'] if TA else -1, 26.25, 0.05),
@@ -2170,9 +2204,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 63, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 65, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 19, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 11.111, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 10.769, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
@@ -2180,7 +2214,7 @@ def main() -> int:
             # has found. The claim the detector suite was built from is now FALSE, and the check
             # written to notice that is what noticed. Expected count updated, not the check.
             ('LDG instrument-found CONTROL defects',
-             DL['cross_tab']['CONTROL']['instrument'] if DL else -1, 1, 0),
+             DL['cross_tab']['CONTROL']['instrument'] if DL else -1, 2, 0),
             ('LDG instrument-found SCOPE defects',
              DL['cross_tab']['SCOPE']['instrument'] if DL else -1, 0, 0),
             ('VAR in-sample floor share', VD['in_sample']['floor_share_pct'] if VD else -1,

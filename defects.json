@@ -576,6 +576,24 @@
       "defect": "the task audit's own import guard was `except Exception: return None`, and it swallowed a NameError (headline.py had no `import sys`) so the entire section vanished from the output with no error",
       "operation": "A GUARD THAT TURNS A BUG INTO AN ABSENCE -- the exact pattern this repository keeps finding in other people's checks, hiding one of its own for a run. Narrowed to ImportError and made loud: it now refuses with a message rather than returning None, because reporting nothing looks identical to reporting no problem",
       "found_by": "author_attacking_own_detector"
+    },
+    {
+      "id": "D64",
+      "round": "R13",
+      "bin": "SCOPE",
+      "commit": "994dd5c",
+      "defect": "the fixed-position degeneracy depends on the TOKENIZER -- the query is the first single-token person -- so different models could have been asked about different people at different line indices, making R1's cross-model ratio a comparison of two different tasks",
+      "operation": "PROBED and UNIFORM. Across 8 model x vocabulary cells the distinct query line indices are [0]: single-token counts differ (8, 8, 6, 4 of 8) but Alice is single-token under every tokenizer tested, so every model is asked about line 0. Cross-model comparisons stay commensurable. The degeneracy is not model-specific -- it is everywhere",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D65",
+      "round": "R13",
+      "bin": "CONTROL",
+      "commit": "994dd5c",
+      "defect": "the first version of this probe REIMPLEMENTED the runner's tokenization instead of reusing it, omitting the prefix_len adjustment, and reported 0 of 8 single-token persons for phi-3.5-mini",
+      "operation": "WRONG, and caught only because the actual run had already PRINTED 6/8 to its job log. The disagreement with a number the object had emitted is the entire reason it surfaced. Same 'match rule is not the concept' defect this repository keeps finding in other people's checks, committed while investigating that exact class. The probe now uses the runners' own convention and is checked in with a producer stamp",
+      "found_by": "instrument"
     }
   ]
 }
