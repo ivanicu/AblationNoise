@@ -71,6 +71,39 @@ the half-width (`0.0946` against `0.9766`). Shifting it barely moves a threshold
 **The scale is the estimand.** That is a sharper claim than *"a scalar floor does not transport"* and
 it is the one the data supports.
 
+### The fourth axis — **layer band** — fails in *both* directions, and it scopes the claim above
+
+The layer axis was never in the table, and it carries the largest variation in the repository. It is
+also the only axis where the **reverse** direction is testable, because both regions come from one
+result file.
+
+```
+sham L0-7  judged by the BAND's rule :   0  against its own   4    ratio 0.00   you see NOTHING
+band L14-27 judged by the SHAM rule  :  78  against its own  10    ratio 7.80   46% of the band
+
+floor ratio band/sham  6.15x        mu ratio  12.05x
+```
+
+**And it corrects the section above.** *"The centre is ~`10%` of the half-width, so it does not
+matter"* was measured **on the band**. Here `centre only` gives `8` against its own `4`.
+
+```
+                              |mu_dest − mu_src| / floor_dest    centre-only ratio
+D  I_final @ new items                    0.1%                        1.00
+B  I_final @ SHUFFLED                     2.2%                        1.08
+C  I_all   @ unshuffled                   4.8%                        0.86
+sham L0-7  (layer axis)                  55.5%                        2.00
+```
+
+> **The centre matters exactly when its *shift* is large relative to the *destination's* scale.**
+> Below `~5%` the centre-only transport is calibrated (`0.86`–`1.08`); at `55%` it doubles.
+> **So *"the scale is the estimand"* is itself scoped** — it holds where the centre shift is small
+> against the destination scale, which is three of these four axes and not the fourth.
+
+`n = 4` contrasts. What makes four points worth stating is that there is a **mechanism**, not just a
+trend: a threshold sitting at `±f` is insensitive to a shift that is small relative to `f`, and stops
+being insensitive when it is not.
+
 **What this is not:** the `own` column is the same `2σ` rule on a heavy-tailed distribution, so this
 compares **two applications of one rule**, not a calibration against a nominal `α`. That is exactly
 the transportability question — which is the one being asked — but it is not a `5%` false-positive

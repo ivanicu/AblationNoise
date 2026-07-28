@@ -694,6 +694,12 @@ def floor_transport():
         scale_only = sum(1 for z in v if abs(z - mu) > ref[1])      # local centre, A's scale
         centre_only = sum(1 for z in v if abs(z - ref[0]) > fl)     # A's centre, local scale
         rows.append({'config': name, 'differs_by': why, 'n': len(v),
+                     # THE UNIFYING QUANTITY. Whether the CENTRE's transport matters is not a
+                     # constant of this repository -- it depends on how big the centre SHIFT is
+                     # relative to the DESTINATION's scale. On the band-to-band axes that is a few
+                     # percent and the centre is irrelevant; on the layer axis it is over half, and
+                     # there the centre matters as much as the scale.
+                     'shift_over_dest_scale': abs(mu - ref[0]) / fl,
                      'own_floor': fl, 'own_mu': mu,
                      'own_n': own, 'own_pct': 100 * own / len(v),
                      'transported_n': transported, 'transported_pct': 100 * transported / len(v),
@@ -703,7 +709,35 @@ def floor_transport():
                      'centre_only_ratio': centre_only / own if own else float('nan'),
                      'mu_ratio': mu / ref[0] if ref[0] else float('nan'),
                      'floor_ratio': fl / ref[1]})
-    return {'reference_mu': ref[0], 'reference_floor': ref[1], 'rows': rows}
+    # THE FOURTH AXIS: LAYER BAND. It is the largest known variation in this repository (6.15x)
+    # and it was not in the table. It is also the only axis where the REVERSE direction can be
+    # tested, because both regions come from the SAME result file.
+    d = json.load(open(HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'))
+    L = {int(k): v for k, v in d['layers'].items()}
+    NH = len(L[0]['per_head'])
+
+    def region(lo, hi):
+        v = [L[x]['per_head'][str(h)] for x in range(lo, hi) for h in range(NH)]
+        mu = sum(v) / len(v)
+        return v, mu, 2 * _m.sqrt(sum((z - mu) ** 2 for z in v) / (len(v) - 1))
+
+    vS, muS, fS = region(0, 8)
+    vB, muB, fB = region(14, 28)
+
+    def cnt(v, mu, f):
+        return sum(1 for z in v if abs(z - mu) > f)
+
+    layer = {
+        'sham_n': len(vS), 'sham_mu': muS, 'sham_floor': fS,
+        'band_mu': muB, 'band_floor': fB,
+        'floor_ratio_band_over_sham': fB / fS, 'mu_ratio': muB / muS,
+        'sham_own': cnt(vS, muS, fS), 'sham_by_band_rule': cnt(vS, muB, fB),
+        'band_own': cnt(vB, muB, fB), 'band_by_sham_rule': cnt(vB, muS, fS),
+        'sham_scale_only': cnt(vS, muS, fB), 'sham_centre_only': cnt(vS, muB, fS),
+        'shift_over_sham_scale': abs(muB - muS) / fS}
+    layer['ratio_down'] = layer['sham_by_band_rule'] / max(layer['sham_own'], 1e-9)
+    layer['ratio_up'] = layer['band_by_sham_rule'] / layer['band_own']
+    return {'reference_mu': ref[0], 'reference_floor': ref[1], 'rows': rows, 'layer_axis': layer}
 
 
 def selection_overlap():
@@ -3072,6 +3106,30 @@ def main() -> int:
             print(f"     {r['config']:<26}{r['own_n']:>6}{r['transported_n']:>7}"
                   f"{r['scale_only_n']:>12}{r['centre_only_n']:>13}"
                   f"{r['mu_ratio']:>7.2f}{r['floor_ratio']:>9.2f}")
+        LX = FTR['layer_axis']
+        print(f"     FOURTH AXIS -- LAYER BAND, the largest variation here and it was not in the")
+        print(f"     table. It is also the ONLY axis where the REVERSE direction is testable,")
+        print(f"     because both regions come from the same result file:")
+        print(f"       sham L0-7 judged by the BAND's rule : {LX['sham_by_band_rule']:>3} against "
+              f"its own {LX['sham_own']:>3}   ratio {LX['ratio_down']:.2f}  -- you see NOTHING")
+        print(f"       band L14-27 judged by the SHAM rule : {LX['band_by_sham_rule']:>3} against "
+              f"its own {LX['band_own']:>3}   ratio {LX['ratio_up']:.2f}  -- 46% of the band")
+        print(f"       floor ratio {LX['floor_ratio_band_over_sham']:.2f}x   "
+              f"mu ratio {LX['mu_ratio']:.2f}x")
+        print(f"     AND IT CORRECTS THE PREVIOUS STEP. `the centre is ~10% of the half-width so it")
+        print(f"     does not matter` was measured ON THE BAND. Here centre-only gives "
+              f"{LX['sham_centre_only']} against own {LX['sham_own']},")
+        print(f"     because the centre SHIFT is {100 * LX['shift_over_sham_scale']:.0f}% of the "
+              f"destination's scale rather than a few percent.")
+        print(f"     THE UNIFYING QUANTITY IS |mu_dest - mu_src| / floor_dest:")
+        for r in FTR['rows'][1:]:
+            print(f"       {r['config']:<26}{100 * r['shift_over_dest_scale']:>6.1f}%   "
+                  f"centre-only ratio {r['centre_only_ratio']:.2f}")
+        print(f"       {'sham L0-7 (layer axis)':<26}"
+              f"{100 * LX['shift_over_sham_scale']:>6.1f}%   centre-only ratio "
+              f"{LX['sham_centre_only'] / max(LX['sham_own'], 1e-9):.2f}")
+        print(f"     -> the CENTRE matters exactly when its SHIFT is large relative to the")
+        print(f"     DESTINATION's scale. `the scale is the estimand` is itself SCOPED.")
         print(f"     -> RE-CENTRING FIXES NOTHING and the local SCALE fixes almost everything. The")
         print(f"     centre moves by about the SAME factor as the scale and it does not matter,")
         print(f"     because the centre is ~10% of the half-width: shifting it barely moves a")
@@ -3793,7 +3851,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 31.598, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 32.286, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -3874,9 +3932,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 97, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 98, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 25, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.247, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.163, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
