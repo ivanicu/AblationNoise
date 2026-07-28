@@ -246,6 +246,7 @@ def r7():
         for arm in ('zero', 'mean', 'shrink', 'randdir'):
             r[f'read_{arm}'] = a[arm]['readability']
             r[f'floor_{arm}'] = a[arm]['band_floor']
+            r[f'pcsign_{arm}'] = 1 if a[arm]['positive_control'] >= 0 else -1
         r['rr_shrink'] = d['rr']['shrink']
         r['rr_randdir'] = d['rr']['randdir']
         # THE QUANTITY THAT DECIDED WHY TWO ROUNDS RETURNED `NOT MET`. The mean arm's readability
@@ -274,12 +275,36 @@ def r7():
     if out['median_rr_shrink'] is not None:
         # The gate turns on S alone (AMENDMENT 1). S is refused as soon as either matched arm's
         # median lands outside the pre-registered band; it is not confirmed by one arm.
-        s_ok = (0.67 <= out['median_rr_shrink'] <= 1.5 and
-                0.67 <= out['median_rr_randdir'] <= 1.5)
-        d_ok = (not (0.5 <= out['median_rr_shrink'] <= 2.0) or
-                not (0.5 <= out['median_rr_randdir'] <= 2.0))
-        out['gate'] = ('SIZE-IS-ALL' if s_ok else
-                       'DIRECTION-MATTERS' if d_ok else 'AMBIGUOUS')
+        # THE STOPPING RULE IS PART OF THE GATE, and this code did not implement it. R7's
+        # pre-registration says: "If fewer than 3 models satisfy both inclusion criteria, R7
+        # reports what it has and returns NOT MET." headline.py evaluated the bands anyway and
+        # printed DIRECTION-MATTERS on 2 cells, while the shipped README said NOT MET -- the
+        # machine and the page contradicting each other, in the repository whose entire subject
+        # is numbers that drift from their source. Found by an adversarial reader, not by
+        # `make verify`: --check asserts 11 hard-coded NUMBERS and prose_numbers.py checks
+        # decimals, so neither can see a wrong VERDICT STRING. That blind spot is now closed by
+        # asserting the verdict itself (see the claims list below).
+        if len(inc) < 3:
+            out['gate'] = 'NOT MET'
+            out['gate_reason'] = (f"pre-registered stopping rule: {len(inc)} of "
+                                  f"{len(rows)} cells included AND valid, needs 3")
+        else:
+            s_ok = (0.67 <= out['median_rr_shrink'] <= 1.5 and
+                    0.67 <= out['median_rr_randdir'] <= 1.5)
+            d_ok = (not (0.5 <= out['median_rr_shrink'] <= 2.0) or
+                    not (0.5 <= out['median_rr_randdir'] <= 2.0))
+            out['gate'] = ('SIZE-IS-ALL' if s_ok else
+                           'DIRECTION-MATTERS' if d_ok else 'AMBIGUOUS')
+            out['gate_reason'] = f"{len(inc)} included and valid cells"
+        # FIX 4: THE SIGN OF EVERY POSITIVE CONTROL, compared to the zero arm's. The runners'
+        # pc_clears_own_floor is |PC| > sd -- magnitude only -- so an INVERTED control passes it.
+        # detectors/control_fitness.py exists precisely for this and was never called by anything;
+        # meanwhile R8's randdir arm carries PC = -0.0096 against four positive arms and reports
+        # clears=True. Surfaced here rather than left to a detector nobody invokes.
+        out['sign_inverted_arms'] = [
+            f"{r['model']}/{a}" for r in rows for a in ('mean', 'shrink', 'randdir')
+            if r.get(f'pcsign_{a}') is not None and r.get('pcsign_zero') is not None
+            and r[f'pcsign_{a}'] != r['pcsign_zero']]
         # The ordering is reported as an ORDERING because AMENDMENT 1 forbids saying why.
         if inc:
             order = sorted(('mean', 'shrink', 'randdir'),
@@ -470,8 +495,11 @@ def main() -> int:
               f"across all cells; shrink overshoot past origin: {R['total_overshoot']}")
         if R.get('gate'):
             print(f"      median rr: shrink {R['median_rr_shrink']:.2f}x  "
-                  f"randdir {R['median_rr_randdir']:.2f}x  over {R['n_included']} included cells"
-                  f"  -> {R['gate']}")
+                  f"randdir {R['median_rr_randdir']:.2f}x  -> {R['gate']}"
+                  f"  ({R['gate_reason']})")
+        if R.get('sign_inverted_arms'):
+            print(f"      *** POSITIVE CONTROL SIGN INVERTED vs the zero arm on: "
+                  f"{', '.join(R['sign_inverted_arms'])} -- |PC| > sd passes these")
             print(f"      readability order low->high: "
                   f"{' < '.join(R['readability_order_low_to_high'])}"
                   f"  -- same order in {R['n_cells_matching_order']} of "
@@ -488,6 +516,15 @@ def main() -> int:
             ('R5 worse on 2sd', E['n_worse_2sd'], 6, 0),
             ('R5 worse on p10-p90', E['n_worse_w'], 6, 0),
         ]
+        if R and R.get('gate'):
+            # A VERDICT IS A CLAIM AND WAS NEVER CHECKED. --check asserted numbers and
+            # prose_numbers.py asserts decimals; a wrong verdict string passed both for as long
+            # as it existed. Asserted here as a string comparison against the shipped README.
+            shipped = (HERE / 'R7_norm_matched' / 'README.md').read_text()
+            want_not_met = '`NOT MET` on the gate' in shipped
+            if want_not_met and R['gate'] != 'NOT MET':
+                print(f"  STALE: R7 README says NOT MET, headline computes {R['gate']}")
+                return 1
         if D:
             t = D['two_point']
             claims += [('R4 two-point within 2x', t['n_within_2x'], 12, 0),

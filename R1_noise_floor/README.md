@@ -3,8 +3,13 @@
 **Question.** Ablation effects are read as evidence of localisation. What does a *random* component
 set of the same size do?
 
-**Verdict.** `K1-COMPONENT-CHOICE` — at k=1, *which* head you ablate accounts for **2.7×–12.3×** more
-variance than *that* you ablated one, on four models across three families.
+**Verdict.** `K1-COMPONENT-CHOICE` — at k=1, *which* head you ablate produces **2.7×–12.3×** more
+spread in the outcome than *that* you ablated one, on four models across three families.
+
+> The statistic is `sd(band draws) / sd(sham draws)` — a ratio of **standard deviations**, not of
+> variances. This page said "variance" until 2026-07-28; an outside reader caught it. The variance
+> ratio is the square, 7.5×–151×, and quoting the larger number would have been the more impressive
+> and the more wrong of the two.
 
 | model | family | margin | sd(k=1) | floor | sham | ratio_k1 | |
 |---|---|---|---|---|---|---|---|

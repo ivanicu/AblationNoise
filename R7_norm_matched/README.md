@@ -52,11 +52,40 @@ qwen2.5-3b        10.07   2.38    7.43     5.68     mean<randdir<shrink    0
 readability = |positive control| / band sd, per arm
 ```
 
-**`mean < randdir < shrink` in 4 of 4 cells.** This is a **within-cell** comparison — three
-readabilities measured on the same model, the same items, the same 30 draws. It uses no ratio, no
-cross-model aggregation, and no inclusion rule, which is exactly why it survives the two cells the
-gate had to drop: the inclusion rule exists to protect a ratio whose denominator can be a dead arm,
-and an ordering has no denominator to protect.
+> ### RETRACTED 2026-07-28 — `randdir` is withdrawn, and with it two thirds of the ordering
+>
+> This section read **`mean < randdir < shrink` in 4 of 4 cells**. An outside reader pointed at a
+> defect the repository had built a detector for and never called: the runners' control check is
+> `|PC| > band sd` — **magnitude only**. Checking the sign against the `zero` arm's:
+>
+> ```
+>              zero      mean     shrink    randdir
+> internlm2   +0.147   +0.0083   +0.0285   -0.0029  INVERTED
+> phi         +0.575   +0.0689   +0.4217   -0.0123  INVERTED
+> qwen1.5b    +0.646   +0.0981   +0.1866   -0.0096  INVERTED
+> qwen3b      +1.605   -0.0305   +0.1577   -0.0188  INVERTED
+>                        INVERTED
+> ```
+>
+> **`randdir`'s positive control is inverted on 4 of 4 models**, and `mean`'s on `qwen2.5-3b`. Its
+> "readability" was `|PC| / sd` of a control pointing the wrong way — which is the exact failure
+> [R2](../R2_inversion/) was built to hunt: *a wrong-signed positive control is worse than a dead
+> one, because its magnitude reads as calibration.* R7 then put that number in the middle of its
+> headline ordering.
+>
+> **What survives**, counting only cells where **both** compared arms' controls point the same way
+> as `zero`:
+>
+> ```
+> mean < shrink      3 of 3 admissible cells   (internlm2, phi, qwen2.5-1.5b)
+> mean < randdir     0 of 0 admissible cells
+> randdir < shrink   0 of 0 admissible cells
+> ```
+
+**`mean < shrink` in 3 of 3 admissible cells.** A **within-cell** comparison — two readabilities on
+the same model, the same items, the same 30 draws — so it needs no ratio, no cross-model
+aggregation and no inclusion rule. It is a weaker claim than the one this page shipped, over fewer
+cells, and it is the one the controls support.
 
 > Reported as a secondary statistic and labelled as one. The order was added to the analysis after
 > the first two cells and before the last two — the commit is in the history — so it is not a
@@ -69,12 +98,24 @@ The objection says: *zeroing is off-manifold, so of course everything moves, so 
 an artifact.* Read as a prediction about signal-to-floor, it says the zeroing direction should be
 the **least** readable of the three.
 
-**It is the most readable, on all four models. The on-manifold direction is the least, on all four.**
+**It is the more readable of the two admissible arms, on 3 of 3 cells whose controls are correctly
+signed. The on-manifold direction is the less readable.**
 
-So the objection is not merely unsupported here — the measurement runs the other way. That is one
-model family short of the pre-registered bar and it is reported at that strength: an **ordering
-consistent across 4 models and 3 families**, not a gate result, and not yet a claim that R1's floor
-is vindicated.
+So the objection is not supported here. Reported at the strength the controls allow: an **ordering
+over two arms on three cells**, not a gate result, not a four-model claim, and not yet a claim that
+R1's floor is vindicated.
+
+## The observation `randdir` leaves behind, held as an observation
+
+Adding a random vector of the *same* norm as the item deviation to **every head of one layer**
+**raises** the correct-answer margin — on **4 of 4** models, by 0.003–0.019 margin units, each
+outside its own single-head null. R2 went looking for exactly this shape under zero-ablation and
+found **0 of 4**. Under a norm-matched random write it is **4 of 4**.
+
+Nothing in R7's pre-registration mentions inversion, so this cannot be a verdict of R7's. It is
+recorded here, with its numbers, as the observation that a round designed for something else
+happened to make — and as the reason `randdir` cannot serve as a comparison arm until it is
+understood.
 
 **What R7 does not say.** [AMENDMENT 1](AMENDMENT_1_two_worlds_had_one_row.md) found that two of the
 three pre-registered worlds had **identical rows** in the prediction matrix — *"direction matters"*

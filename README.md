@@ -39,7 +39,7 @@ Each round is a folder: its pre-registration, its amendments, its runner, its re
 
 | | question | verdict |
 |---|---|---|
-| **[R1](R1_noise_floor/)** | how large is the ablation noise floor? | at k=1, *which* component you ablate explains **2.7–12.3×** more variance than *that* you ablated one — 4 models, 3 families |
+| **[R1](R1_noise_floor/)** | how large is the ablation noise floor? | at k=1, *which* component you ablate produces **2.7–12.3×** more spread in the outcome than *that* you ablated one — a ratio of standard deviations, 4 models, 3 families |
 | **[R2](R2_inversion/)** | how often does ablating a *known* mechanism go the wrong way? | **rare** — 0 of 4. The attractive hypothesis died |
 | **[R3](R3_withdrawn/)** | is a sibling project's specificity control a single draw? | **withdrawn before spending compute** — its own records refuted the premise |
 | **[R4](R4_predictability/)** | can readability be predicted from cheap observables? | across models **UNVERIFIED** — the pre-registered gate is met by 60 of 324 admissible estimators, so its own first verdict was withdrawn. Within a model the floor is a power law and **two measured points fix the curve** (12/12 held-out within 2×) |
@@ -64,11 +64,16 @@ those floors compares two *magnitudes*, not two *kinds*, so the round **cannot d
 
 **[R7](R7_norm_matched/) fixed the size and varied only the direction** — three arms writing a point
 exactly `‖x − μ‖` away from `x`, matched to **0.00%**. Its gate also returns `NOT MET`, on a count:
-two of four cells were droppable, one for a dead arm and one by R1's own live-sham exclusion. But
-the part that needs no gate is unambiguous — **in 4 of 4 cells a known effect is *least* readable in
-the on-distribution direction and *most* readable in the zeroing direction.** The off-manifold
-objection predicts the reverse. It is one family short of the pre-registered bar, so it is reported
-as an ordering across 4 models and 3 families, not as a verdict.
+two of four cells were droppable, one for a dead arm and one by R1's own live-sham exclusion.
+
+**And its third arm was retracted.** An outside reader found that `randdir`'s positive control is
+**sign-inverted on 4 of 4 models** — its `|PC|/sd` was the magnitude of a control pointing the wrong
+way, which is the exact failure [R2](R2_inversion/) was built to hunt. This repository owns a
+detector for it, [`control_fitness`](detectors/control_fitness.py), and **no runner had ever called
+it**. What survives, counting only cells where both compared arms' controls agree in sign with the
+anchor: a known effect is **less readable in the on-distribution direction than in the zeroing
+direction, on 3 of 3 admissible cells** — the off-manifold objection predicts the reverse, but this
+is now three cells and two arms, not four and three.
 
 What both rounds established on the way: the zero arm reproduced R1's `ratio_k1` to **0.0% on four
 models out of four, twice**, through two independently rewritten measurement paths. R1's number is
@@ -130,9 +135,16 @@ on that model, and records any scope reduction in its own output rather than in 
 
 ## Two rounds returned `NOT MET`. A separator run on the existing files says the gate was wrong, not the instrument.
 
-R6 and R7 both stopped short of their gates because the `mean` arm's positive control failed to
-clear its own floor and the cell was declared invalid. **That reading is now withdrawn.** The
-separator cost zero compute — every number was already in the checked-in results:
+R6 and R7 both stopped short of their gates. **The two rounds lost cells for two different
+reasons**, and an earlier draft of this section collapsed them into one — corrected here:
+
+| cell | why it was dropped |
+|---|---|
+| `phi-3.5-mini` (R6, R7) | its `mean` arm's positive control did not clear its own floor → cell declared invalid |
+| `internlm2-1.8b` (R7) | its **zero** arm's `ratio_k1` is 0.98 → R1's live-sham exclusion. **Nothing to do with any positive control** |
+
+The separator below addresses only the **first** reason. It cost zero compute — every number was
+already in the checked-in results:
 
 ```
 by displacement ratio   qwen2.5-1.5b 0.141 < qwen2.5-3b 0.148 < phi 0.232 < internlm2 0.272
@@ -145,10 +157,19 @@ that *model* is at all: the mean arm sits at a stable **0.23–0.44** of the sam
 every one of the four, and it crosses the `|PC| > 1 band sd` line only where the model's zero arm is
 itself low. That is a threshold crossing a smooth quantity — not an instrument failing.
 
-So the honest restatement: **R6's and R7's `NOT MET` were produced by an exclusion rule, not by a
-broken measurement.** The rounds' numbers were well defined in every cell the rule discarded. R8
-already stopped using `mean` as a denominator and moved to a within-cell ordering; this is the
-evidence that the change was necessary rather than convenient.
+So the honest restatement, **scoped to the cells it covers**: the cells dropped for a *dead `mean`
+arm* were dropped by a threshold crossing a smooth quantity, not by a broken measurement. That is
+one of the two reasons. The other — `internlm2`'s band ≈ sham — is untouched by this argument and
+remains a real exclusion. R8 already stopped using `mean` as a denominator and moved to a
+within-cell ordering; this is evidence that the change was necessary rather than convenient, and it
+is **not** evidence that every `NOT MET` was an artifact.
+
+> **What would break this argument, stated because it is missing otherwise.** If a positive control
+> can be re-admitted whenever its magnitude is "smoothly continuous" with other models', then no
+> positive-control check can ever exclude anything — any failure is re-describable after the fact.
+> The criterion that separates the two cases is *whether the failing arm's deficit tracks the
+> intervention or the model*, and it is only checkable because four models exist. On three it would
+> not have been.
 
 *(The 0.23–0.44 fraction is **not** a matched comparison — `zero` displaces by ‖x‖ and `mean` by
 `d`, which R6 measured at 14–27% of it. It says nothing about direction. What it says is that the
