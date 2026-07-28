@@ -1,0 +1,21 @@
+{
+  "model": "qwen2.5-1.5b",
+  "n_items": 30,
+  "n_band_heads": 168,
+  "residual_norm_mean": {
+    "mean": 1.2262930356690454,
+    "constant_only": 1.1089083284106371,
+    "shrink": 1.1139579272769864,
+    "randdir": 1.195184519989342
+  },
+  "residual_norm_median": {
+    "mean": 0.7197727859020233,
+    "constant_only": 0.6446784734725952,
+    "shrink": 0.6452061235904694,
+    "randdir": 0.7086323201656342
+  },
+  "residual_spread": 1.105856096713289,
+  "permitted_by_gauge_median_cond": 5.83381199836731,
+  "cond_max": 17.670085906982422,
+  "verdict": "GAUGE-ROBUST-IN-PRACTICE"
+}

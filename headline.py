@@ -352,8 +352,14 @@ def main() -> int:
 
     print("R1  how much of an ablation effect is WHICH component rather than THAT one?")
     for r in sorted(A['rows'], key=lambda r: r['ratio_k1']):
+        # NOT "excluded by its own sham control" -- that string said the instrument was dead on
+        # this model, and it is not: internlm2's zero-arm positive control is 4.69 band sd, the
+        # second strongest of the four measured in R7. ratio_k1 = 0.98 says something else
+        # entirely -- that on this model an EARLY-layer head and a LATE-layer head do comparable
+        # damage. That is a fact about its damage profile, not about a failed control, and the
+        # two were conflated in a label a reader sees before they see any number.
         tag = 'replicate' if r['replicate'] else ('' if r['informative'] else
-                                                  'EXCLUDED by its own sham control')
+                                                  'band ~ sham: early and late heads damage alike')
         print(f"      {r['model']:<20} band {r['band_floor']:.4f} / sham {r['sham_floor']:.4f}"
               f" = {r['ratio_k1']:6.2f}x  {tag}")
     print(f"      -> {A['ratio_min']:.1f}x-{A['ratio_max']:.1f}x over "
