@@ -141,6 +141,49 @@ def r5():
                               max(r['effect_change'] for r in rows))}
 
 
+def r6():
+    """AMENDED STATISTIC (R6_intervention/AMENDMENT_1_statistic_degenerates.md).
+
+    readability(X) = |positive control effect| / band sd(X) -- a known, previously established
+    effect measured against the null of the SAME arm. The pre-registered ratio_k1 is reported
+    beside it and marked degenerate wherever the sham sd has collapsed, because that is the number
+    the pre-registration named and hiding it would be a quieter kind of revision.
+    """
+    rows = []
+    for name, d in load('R6_intervention/results/*.json').items():
+        a = d['arms']
+        r = {'model': name, 'informative': d['informative'],
+             'check1': d['check1_zero_reproduces_r1'].get('reproduces'),
+             'check1_rel_diff': d['check1_zero_reproduces_r1'].get('rel_diff'),
+             'dead_arms': d['check2_dead_arms'], 'round_valid': d['round_valid']}
+        for iv in ('zero', 'mean', 'resample'):
+            r[f'read_{iv}'] = abs(a[iv]['positive_control']) / a[iv]['band_sd']
+            r[f'bandsd_{iv}'] = a[iv]['band_sd']
+            r[f'shamsd_{iv}'] = a[iv]['sham_sd']
+            r[f'pc_{iv}'] = a[iv]['positive_control']
+            r[f'ratio_k1_{iv}'] = a[iv]['ratio_k1']
+            # The pre-registered statistic is degenerate exactly when its denominator has
+            # collapsed relative to the arm it was calibrated on. Flagged per arm rather than
+            # dropped, so the reader sees which number the pre-registration actually named.
+            r[f'ratio_k1_degenerate_{iv}'] = bool(
+                a[iv]['sham_sd'] < 0.05 * a['zero']['sham_sd'])
+        for iv in ('mean', 'resample'):
+            r[f'rr_{iv}'] = r[f'read_{iv}'] / r['read_zero']
+        rows.append(r)
+    if not rows:
+        return None
+    inf = [r for r in rows if r['informative']]
+    def med(xs):
+        xs = sorted(xs)
+        n = len(xs)
+        return None if not n else (xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2)
+    return {'rows': rows, 'n_informative': len(inf),
+            'median_rr_mean': med([r['rr_mean'] for r in inf]),
+            'median_rr_resample': med([r['rr_resample'] for r in inf]),
+            'n_valid_rounds': sum(r['round_valid'] for r in rows),
+            'all_check1_pass': all(r['check1'] for r in rows if r['check1'] is not None)}
+
+
 def r4():
     p = HERE / 'R4_predictability' / 'results' / 'r4_predictability.json'
     if not p.exists():
@@ -155,10 +198,10 @@ def main() -> int:
     args = ap.parse_args()
 
     A, B, E = r1(), r2(), r5()
-    D, V = r4(), r1_vocabulary()
+    D, V, S = r4(), r1_vocabulary(), r6()
 
     if args.json:
-        print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E},
+        print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S},
                          indent=2, default=float))
         return 0
 
@@ -217,6 +260,26 @@ def main() -> int:
     print(f"      floor widens {E['widen_sd'][0]:.2f}-{E['widen_sd'][1]:.2f}x (2sd) / "
           f"{E['widen_w'][0]:.2f}-{E['widen_w'][1]:.2f}x (p10-p90); "
           f"|effect| changes {E['effect_change'][0]:.2f}-{E['effect_change'][1]:.2f}x")
+
+    if S:
+        print("\nR6  is the floor a property of ablation, or of ZEROING?  (amended statistic)")
+        print(f"      {'model':<16} {'zero':>8}{'mean':>8}{'resample':>10}   "
+              f"{'rr mean':>8}{'rr resamp':>10}   checks")
+        for r in S['rows']:
+            ck = ('CHECK1 ok' if r['check1'] else 'CHECK1 FAIL') + \
+                 ('' if not r['dead_arms'] else f", dead: {','.join(r['dead_arms'])}")
+            print(f"      {r['model']:<16} {r['read_zero']:>8.2f}{r['read_mean']:>8.2f}"
+                  f"{r['read_resample']:>10.2f}   {r['rr_mean']:>8.2f}{r['rr_resample']:>10.2f}"
+                  f"   {ck}")
+        print(f"      readability = |positive control| / band sd, per arm")
+        print(f"      median rr: mean {S['median_rr_mean']:.2f}x  "
+              f"resample {S['median_rr_resample']:.2f}x  over {S['n_informative']} informative "
+              f"cells; {S['n_valid_rounds']} of {len(S['rows'])} rounds fully valid")
+        deg = [f"{r['model']}/{iv}" for r in S['rows'] for iv in ('mean', 'resample')
+               if r[f'ratio_k1_degenerate_{iv}']]
+        if deg:
+            print(f"      pre-registered ratio_k1 DEGENERATE (sham sd collapsed) on: "
+                  f"{', '.join(deg)} -- see AMENDMENT 1")
 
     if args.check:
         claims = [
