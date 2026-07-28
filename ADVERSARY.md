@@ -39,6 +39,12 @@ independently established mechanisms shown to be inside the floor is `1`, not `8
 and it carries the whole claim by itself. I predict the adversary states it more sharply than this
 paragraph does.
 
+> **ACTED ON, same day, before any adversary ran.** The front page no longer says "eight published
+> effects"; it leads with the one established mechanism. **This row can no longer be scored** — a
+> self-corrected prediction is not a tested one, and the only evidence it was written first is the
+> commit order. Recorded here rather than deleted, because a prediction file that quietly drops the
+> rows its author fixed is a file that always scores well.
+
 ### A2 · The whole repository is one synthetic task — `LANDS`
 
 One 4-way binding task, one prompt template, `n=120` items, one readout (margin), four models of
@@ -62,6 +68,11 @@ more provocative one.
 **My assessment: I think this substantially lands**, and the counter — that single-head effects
 *are* what gets published, so measuring their floor is the point — is a reason the work matters, not
 a reason the framing is right.
+
+> **ACTED ON, same day.** The front page now leads with *"the single head is the wrong unit"* and
+> puts the `k=5` circuit result (`0.0`th percentile, `−1.4279` against a `4.477` margin) beside the
+> single-head number instead of three screens below it. **Also unscoreable now**, for the same
+> reason as A1.
 
 ### A4 · `2 × sd` is a normal-distribution threshold on a visibly non-normal null — `PARTLY LANDS`
 
@@ -107,14 +118,14 @@ reading of a clean row is *(1 − that rate)* per number rather than a guarantee
 
 ### A8 · The defect ledger is self-reported — `LANDS`
 
-`42` rows, `19` of them found by the author reading the object, classified by the author, against
+`45` rows, `20` of them found by the author reading the object, classified by the author, against
 bins the author pre-registered. The taxonomy test caught its own designer once; **that is one check, not
 independence.** `7` rows came from an outside reader, and the cross-tab shows **no instrument has
 ever caught a `CONTROL` or `SCOPE` defect** — which is itself evidence that the author's instruments
 cannot see the author's blind spots.
 
 **Prediction:** the adversary says the ledger measures *what the author noticed*, not *what is
-there*, and the `16.7%` outside-reader fraction is a floor on the true rate, not an estimate. Correct.
+there*, and the `15.6%` outside-reader fraction is a floor on the true rate, not an estimate. Correct.
 
 ---
 

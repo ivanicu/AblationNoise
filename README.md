@@ -12,14 +12,39 @@
 what a *random* component of the same size does. This repository measures that — and then points
 the measurement at its own author's prior work.**
 
-Then it points the measurement at its own author's prior results, and **all eight published
-single-head effects turn out to sit inside the noise floor** — including a head that had been
-independently established as the copy head for that task.
+Then it points the measurement at its own author's prior results. The finding, stated at the size
+the evidence supports:
 
-> That count was **seven of eight** until the floor itself was audited. The floor it was measured
-> against is `2 × sd` of **30 random draws** from a band of `168` heads; [R10](R10_exhaustive/)
-> measured all `168`, and the exhaustive floor is `0.4870` rather than `0.4418`. The one effect
-> that cleared now sits at `0.96×`. The sampled floor is neither wrong nor lucky — it is at the
+> ## The single head is the wrong unit — and this repository's own data shows what the right one does
+>
+> **`L22H7` was independently established as the copy head for this task. Ablating it moves the
+> answer by `0.27×` the noise floor — indistinguishable from ablating a random head.**
+>
+> **Ablate the whole copy circuit and it lands at the `0.0`th percentile of the `k=5` null**, at
+> `−1.4279` against a baseline margin of `4.477`. Not marginal. Not inside anything.
+>
+> So the mechanism is real, it is localised, and **the granularity at which it was reported —
+> one head — cannot see it.**
+
+### Two corrections to how this used to be worded, both predicted by [`ADVERSARY.md`](ADVERSARY.md) before they were made
+
+This page used to lead with *"all eight published single-head effects sit inside the noise floor"*.
+Writing down what a hostile reader would attack produced two rows that hit that sentence, and both
+are right:
+
+| | |
+|---|---|
+| **A1** | **"Eight published effects" oversells the population.** The set is `5` read-head *candidates*, `1` independently proven copy head, `2` unlabelled. A candidate is a hypothesis; finding that five hypotheses fail to clear a floor is close to tautological — R1's own set-level data puts the READ set at the `46.7`th percentile of the null, so **there was nothing there to find**. The count of *established* mechanisms shown inside the floor is **`1`**, and it is the one that matters. |
+| **A3** | **`k=1` is the wrong granularity, and the repository had the stronger claim in hand.** Leading with *"published effects are noise"* was the more provocative reading of data whose honest reading is *"single heads are the wrong unit"* — because the `k=5` circuit result was sitting in the same round the whole time. |
+
+**They were self-corrected, not tested.** A future adversary cannot score these two rows any more,
+and the calibration record says so: they were written as predictions on 2026-07-28 and acted on the
+same day, with the commit order as the only proof they came first.
+
+> **The floor `L22H7`'s `0.27×` is measured against was itself audited, and it moved.** It is `2 × sd` of **30 random draws** from a band of `168` heads; [R10](R10_exhaustive/)
+> measured all `168`, and the exhaustive floor is `0.4870` rather than `0.4418` — which flipped the
+> count of the eight from `7` inside to **`8` inside**, since `L16H3`, the only one that had
+> cleared, now sits at `0.96×`. The sampled floor is neither wrong nor lucky — it is at the
 > `45.1`st percentile of its own sampling distribution — it is **unresolved**, because a 30-draw
 > floor from this population spans `2.7×` from p05 to p95. **The floor had a noise floor.**
 > `make headline` replays the draw from its seed and returns the recorded value with
@@ -401,23 +426,24 @@ it does not fail, and it does not claim the rows are wrong. There is no reposito
 against, which is a fact about your directory and not about the ledger.
 
 ```
-    PROVENANCE     13      whether the number has a generator at all
+    PROVENANCE     14      whether the number has a generator at all
+    SCOPE           9      which population the claim covers
     CONTROL         8      what the control arm actually holds fixed
     STATISTIC       8      what quantity the number is
-    SCOPE           7      which population the claim covers
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 19 · instrument 8 · outside reader 7
-               author attacking own detector 6 · author writing it up 1 · detector 6 1
+    found by:  author reading the object 20 · instrument 8 · outside reader 7
+               author attacking own detector 6 · author writing the adversary predictions 2
+               author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 42 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 45 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 42 were findable only by an outside reader** — `16.7%`. That fraction was 27% at n=22 and
+**7 of 45 were findable only by an outside reader** — `15.6%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -427,15 +453,15 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 
 ```
 joint            by the author   by an instrument   by an outside reader
-PROVENANCE             8                5                    0
-SCOPE                  5                0                    2
+PROVENANCE             9                5                    0
+SCOPE                  7                0                    2
 CONTROL                4                0                    4
 STATISTIC              4                3                    1
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**The overlap is one bin, and n=`42` has not changed it — after a step that added `4` rows, all found by attacking the instruments themselves.** Nine detectors now exist and **not one has
+**The overlap is one bin, and n=`45` has not changed it.** `SCOPE` has grown to `9` — the largest jump of any bin — entirely from the author attacking his own framing, and an instrument still has not caught one. Nine detectors now exist and **not one has
 ever caught a `CONTROL` or `SCOPE` defect** — those two joints were found only by another mind. That measurement is what
 [`arm_contrast`](detectors/arm_contrast.py) was built from: it is aimed at the joint the instruments
 had never reached, and its first selftest case is the real defect that eight rounds inherited.
@@ -444,12 +470,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`42` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
-the pre-registered threshold of ≥8 and now stands at `13`.
+`AMBIGUOUS` by one instance. At n=`45` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+the pre-registered threshold of ≥8 and now stands at `14`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`42` a bin of `13` is `31.0%`, which is not domination
+> ledger; at n=`45` a bin of `14` is `31.1%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

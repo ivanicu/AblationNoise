@@ -1298,9 +1298,9 @@ def main() -> int:
             ('ITM copy head vs item noise',
              next((e['x_item_noise'] for e in IN['effects'] if e['head'] == 'L22H7'), -1)
              if IN else -1, 3.33, 0.01),
-            ('LDG defect rows', DL['n'] if DL else -1, 42, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 13, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 16.667, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 45, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 14, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 15.556, 0.001),
             # THE FINDING THE WHOLE DETECTOR SUITE WAS BUILT FROM, asserted so it cannot rot:
             # at n=37 no instrument has yet caught a CONTROL or a SCOPE defect. If a detector
             # ever does, this assertion fails and the front page's claim must be rewritten --

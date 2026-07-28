@@ -164,7 +164,12 @@ def main():
     rep = check_readout(tok, rooms)
     print(f'  readout detector: {rep.verdict} -- {rep.why}')
     if not rep.ok():
-        Path('results').mkdir(exist_ok=True)
+        # NOT `Path('results')`. That is CWD-relative, so it creates a phantom directory next to
+        # wherever the job happened to start while `out` still points at --out's path -- and if
+        # --out's parent does not exist, `open(out,'w')` raises and THE REFUSAL IS NEVER WRITTEN.
+        # The one branch whose entire purpose is to leave an honest record of "this model could not
+        # be measured" was the one branch that could leave nothing but a traceback in a job log.
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         out = f'{args.out}_{args.tag}.REFUSED.json'
         json.dump({'model': args.tag, 'rooms': rooms, 'verdict': 'REFUSED-BAD-READOUT',
                    'readout_verdict': rep.verdict, 'why': rep.why,
@@ -280,11 +285,16 @@ def main():
     # a cell of the atlas.
     MIN_ITEMS = 30
     if n < MIN_ITEMS:
-        Path('results').mkdir(exist_ok=True)
+        # NOT `Path('results')`. That is CWD-relative, so it creates a phantom directory next to
+        # wherever the job happened to start while `out` still points at --out's path -- and if
+        # --out's parent does not exist, `open(out,'w')` raises and THE REFUSAL IS NEVER WRITTEN.
+        # The one branch whose entire purpose is to leave an honest record of "this model could not
+        # be measured" was the one branch that could leave nothing but a traceback in a job log.
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         out = f"{args.out}_{args.tag}.REFUSED.json"
         json.dump({'model': args.tag, 'n_items': n, 'n_seeds_tried': len(seeds),
                    'verdict': 'REFUSED-INSUFFICIENT-ITEMS',
-                   'why': (f'only {n} of {len(SEEDS)} seeds produced an item this model answers '
+                   'why': (f'only {n} of {len(seeds)} seeds produced an item this model answers '
                            f'correctly (need {MIN_ITEMS}); no floor can be estimated. This is a '
                            f'statement about the model/task pairing, not about the floor.')},
                   open(out, 'w'), indent=2)

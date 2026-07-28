@@ -387,6 +387,33 @@
       "defect": "an exemption written in scientific notation (3.55e-05) registers as 3.55 and 05, because the number pattern does not parse exponents -- so it exempts neither value",
       "operation": "FIXED by writing the exemption in the table's own decimal notation. The match rule is not the concept, in the mechanism built to enforce that numbers match their concept",
       "found_by": "author_attacking_own_detector"
+    },
+    {
+      "id": "D43",
+      "round": "repo",
+      "bin": "SCOPE",
+      "commit": "512e86e",
+      "defect": "the front page led with 'all eight published single-head effects sit inside the noise floor', when 5 of the 8 were read-head CANDIDATES whose set sits at the 46.7th percentile of the null -- there was nothing there to find -- and only 1 (L22H7) was an independently established mechanism",
+      "operation": "REWRITTEN to lead with the one established mechanism. Predicted by ADVERSARY.md as row A1 BEFORE it was made, and acted on the same day, which means the row can no longer be scored by a real adversary. Recorded as unscoreable rather than quietly dropped",
+      "found_by": "author_writing_the_adversary_predictions"
+    },
+    {
+      "id": "D44",
+      "round": "repo",
+      "bin": "SCOPE",
+      "commit": "512e86e",
+      "defect": "the page led with the provocative reading ('published effects are noise') of data whose honest reading is 'the single head is the wrong unit' -- the k=5 COPY circuit result, 0.0th percentile at -1.4279 against a 4.477 margin, was in the same round the whole time",
+      "operation": "REWRITTEN. The circuit result now sits beside the single-head number instead of three screens below it. ADVERSARY.md row A3, self-corrected, unscoreable, and recorded as such",
+      "found_by": "author_writing_the_adversary_predictions"
+    },
+    {
+      "id": "D45",
+      "round": "R10",
+      "bin": "PROVENANCE",
+      "commit": "512e86e",
+      "defect": "both REFUSED branches of the exhaustive runner called Path('results').mkdir -- CWD-relative -- while writing to --out's full path, so a refusal into a not-yet-existing directory raises FileNotFoundError and writes NOTHING",
+      "operation": "FIXED before the phi-3.5-mini job could hit it (phi has refused before, on n=0 items). The fossil was on disk: an empty untracked results/ in the repo root, created 03:02 by task 41 -- the R9 run that died on its last line with exactly this error. The one branch whose purpose is to leave an honest record of 'this model could not be measured' was the one that could leave nothing but a traceback in a job log",
+      "found_by": "author_reading_the_object"
     }
   ]
 }
