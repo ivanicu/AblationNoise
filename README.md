@@ -120,6 +120,7 @@ replays the real incident that produced it.
 | [`circularity`](detectors/circularity.py) | is your predictor already the answer? | a prospective law validated out-of-sample to 0.02, retracted 15 minutes later as a copy-head tautology |
 | [`control_fitness`](detectors/control_fitness.py) | can your control fail, and is your positive control the right sign? | a control whose two hypotheses both predicted the same reading, and a positive control that fired inverted |
 | [`prose_numbers`](detectors/prose_numbers.py) | does any code in this repository actually emit the number you wrote? | R4's fold errors and R5's whole results table, both quoted from commit messages, neither regenerable. It reports its own false-pass rate — `--power` |
+| [`arm_contrast`](detectors/arm_contrast.py) | does your control arm differ from the studied arm in the property it claims to isolate, **and nothing else**? | R1's sham arm, which claims to isolate *which head* while the arms differ in *layer band* — inherited by eight rounds, found by an outside reader. Aimed at the two joints **no instrument here had ever caught** |
 
 ```bash
 python3 detectors/readout_tokens.py --selftest
@@ -127,6 +128,7 @@ python3 detectors/circularity.py    --selftest
 python3 detectors/control_fitness.py --selftest
 python3 detectors/prose_numbers.py   --selftest
 python3 detectors/prose_numbers.py   --power      # what fraction of RANDOM numbers it clears
+python3 detectors/arm_contrast.py    --selftest
 ```
 
 ## Running a round
@@ -218,6 +220,22 @@ commit message that no code emits.
 
 **Six of twenty-two were findable only by an outside reader** — 27%, and that is the number that
 bounds how far self-audit goes here.
+
+And the split is not uniform. Cross-tabulating the joint against who found it:
+
+```
+joint          by an instrument    by an outside reader
+PROVENANCE            5                    0
+STATISTIC             2                    1
+INTERVENTION          1                    0
+CONTROL               0                    3
+SCOPE                 0                    2
+```
+
+**The overlap is one bin.** Six detectors existed and **not one had ever caught a `CONTROL` or
+`SCOPE` defect** — those two joints were found only by another mind. That measurement is what
+[`arm_contrast`](detectors/arm_contrast.py) was built from: it is aimed at the joint the instruments
+had never reached, and its first selftest case is the real defect that eight rounds inherited.
 
 ### The taxonomy test returned `AMBIGUOUS`, by one instance
 
