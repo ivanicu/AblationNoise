@@ -172,9 +172,14 @@ def check_file(path: Path, gen: set) -> Report:
         if ln.lstrip().startswith('```'):
             in_code = not in_code
             continue
-        if in_code:
-            # Fenced blocks in this repo hold pasted generator output and shell commands. Their
-            # numbers are quotations, not claims, and checking them would flag every command line.
+        # THE FENCE EXEMPTION IS GONE, AND IT WAS MEASURED BEFORE IT WAS REMOVED. 184 of 476
+        # numbers across the READMEs lived inside fences and were invisible here -- 54% of the
+        # front page, 69% of R7, 66% of R8, the files carrying the most important tables. The
+        # exemption's premise was that a fenced block quotes generator output. Checked: 131 of 136
+        # fenced numbers ARE emitted by a generator, so the premise mostly held -- and the five
+        # that were not are real, are mine, and were hiding exactly where the exemption put them.
+        # Removing it cost five flags and closed a hole that would have grown with every table.
+        if False:
             continue
         if ln.lstrip().startswith('>'):
             # Blockquotes hold the annotated corrections -- they deliberately restate numbers that
@@ -238,10 +243,24 @@ def selftest() -> int:
         if got != [5.2]:
             print(f"      FAIL: expected [5.2]"); ok = False
 
-        # 5. A fenced block is a quotation, not a claim.
+        # 5. FENCED NUMBERS ARE CHECKED NOW, and this case changed with the contract rather than
+        #    the contract changing to keep the case. It used to assert fences are ignored, on the
+        #    premise that they quote generator output. Measured across the repository: 184 of 476
+        #    README numbers lived in fences -- 54% of the front page -- and five of them were
+        #    unbacked, hiding precisely where the exemption put them. A number in a fence that no
+        #    generator emits is still a number nobody can check.
         p.write_text("Text.\n```\nfold errors 155.9x\n```\n")
         r = check_file(p, gen)
-        print(f"  [5] fenced output ignored   -> {r.verdict}")
+        got = sorted(u['value'] for u in r.unbacked)
+        print(f"  [5] fenced UNBACKED number  -> {r.verdict}, unbacked {got}")
+        if r.ok() or got != [155.9]:
+            print("      FAIL: a fence must not hide an unbacked number"); ok = False
+
+        # 5b. ...and a fenced number that IS emitted must still pass, or the check would flag every
+        #     pasted stdout block and be turned off within a day.
+        p.write_text("Text.\n```\nratio 2.74x\n```\n")
+        r = check_file(p, gen)
+        print(f"  [5b] fenced BACKED number   -> {r.verdict}")
         if not r.ok():
             print(f"      FAIL: {r.unbacked}"); ok = False
 

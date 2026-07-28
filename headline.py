@@ -114,6 +114,23 @@ def cross_round_scale():
     return out
 
 
+def r1_set_null_range():
+    """The k=5 null's FULL RANGE, and the COPY set, as fractions of the flip distance.
+
+    Hand-computed in a shell and quoted on the front page inside a fence, where the fence
+    exemption hid them. Emitted so they are checked like everything else.
+    """
+    sn = r1_set_null()
+    if not sn:
+        return None
+    n = sn['null']
+    rng = n['max'] - n['min']
+    return {'null_full_range': rng, 'base_margin': sn['base_margin'],
+            'pct_of_flip_distance': 100 * rng / sn['base_margin'],
+            'copy_pct_of_flip_distance':
+                100 * abs(sn['sets']['COPY']['drop']) / sn['base_margin']}
+
+
 def r1_behavioural_scale():
     """How far is any of this from the model actually answering differently?
 
@@ -449,6 +466,9 @@ def r8():
     cs = [r for r in rows if r['ok_constant_only'] and r['ok_shrink']]
     cm = [r for r in rows if r['ok_constant_only'] and r['ok_mean']]
     return {'rows': rows,
+            # Emitted because the front page quotes them inside a code fence, where Detector 6's
+            # fence exemption could not see them. That exemption is now gone; these are why.
+            'const_over_shrink': [r['read_constant_only'] / r['read_shrink'] for r in rows],
             'n_order_eligible': sum(r['order_eligible'] for r in rows),
             'n_const_approx_shrink': sum(0.7 <= r['read_constant_only'] / r['read_shrink'] <= 1.43
                                          for r in cs), 'n_cs': len(cs),
@@ -500,10 +520,11 @@ def main() -> int:
     D, V, S, G, R, E8 = r4(), r1_vocabulary(), r6(), r6_diag(), r7(), r8()
     PE, SN = r1_prior_effects(), r1_set_null()
     BS, CR = r1_behavioural_scale(), cross_round_scale()
+    SR = r1_set_null_range()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
-                          'r1_prior_effects': PE, 'r1_set_null': SN,
+                          'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0

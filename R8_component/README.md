@@ -66,7 +66,7 @@ one column that separated `C` from `F` is unavailable.
 phi-3.5-mini    +0.5752     +0.0689       +0.5019      +0.4217    -0.0123  INVERTED
 qwen2.5-1.5b    +0.6458     +0.0981       +0.1618      +0.1866    -0.0096  INVERTED
 qwen2.5-3b      +1.6054     -0.0305 INV   +0.1714      +0.1577    -0.0188  INVERTED
-internlm2-1.8b  +0.1470     +0.0083       +0.0148      +0.0285    -0.0029  INVERTED
+internlm2-1.8b  +0.1470     +0.0083       +0.0268      +0.0285    -0.0029  INVERTED
 ```
 
 ## What survives, using only correctly-signed arms
@@ -120,3 +120,13 @@ for this and, until 2026-07-28, was **never called by any runner** — the sign 
 And the inversion is a finding waiting for its own round: adding a random vector of the item
 deviation's norm to every head of one layer **raises** the correct-answer margin, on **4 of 4**
 models, each outside its own single-head null.
+
+> **Corrected 2026-07-28.** `internlm2`'s `constant_only` positive control read **+0.0148** in the
+> table above; the measured value is **+0.0268**. The other four cells of that row were exact, so
+> this was a single mistyped digit, not a copied row — and it sat inside a code fence, where
+> Detector 6's fence exemption made it **invisible to `make verify`** for as long as it existed.
+> The exemption is now gone: 184 of 476 README numbers had been living behind it, including 54% of
+> the front page. Removing it raised the checked count from 16 to 47 in this file alone and
+> surfaced exactly this one error. Nothing in the round's conclusions depends on it — the arm's
+> sign, which is what that table exists to show, is unchanged.
+
