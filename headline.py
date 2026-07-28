@@ -549,6 +549,102 @@ def r11():
             'effects': rows}
 
 
+def r17():
+    """R17 -- IS THE HEADLINE AN ARTIFACT OF MEASURING WHERE THE FLOOR IS LARGEST?
+
+    R15 showed the floor tracks the task's baseline margin at Spearman +0.8810. The eight published
+    heads were measured on the configuration with the HIGHEST margin available -- every answer at
+    line 0, the primacy position, margin 4.477 -- and the floor sits in the DENOMINATOR of `x floor`.
+    A larger floor makes every head look smaller. So the repository's headline finding was produced
+    at exactly the configuration most favourable to it. That is a directional bias pointing at my own
+    conclusion, and R15's scan makes it free to check: the shuffled floor is 17% lower.
+
+        WORLD A  "7 of 8 inside the floor" is a fact about those heads
+        WORLD B  it is an artifact of the highest-floor configuration
+
+    KILLED: WORLD B. On the shuffled task, where the floor is 0.4023 against 0.4870, the count goes
+    1 of 8 to 0 OF 8. The lower floor rescued nothing. L16H3, the only one that cleared, falls from
+    1.06x to 0.92x -- because its NUMERATOR fell 0.72x while the denominator fell only 0.83x.
+
+    TWO NARRATIVE-FRIENDLY PATTERNS APPEAR IN THE SAME TABLE AND BOTH DIE TO CONTROLS RUN IN THE SAME
+    COMPUTATION. Both pointed toward the conclusion this repository already argues, which is why the
+    controls were run, not a reason to skip them.
+
+      (1) SEVEN OF EIGHT RISE IN RANK, mean 101.6 -> 85.5. But ranks regress toward the middle for
+          EVERY head: the slope of (shuffled rank - 84.5) on (unshuffled rank - 84.5) is 0.6092 over
+          all 168, which predicts 94.9. Residual -9.43. Against 20,000 random 8-head sets the null sd
+          is 13.29 and one-sided p = 0.2351. INSIDE THE NULL. No finding.
+
+      (2) L22H7's RAW EFFECT MORE THAN HALVES, 0.433x, while the floor fell only 0.826x -- and it is
+          the only one of the eight to fall in rank. But the median band head's effect fell to 0.723x
+          with an IQR of 0.424 to 1.392, so 0.433 is the 26.2nd percentile: inside the IQR, low-normal
+          NOT anomalous. It is also the noisiest of the eight -- R11 measured it at 1.27x its own SEM,
+          the weakest margin of the set. No finding.
+
+    THIS IS THE FIRST ROUND THAT ATTACKED A HEADLINE CLAIM AND DID NOT MOVE IT. No ledger row is added
+    for it, because nothing in the artifact was wrong. The two patterns above were caught before they
+    were written down, and a defect caught before shipping is not a defect in the artifact.
+    """
+    import random as _r
+    pe = r1_prior_effects()
+    fa_ = HERE / 'R15_shuffled_scan' / 'results' / 'r15_shuffled_qwen2.5-1.5b.json'
+    fb_ = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    if not (pe and fa_.exists() and fb_.exists()):
+        return None
+    a = json.load(open(fa_))
+    b = json.load(open(fb_))
+    LA = {int(k): v for k, v in a['layers'].items()}
+    LB = {int(k): v for k, v in b['layers'].items()}
+    NH = a['n_heads_per_layer']
+    band = [(x, h) for x in range(14, 28) for h in range(NH)]
+    va = [LA[x]['per_head'][str(h)] for x, h in band]
+    vb = [LB[x]['per_head'][str(h)] for x, h in band]
+    mua, mub = sum(va) / len(va), sum(vb) / len(vb)
+    fa = 2 * math.sqrt(sum((v - mua) ** 2 for v in va) / (len(va) - 1))
+    fb = 2 * math.sqrt(sum((v - mub) ** 2 for v in vb) / (len(vb) - 1))
+    cu = {k: abs(LB[k[0]]['per_head'][str(k[1])] - mub) for k in band}
+    cs = {k: abs(LA[k[0]]['per_head'][str(k[1])] - mua) for k in band}
+    ru = sorted(band, key=lambda k: -cu[k])
+    rs = sorted(band, key=lambda k: -cs[k])
+    RU = {k: ru.index(k) + 1 for k in band}
+    RS = {k: rs.index(k) + 1 for k in band}
+    MID = (len(band) + 1) / 2
+    X = [RU[k] - MID for k in band]
+    Y = [RS[k] - MID for k in band]
+    slope = sum(X[i] * Y[i] for i in range(len(X))) / sum(x * x for x in X)
+    eight = [(int(k[1:k.index('H')]), int(k[k.index('H') + 1:])) for k in pe['effects']]
+    eight = sorted(k for k in eight if 14 <= k[0] < 28)
+
+    def resid(S):
+        return (sum(RS[k] for k in S) / len(S)
+                - (MID + slope * (sum(RU[k] for k in S) / len(S) - MID)))
+
+    obs = resid(eight)
+    rng = _r.Random(11)
+    N = 20000
+    null = [resid(rng.sample(band, len(eight))) for _ in range(N)]
+    pval = sum(1 for v in null if v <= obs) / N
+    rat = sorted((cs[k] / cu[k], k) for k in band if cu[k] > 1e-9)
+    r227 = next(r for r, k in rat if k == (22, 7))
+    return {'floor_unshuffled': fb, 'floor_shuffled': fa, 'floor_ratio': fa / fb,
+            'mid_rank': MID,
+            'n_clear_unshuffled': sum(1 for k in eight if cu[k] > fb),
+            'n_clear_shuffled': sum(1 for k in eight if cs[k] > fa),
+            'rows': [{'head': f'L{x}H{h}', 'cu': cu[(x, h)], 'xf_u': cu[(x, h)] / fb,
+                      'ru': RU[(x, h)], 'cs': cs[(x, h)], 'xf_s': cs[(x, h)] / fa,
+                      'rs': RS[(x, h)], 'num_ratio': cs[(x, h)] / cu[(x, h)]}
+                     for x, h in eight],
+            'regression_slope': slope, 'mean_rank_unshuffled': sum(RU[k] for k in eight) / 8,
+            'mean_rank_shuffled': sum(RS[k] for k in eight) / 8,
+            'predicted_mean_rank': MID + slope * (sum(RU[k] for k in eight) / 8 - MID),
+            'residual': obs, 'null_sd': math.sqrt(sum(v * v for v in null) / N),
+            'p_one_sided': pval, 'n_null': N,
+            'L22H7_num_ratio': r227,
+            'L22H7_percentile': 100 * sum(1 for r, _ in rat if r < r227) / len(rat),
+            'median_num_ratio': rat[len(rat) // 2][0],
+            'iqr_lo': rat[len(rat) // 4][0], 'iqr_hi': rat[3 * len(rat) // 4][0]}
+
+
 def r15():
     """R15 -- the shuffled exhaustive scan. Pre-registered kill: does the head ranking transfer?
 
@@ -2234,6 +2330,7 @@ def main() -> int:
     SV = selection_vs_effect()
     DS = depth_sensitivity()
     R15 = r15()
+    R17 = r17()
     EL = r11()
     PW = power()
     RC = reference_class()
@@ -2242,7 +2339,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -2424,6 +2521,38 @@ def main() -> int:
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
               f"<=5 -- and it is the proven copy head\n")
+
+    if R17:
+        print("R17 is the headline an ARTIFACT of measuring where the FLOOR IS LARGEST?")
+        print(f"      the eight were measured at margin 4.477, the highest configuration available,")
+        print(f"      and the floor is the DENOMINATOR of `x floor`. Shuffled floor is "
+              f"{R17['floor_ratio']:.3f}x of it.")
+        print(f"      {'head':<9}{'UNSH |c|':>10}{'xfloor':>8}{'rank':>6}   {'SHUF |c|':>10}"
+              f"{'xfloor':>8}{'rank':>6}{'num ratio':>11}")
+        for r in R17['rows']:
+            print(f"      {r['head']:<9}{r['cu']:>10.4f}{r['xf_u']:>8.2f}{r['ru']:>6}   "
+                  f"{r['cs']:>10.4f}{r['xf_s']:>8.2f}{r['rs']:>6}{r['num_ratio']:>11.2f}")
+        print(f"      CLEARING THE FLOOR: {R17['n_clear_unshuffled']} of 8 unshuffled -> "
+              f"{R17['n_clear_shuffled']} OF 8 shuffled. The lower floor rescued NOTHING.")
+        print("      -> WORLD 'artifact of the highest-floor configuration' is KILLED\n")
+        print("      two narrative-friendly patterns in that table, both controlled in the same run:")
+        print(f"      (1) seven of eight RISE in rank, mean {R17['mean_rank_unshuffled']:.1f} -> "
+              f"{R17['mean_rank_shuffled']:.1f}. But ranks regress toward the middle "
+              f"({R17['mid_rank']:.1f}) for EVERY")
+        print(f"          head: global slope {R17['regression_slope']:.4f} predicts "
+              f"{R17['predicted_mean_rank']:.1f}, residual {R17['residual']:+.2f}, null sd "
+              f"{R17['null_sd']:.2f}")
+        print(f"          over {R17['n_null']} random 8-head sets, one-sided p = "
+              f"{R17['p_one_sided']:.4f} -> INSIDE THE NULL, no finding")
+        print(f"      (2) L22H7's raw effect more than halves ({R17['L22H7_num_ratio']:.3f}x) and it")
+        print(f"          is the only one of the eight to FALL in rank. But the median band head "
+              f"fell to {R17['median_num_ratio']:.3f}x")
+        print(f"          with IQR {R17['iqr_lo']:.3f}-{R17['iqr_hi']:.3f}, so "
+              f"{R17['L22H7_num_ratio']:.3f} is the {R17['L22H7_percentile']:.1f}th percentile:")
+        print("          inside the IQR, low-normal NOT anomalous -> no finding")
+        print("      THE FIRST ROUND THAT ATTACKED A HEADLINE CLAIM AND DID NOT MOVE IT. No ledger")
+        print("      row: nothing in the artifact was wrong, and a pattern caught before it was")
+        print("      written down is not a defect in the artifact\n")
 
     if R15:
         print("R15 the SHUFFLED exhaustive scan -- the pre-registered kill on head-ranking transfer")
