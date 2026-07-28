@@ -57,13 +57,22 @@ def main() -> int:
     ap.add_argument('--model', default='artifacts/model_qwen2.5-1.5b-instruct')
     ap.add_argument('--tag', default='qwen2.5-1.5b')
     ap.add_argument('--out', default='results/r5_factorial')
+    ap.add_argument('--dtype', default='float32', choices=['float32', 'bfloat16'])
+    ap.add_argument('--max-gpu', default='', help='e.g. 13GiB — spill remaining layers to CPU')
     args = ap.parse_args()
 
     tok = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
-    m = AutoModelForCausalLM.from_pretrained(
-        args.model, trust_remote_code=True, torch_dtype=torch.float32,
-        device_map='cuda' if torch.cuda.is_available() else 'cpu',
-        attn_implementation='eager').eval()
+    load_kw = dict(trust_remote_code=True, torch_dtype=getattr(torch, args.dtype),
+                   attn_implementation='eager')
+    if args.max_gpu and torch.cuda.is_available():
+        # An 8B in bf16 is 15 GB against a 15.5 GB card and OOMs by ~20 MiB with activations.
+        # Spilling the tail layers to CPU keeps the forward hooks intact -- they are registered on
+        # modules, not devices -- and that was verified before trusting any number from such a run:
+        # ablating every head of an OFFLOADED layer moves the logits, so the hooks bite there.
+        load_kw.update(device_map='auto', max_memory={0: args.max_gpu, 'cpu': '40GiB'})
+    else:
+        load_kw.update(device_map='cuda' if torch.cuda.is_available() else 'cpu')
+    m = AutoModelForCausalLM.from_pretrained(args.model, **load_kw).eval()
     m.config.use_cache = False
     NL, NH = m.config.num_hidden_layers, m.config.num_attention_heads
     HD = m.config.hidden_size // NH
@@ -192,7 +201,7 @@ def main() -> int:
 
     res = {'model': args.tag, 'n_items': len(items), 'n_draws': N_DRAWS,
            'mechanism': [list(x) for x in mech], 'mechanism_attn': mech_attn,
-           'mechanism_identified': 'in-run: max final-position attention to the correct room token', 'rooms': ROOMS4, 'cells': cells}
+           'dtype': args.dtype, 'mechanism_identified': 'in-run: max final-position attention to the correct room token', 'rooms': ROOMS4, 'cells': cells}
     Path('results').mkdir(exist_ok=True)
     out = f"{args.out}_{args.tag}.json"
     json.dump(res, open(out, 'w'), indent=2, default=float)
