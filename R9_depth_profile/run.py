@@ -297,10 +297,18 @@ def main():
     n_dead = int((sds < 1e-9).sum())
     rk = lambda a: np.argsort(np.argsort(a)).astype(float)
     rho = float(np.corrcoef(rk(np.arange(NL)), rk(sds))[0, 1])
+    # THE FIT IS IN LOG SPACE, AND THE FIRST VERSION WAS NOT. A straight line through the sham
+    # half's sd values, extrapolated to the band's depth, returned a NEGATIVE predicted sd on two
+    # of four models -- and a standard deviation cannot be negative. The excess ratio then came
+    # out `nan` and the verdict fell through to AMBIGUOUS for a reason that was arithmetic, not
+    # empirical. sd is positive and grows multiplicatively with depth (R4 already established the
+    # floor is a power law in set size), so the trend belongs in log space, where the
+    # extrapolation cannot leave the domain.
     sh = np.arange(sham_lo, sham_hi + 1)
-    a_, b_ = np.polyfit(sh, sds[sham_lo:sham_hi + 1], 1)
+    sh_sd = np.clip(sds[sham_lo:sham_hi + 1], 1e-12, None)
+    a_, b_ = np.polyfit(sh, np.log(sh_sd), 1)
     band_layers = np.arange(lo, hi + 1)
-    pred = float(np.mean(a_ * band_layers + b_))
+    pred = float(np.mean(np.exp(a_ * band_layers + b_)))
     obs = float(np.mean(sds[lo:hi + 1]))
     excess = obs / pred if pred > 0 else float('nan')
     verdict = ('DEPTH-EXPLAINS-IT' if (rho >= 0.7 and excess <= 1.3) else
@@ -330,8 +338,12 @@ def main():
           f"half's own trend  ->  excess {excess:.2f}x")
     print(f"  VERDICT {verdict}")
 
-    Path('results').mkdir(exist_ok=True)
+    # INHERITED FROM R1 AND IT COST A COMPLETED RUN. `Path('results').mkdir` creates a directory
+    # relative to the CWD, which is not where --out points. The first R9 cell did every forward
+    # pass, printed every layer, and then died on the last line with FileNotFoundError. A write
+    # target must be created from the path actually being written.
     out = f"{args.out}_{args.tag}.json"
+    Path(out).parent.mkdir(parents=True, exist_ok=True)
     json.dump(res, open(out, 'w'), indent=2, default=float)
     print(f"  -> {out}")
 

@@ -30,7 +30,28 @@ verdict holds for any threshold up to 4.3× — the chosen 3.0 sits inside that 
 
 2 sd of a random single head in the studied band is **0.442 margin units** — measured in the
 **original** room vocabulary, because that is the vocabulary the eight prior effects were measured
-in and Amendment 2 showed the floor moves when the vocabulary does. Against that, of eight
+in and Amendment 2 showed the floor moves when the vocabulary does.
+
+**The eight are exhibited, not asserted** —
+[`results/prior_effects/`](results/prior_effects/e132b_eight_single_head_effects.json), lifted whole
+from experiment E132b's `drop` field. The set is **defined by that file**, not selected here: E132b
+measured exactly these eight heads, five as read-head *candidates* and one (`L22H7`) as an
+independently proven copy head. They were chosen because they were **expected** to be causal, which
+makes the result stronger rather than weaker.
+
+```
+head       drop     |drop| / floor
+L16H3   -0.4668         1.057    CLEARS  (the only one)
+L17H0   +0.1336         0.302
+L22H7   -0.1317         0.298    <- the independently proven copy head
+L18H9   +0.0410         0.093
+L17H11  +0.0379         0.086
+L19H5   +0.0373         0.084
+L17H7   -0.0352         0.080
+L19H0   +0.0154         0.035
+
+7 of 8 inside the floor · largest clears by 5.7% · base margin 4.477, n=120
+``` Against that, of eight
 previously measured single-head effects, **seven are inside the floor** — including the head an
 earlier experiment had independently proved was the copy head (−0.132, a third of the floor). The
 largest effect in the set clears by 6%.

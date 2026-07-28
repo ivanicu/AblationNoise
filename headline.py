@@ -57,6 +57,19 @@ def r1():
             'ratio_max': max(r['ratio_k1'] for r in inf)}
 
 
+def r1_prior_effects():
+    """The eight single-head effects the front page's first paragraph is about.
+
+    Asserted in prose since the repository was published and shown nowhere -- an outside reader's
+    finding, and a fair one: the claim that made this work worth publishing had no object behind it
+    here. The set is E132b's own `drop` field, so it is defined by the source experiment rather than
+    chosen to fit the floor.
+    """
+    p = HERE / 'R1_noise_floor' / 'results' / 'prior_effects' / \
+        'e132b_eight_single_head_effects.json'
+    return json.load(open(p)) if p.exists() else None
+
+
 def r1_vocabulary():
     """AMENDMENT 2's measurement: the dimensionless floor moves for two reasons.
 
@@ -398,9 +411,11 @@ def main() -> int:
 
     A, B, E = r1(), r2(), r5()
     D, V, S, G, R, E8 = r4(), r1_vocabulary(), r6(), r6_diag(), r7(), r8()
+    PE = r1_prior_effects()
 
     if args.json:
-        print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8},
+        print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
+                          'r1_prior_effects': PE},
                          indent=2, default=float))
         return 0
 
@@ -420,6 +435,15 @@ def main() -> int:
           f"{A['n_informative']} informative models")
     print(f"      baseline margins: " +
           '  '.join(f"{r['model']} {r['base_margin']:.3f}" for r in A['rows']) + "\n")
+    if PE:
+        print(f"R1' the eight prior single-head effects, against the floor of the SAME vocabulary")
+        for h, e in sorted(PE['effects'].items(), key=lambda kv: -kv[1]['abs']):
+            print(f"      {h:<8}{e['drop']:>+9.4f}   {e['frac_of_floor']:>6.3f} of the floor   "
+                  f"{'CLEARS' if not e['inside_floor'] else ''}")
+        print(f"      -> {PE['n_inside']} of {PE['n_total']} inside a floor of "
+              f"{PE['floor_2sd_same_vocabulary']:.4f}; the largest clears by "
+              f"{PE['largest']['clears_floor_by_pct']:.1f}%\n")
+
     if V:
         print("R1' changing ONLY the four answer nouns (Amendment 2)")
         for r in V:
@@ -553,6 +577,8 @@ def main() -> int:
             ('R1 ratio min', A['ratio_min'], 2.74, 0.01),
             ('R1 ratio max', A['ratio_max'], 12.27, 0.01),
             ('R1 informative models', A['n_informative'], 4, 0),
+            ('R1 prior effects inside the floor', PE['n_inside'] if PE else -1, 7, 0),
+            ('R1 prior effects total', PE['n_total'] if PE else -1, 8, 0),
             ('R2 valid cells', B['n_valid'], 4, 0),
             ('R2 inverted', B['n_inverted'], 0, 0),
             ('R5 cells', E['n_cells'], 6, 0),

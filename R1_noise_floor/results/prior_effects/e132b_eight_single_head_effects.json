@@ -1,0 +1,67 @@
+{
+  "source_experiment": "E132b (read-head causal test)",
+  "model": "qwen2.5-1.5b",
+  "vocabulary": "original (pine/gold/rust/frost)",
+  "n_items": 120,
+  "base_margin": 4.476819483439128,
+  "floor_2sd_same_vocabulary": 0.4417733517951077,
+  "floor_provenance": "2 x sd of 30 random single-head band draws, k=1, ORIGINAL vocabulary (r1v1_atlas_qwen2.5-1.5b.json, cells.band_k1.sd)",
+  "note": "The set is defined by the source file, not selected here: E132b measured exactly these eight heads. Five were read-head CANDIDATES, one (L22H7) an independently proven copy head. They were chosen because they were EXPECTED to be causal, which makes the result stronger, not weaker.",
+  "effects": {
+    "L17H7": {
+      "drop": -0.03522834777832031,
+      "abs": 0.03522834777832031,
+      "inside_floor": true,
+      "frac_of_floor": 0.07974303482809222
+    },
+    "L17H11": {
+      "drop": 0.03792446454366048,
+      "abs": 0.03792446454366048,
+      "inside_floor": true,
+      "frac_of_floor": 0.08584597597287774
+    },
+    "L18H9": {
+      "drop": 0.04103991190592448,
+      "abs": 0.04103991190592448,
+      "inside_floor": true,
+      "frac_of_floor": 0.09289811560421732
+    },
+    "L19H0": {
+      "drop": 0.01539751688639323,
+      "abs": 0.01539751688639323,
+      "inside_floor": true,
+      "frac_of_floor": 0.03485388338573786
+    },
+    "L19H5": {
+      "drop": 0.03727041880289714,
+      "abs": 0.03727041880289714,
+      "inside_floor": true,
+      "frac_of_floor": 0.08436547530866682
+    },
+    "L16H3": {
+      "drop": -0.4668108383814494,
+      "abs": 0.4668108383814494,
+      "inside_floor": false,
+      "frac_of_floor": 1.0566749589684485
+    },
+    "L17H0": {
+      "drop": 0.1335561434427897,
+      "abs": 0.1335561434427897,
+      "inside_floor": true,
+      "frac_of_floor": 0.302318242827676
+    },
+    "L22H7": {
+      "drop": -0.1317421754201253,
+      "abs": 0.1317421754201253,
+      "inside_floor": true,
+      "frac_of_floor": 0.29821213725273926
+    }
+  },
+  "n_inside": 7,
+  "n_total": 8,
+  "largest": {
+    "head": "L16H3",
+    "drop": -0.4668108383814494,
+    "clears_floor_by_pct": 5.667495896844854
+  }
+}
