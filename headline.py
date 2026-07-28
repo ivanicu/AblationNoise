@@ -330,6 +330,35 @@ def out_mz(R):
     return '  '.join(f"{r['model'].split('-')[0]} {r['mean_over_zero']:.2f}" for r in R['rows'])
 
 
+def r8():
+    """R8's admissible comparisons — arms whose positive control agrees in sign with `zero`."""
+    rows = []
+    for name, d in load('R8_component/results/r8_component_*.json').items():
+        a = d['arms']
+        z = 1 if a['zero']['positive_control'] >= 0 else -1
+        r = {'model': name, 'order': d['order_low_to_high'],
+             'order_eligible': d['order_eligible'], 'overshoot': d['overshoot_total'],
+             'why_ineligible': d['order_ineligible_because']}
+        for k in ('zero', 'mean', 'constant_only', 'shrink', 'randdir'):
+            r[f'read_{k}'] = a[k]['readability']
+            r[f'ok_{k}'] = bool((1 if a[k]['positive_control'] >= 0 else -1) == z)
+            r[f'pc_{k}'] = a[k]['positive_control']
+        rows.append(r)
+    if not rows:
+        return None
+    cs = [r for r in rows if r['ok_constant_only'] and r['ok_shrink']]
+    cm = [r for r in rows if r['ok_constant_only'] and r['ok_mean']]
+    return {'rows': rows,
+            'n_order_eligible': sum(r['order_eligible'] for r in rows),
+            'n_const_approx_shrink': sum(0.7 <= r['read_constant_only'] / r['read_shrink'] <= 1.43
+                                         for r in cs), 'n_cs': len(cs),
+            'n_mean_lowest': sum(r['read_mean'] < min(r['read_constant_only'], r['read_shrink'])
+                                 for r in cm), 'n_cm': len(cm),
+            'inverted': [f"{r['model']}/{k}" for r in rows
+                         for k in ('mean', 'constant_only', 'shrink', 'randdir')
+                         if not r[f'ok_{k}']]}
+
+
 def r6_diag():
     """The pre-registered separator between 'gentler intervention' and 'nearly the identity'.
 
@@ -368,10 +397,10 @@ def main() -> int:
     args = ap.parse_args()
 
     A, B, E = r1(), r2(), r5()
-    D, V, S, G, R = r4(), r1_vocabulary(), r6(), r6_diag(), r7()
+    D, V, S, G, R, E8 = r4(), r1_vocabulary(), r6(), r6_diag(), r7(), r8()
 
     if args.json:
-        print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R},
+        print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8},
                          indent=2, default=float))
         return 0
 
@@ -504,6 +533,20 @@ def main() -> int:
                   f"{' < '.join(R['readability_order_low_to_high'])}"
                   f"  -- same order in {R['n_cells_matching_order']} of "
                   f"{R['n_cells_total']} cells (within-cell, no ratio, no inclusion rule)")
+
+    if E8:
+        print("\nR8  which COMPONENT of a head's output does the intervention destroy?")
+        print(f"      {'model':<16}{'mean':>8}{'const_only':>12}{'shrink':>9}{'randdir':>9}"
+              f"   overshoot  order-eligible")
+        for r in E8['rows']:
+            f = lambda k: (f"{r[f'read_{k}']:.2f}" + ('' if r[f'ok_{k}'] else '!'))
+            print(f"      {r['model']:<16}{f('mean'):>8}{f('constant_only'):>12}"
+                  f"{f('shrink'):>9}{f('randdir'):>9}{r['overshoot']:>11}"
+                  f"   {r['order_eligible']} {','.join(r['why_ineligible'])}")
+        print(f"      ! = positive control sign-inverted vs the zero arm; that arm is inadmissible")
+        print(f"      constant_only ~ shrink: {E8['n_const_approx_shrink']} of {E8['n_cs']}  |  "
+              f"mean is lowest: {E8['n_mean_lowest']} of {E8['n_cm']}  |  "
+              f"order-eligible {E8['n_order_eligible']} of {len(E8['rows'])} -> gate NOT MET")
 
     if args.check:
         claims = [
