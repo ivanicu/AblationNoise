@@ -208,6 +208,15 @@ def main():
     print(f'  {len(groups)} distinct lengths -> {len(batches)} zero-padding batches '
           f'(max {max(len(b) for b in batches)})')
 
+    # logits_to_keep=1 IS NOT AN OPTIMISATION, IT IS THE DIFFERENCE BETWEEN RUNNING AND NOT.
+    # Without it transformers materialises logits for EVERY position: batch 64 x ~250 tokens x
+    # 151936 vocab x 4 bytes is 9.7 GB, and the full run died at lm_head with
+    # "Tried to allocate 4.38 GiB". The runner only ever reads logits[:, -1], so this changes no
+    # number at all -- but raising --batch from 32 to 64 was called "a pure engineering parameter
+    # that changes no number", and it changed whether the job could run. An engineering parameter
+    # that moves the FEASIBLE SET is not free.
+    # The smoke test could not have caught it: n_base=2 is one batch of 32, about 2.4 GB. A smoke
+    # test that shrinks the batch does not exercise the memory path.
     def encode_batch(idxs):
         return torch.cat([enc[i]['input_ids'] for i in idxs], 0).to(m.device)
 
@@ -263,7 +272,7 @@ def main():
         state['layer'] = None
         for bidx in batches:
             ids = encode_batch(bidx)
-            lg = m(input_ids=ids, use_cache=False).logits[:, -1]
+            lg = m(input_ids=ids, use_cache=False, logits_to_keep=1).logits[:, -1]
             sub, lp = readout(lg)
             c = torch.tensor([order_rooms.index(items[i]['room']) for i in bidx], device=m.device)
             masked = sub.clone()
@@ -308,7 +317,7 @@ def main():
                 nflip = 0
                 with torch.no_grad():
                     for b in prep:
-                        lg = m(input_ids=b['ids'], use_cache=False).logits[:, -1]
+                        lg = m(input_ids=b['ids'], use_cache=False, logits_to_keep=1).logits[:, -1]
                         sub, lp = readout(lg)
                         masked = sub.clone()
                         masked.scatter_(1, b['c'][:, None], float('-inf'))

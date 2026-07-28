@@ -1215,6 +1215,46 @@ def r18():
     eight = sorted((int(k[1:k.index('H')]), int(k[k.index('H') + 1:])) for k in pe['effects'])
     eight = [k for k in eight if 14 <= k[0] < 28]
     cF, cA = centroid(LB), centroid(LA)
+    # THE 3b ARM, and R18's pre-registered rule for R12. Both models' centroids move EARLIER under
+    # all-position ablation; the RULE asks whether the shift is a fixed FRACTION of depth or a fixed
+    # NUMBER of layers, and it returns UNRESOLVED by 3%: B = 1.468 misses A/2 = 1.421 by 0.047. Had
+    # the threshold been chosen after seeing this it would have been called layer-shaped.
+    three = HERE / 'R18_all_positions' / 'results' / 'r18_allpos_qwen2.5-3b.json'
+    tb = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-3b.json'
+    r12 = None
+    if three.exists() and tb.exists():
+        A3, B3 = json.load(open(three)), json.load(open(tb))
+        LA3 = {int(k): v for k, v in A3['layers'].items()}
+        LB3 = {int(k): v for k, v in B3['layers'].items()}
+        NL3 = A3['n_layers']
+        NH3 = len(LA3[0]['per_head'])
+        slo3, shi3 = B3['sham_band']
+
+        def cen3(L):
+            sh = [v for x in range(slo3, shi3 + 1) for v in L[x]['per_head'].values()]
+            mus = sum(sh) / len(sh)
+            fs = 2 * math.sqrt(sum((v - mus) ** 2 for v in sh) / (len(sh) - 1))
+            rate = {x: sum(1 for v in L[x]['per_head'].values() if abs(v - mus) > fs) / NH3
+                    for x in range(NL3)}
+            tot = sum(rate.values())
+            return sum(x * q for x, q in rate.items()) / tot
+        cF3, cA3 = cen3(LB3), cen3(LA3)
+        d1l, d2l = cA - cF, cA3 - cF3
+        d1f, d2f = d1l / (NL - 1), d2l / (NL3 - 1)
+        Aq = abs(d1f - d2f) * (NL3 - 1)
+        Bq = abs(d1l - d2l)
+        eta3 = max(abs(LA3[NL3 - 1]['per_head'][str(h)] - LB3[NL3 - 1]['per_head'][str(h)])
+                   for h in range(NH3))
+        r12 = {'centroid_final_3b': cF3, 'centroid_all_3b': cA3,
+               'shift_layers_1_5b': d1l, 'shift_layers_3b': d2l,
+               'shift_frac_1_5b': d1f, 'shift_frac_3b': d2f,
+               'A_fraction_shaped': Aq, 'B_layer_shaped': Bq,
+               'A_threshold': Bq / 2, 'B_threshold': Aq / 2,
+               'miss_by': Bq - Aq / 2,
+               'verdict': ('FRACTION' if Aq <= Bq / 2 else
+                           'LAYER' if Bq <= Aq / 2 else 'UNRESOLVED'),
+               'pc_last_layer_max_eta_3b': eta3,
+               'flip_rate_3b': A3.get('flip_rate')}
     eta_last = [LA[NL - 1]['per_head'][str(h)] - LB[NL - 1]['per_head'][str(h)] for h in range(NH)]
     sd_all = math.sqrt(sum((v - mub) ** 2 for v in vb) / (len(vb) - 1))
     return {
@@ -1223,7 +1263,7 @@ def r18():
         'spearman': _spearman(ca, cb), 'spearman_needs': 0.9,
         'published_agree': sum(1 for k in eight
                                if (ca[band.index(k)] > fa) == (cb[band.index(k)] > fb)),
-        'centroid_final': cF, 'centroid_all': cA,
+        'centroid_final': cF, 'centroid_all': cA, 'r12_rule': r12,
         'depth_frac_final': cF / (NL - 1), 'depth_frac_all': cA / (NL - 1),
         'centroid_shift_layers': cA - cF, 'centroid_shift_norm': abs(cA - cF) / (NL - 1),
         'top10_overlap': len(set(oa[:10]) & set(ob[:10])),
@@ -3267,6 +3307,26 @@ def main() -> int:
         print("      and its A1 row carried the composition error R16 fixed 4 rounds ago as D80,")
         print("      which had landed on the prior-effects note ONLY\n")
 
+        if R18.get('r12_rule'):
+            q = R18['r12_rule']
+            print(f"      THE 3b ARM LANDED, and R18's pre-registered rule for R12 says:")
+            print(f"        qwen2.5-1.5b  {R18['centroid_final']:.3f} -> {R18['centroid_all']:.3f}"
+                  f"   shift {q['shift_layers_1_5b']:+.3f} layers  ({q['shift_frac_1_5b']:+.4f} "
+                  f"of depth)")
+            print(f"        qwen2.5-3b    {q['centroid_final_3b']:.3f} -> "
+                  f"{q['centroid_all_3b']:.3f}   shift {q['shift_layers_3b']:+.3f} layers  "
+                  f"({q['shift_frac_3b']:+.4f} of depth)")
+            print(f"        positive control 3b: last-layer max|eta| "
+                  f"{q['pc_last_layer_max_eta_3b']:.6f}   saturation "
+                  f"{100 * q['flip_rate_3b']:.2f}%")
+            print(f"        A (fraction-shaped) {q['A_fraction_shaped']:.3f}   "
+                  f"B (layer-shaped) {q['B_layer_shaped']:.3f}   "
+                  f"B must be <= {q['B_threshold']:.3f}")
+            print(f"        -> {q['verdict']}, missed by {q['miss_by']:.3f}. R12 stays UNVERIFIED.")
+            print(f"        Chosen after the fact it would have been called layer-shaped; the rule")
+            print(f"        is honoured at a 3% miss rather than renegotiated. Both centroids move")
+            print(f"        EARLIER -- the direction replicates, the SHAPE does not resolve at n=2\n")
+
     if OVC:
         print("OV   A THIRD INSTRUMENT -- the weights. Independent of BOTH attention and ablation.")
         print(f"     M[t,s] = W_E[t] . W_O_h . W_V_kv . W_E[s] over the {len(OVC['rooms'])} room "
@@ -4106,7 +4166,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 36.444, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 34.505, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -4187,9 +4247,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 108, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 109, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 27, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.333, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.257, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

@@ -117,6 +117,30 @@ on `qwen2.5-3b`, which is [`pueue 232`, running now](PREREGISTRATION.md). If the
 absolute. **Until that lands, `R12` stays `UNVERIFIED`**, and the direction of this shift is
 suggestive of nothing on its own — `n=1` model.
 
+### `qwen2.5-3b` landed, and the pre-registered rule returns `UNRESOLVED` — by `3%`
+
+```
+                 centroid final -> all      shift (layers)     shift (depth fraction)
+qwen2.5-1.5b         17.235 -> 12.600           -4.635               -0.1717
+qwen2.5-3b           22.833 -> 19.667           -3.167               -0.0905
+
+positive control, 3b:  last-layer max |eta| = 0.000000        saturation 0.13%
+
+A = |Δfrac₁.₅ᵦ − Δfrac₃ᵦ| × 35 = 2.841     "fraction-shaped" if A ≤ B/2
+B = |Δlay₁.₅ᵦ  − Δlay₃ᵦ|       = 1.468     "layer-shaped"    if B ≤ A/2 = 1.421
+```
+
+**`B = 1.468` misses `A/2 = 1.421` by `0.047`.** The shift is **more** layer-like than fraction-like,
+but not by the margin committed before the run — so the verdict is **`UNRESOLVED` and `R12` stays
+`UNVERIFIED`**.
+
+> **Had the threshold been chosen after seeing this, it would have been called layer-shaped.** That
+> is what a pre-registration is for, and it is being honoured at a `3%` miss rather than renegotiated.
+
+**What is consistent across both models, under `UNRESOLVED`:** the centroid moves **earlier** under
+all-position ablation, by `4.6` and `3.2` layers. The direction replicates; the *shape* of the
+dependence does not resolve at `n=2` models.
+
 ## What R18 does not claim
 
 * **One model, one task, one vocabulary, `n=120` items, `k=1`.** The ranking comparison is over the
