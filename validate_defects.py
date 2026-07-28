@@ -11,6 +11,13 @@ fails, is not.
 exact false all-clear cost this project's sibling a day. The predicate is
 `git merge-base --is-ancestor`.
 
+AND THAT PREDICATE IS THREE-VALUED, which the first version got wrong in the file whose whole job
+is to enforce that it is not. Run from a `git archive` tarball -- which is exactly what a GitHub
+ZIP download is -- it printed "commit abe158b is not an ancestor of HEAD" for all 22 rows and
+failed the build. The sentence is false: there was no repository to check against. A missing
+instrument reported as a failed test, on the flagship command, for the most common way people
+obtain code.
+
     python3 validate_defects.py            validate and score
     python3 validate_defects.py --json     machine-readable
 """
@@ -32,9 +39,34 @@ W_B = "THIRTEEN-ONE-OFFS"
 W_C = "ONE-JOINT-DOMINATES"
 
 
-def ancestor(sha: str) -> bool:
-    return subprocess.run(['git', 'merge-base', '--is-ancestor', sha, 'HEAD'],
-                          cwd=str(HERE), capture_output=True).returncode == 0
+def in_git_worktree() -> bool:
+    r = subprocess.run(['git', 'rev-parse', '--is-inside-work-tree'],
+                       cwd=str(HERE), capture_output=True, text=True)
+    return r.returncode == 0 and r.stdout.strip() == 'true'
+
+
+def ancestry(sha: str) -> str:
+    '''CONFIRMED / OVERTURNED / UNVERIFIED -- three-valued, because two of these are not failures.
+
+    THE FIRST VERSION FOLDED UNVERIFIED INTO OVERTURNED, in the file whose job is to enforce the
+    rule against exactly that. Run from a `git archive` tarball -- which is what a GitHub ZIP
+    download is -- it printed `commit abe158b is not an ancestor of HEAD` twenty-two times. That
+    sentence is FALSE. The truth is "there is no repository here, so I could not check", and the
+    difference between those is this repository's cardinal law.
+
+    Worse than wrong: it fired on the FLAGSHIP command for the most common way people get code.
+    '''
+    if not in_git_worktree():
+        return 'UNVERIFIED'
+    r = subprocess.run(['git', 'cat-file', '-e', sha + '^{commit}'],
+                       cwd=str(HERE), capture_output=True)
+    if r.returncode != 0:
+        # The object is absent -- a shallow clone, or history rewritten downstream. Still not a
+        # statement about the row.
+        return 'UNVERIFIED'
+    ok = subprocess.run(['git', 'merge-base', '--is-ancestor', sha, 'HEAD'],
+                        cwd=str(HERE), capture_output=True).returncode == 0
+    return 'CONFIRMED' if ok else 'OVERTURNED'
 
 
 def main() -> int:
@@ -46,12 +78,17 @@ def main() -> int:
     rows = d['defects']
 
     # --- the admission rule, enforced ------------------------------------------------------
-    bad = []
+    bad, unver = [], []
+    have_git = in_git_worktree()
     for r in rows:
         if r['bin'] not in BINS:
             bad.append((r['id'], f"bin {r['bin']!r} is not one of the pre-registered bins"))
-        if not ancestor(r['commit']):
-            bad.append((r['id'], f"commit {r['commit']} is not an ancestor of HEAD"))
+        v = ancestry(r['commit'])
+        if v == 'OVERTURNED':
+            bad.append((r['id'], f"commit {r['commit']} resolves here but is NOT an ancestor "
+                                 f"of HEAD -- the row points at unreachable history"))
+        elif v == 'UNVERIFIED':
+            unver.append(r['id'])
     ids = [r['id'] for r in rows]
     if len(set(ids)) != len(ids):
         bad.append(('-', 'duplicate ids'))
@@ -79,7 +116,9 @@ def main() -> int:
         verdict = 'AMBIGUOUS'
 
     found = Counter(r['found_by'] for r in rows)
-    out = {'n_defects': len(rows), 'bins': dict(c), 'unclassified': unc,
+    out = {'n_defects': len(rows), 'git_available': have_git,
+           'n_ancestry_unverified': len(unver),
+           'bins': dict(c), 'unclassified': unc,
            'n_bins_with_ge2': n_ge2, 'largest_bin': top, 'verdict': verdict,
            'found_by': dict(found), 'invalid_rows': bad}
 
@@ -87,8 +126,16 @@ def main() -> int:
         print(json.dumps(out, indent=2))
         return 1 if bad else 0
 
-    print(f"  {len(rows)} defects, every one resolved to a commit that is an ancestor of HEAD"
-          if not bad else f"  {len(rows)} defects, {len(bad)} INVALID")
+    if not have_git:
+        print(f"  {len(rows)} defects. ANCESTRY CHECK UNVERIFIED on all {len(unver)} rows: this is "
+              f"not a git work tree\n  (a ZIP download or `git archive` tarball). That is a "
+              f"statement about the ENVIRONMENT, not about the rows --\n  UNVERIFIED is not "
+              f"OVERTURNED, and it does not fail the build. Clone the repository to check them.")
+    elif bad:
+        print(f"  {len(rows)} defects, {len(bad)} INVALID")
+    else:
+        print(f"  {len(rows)} defects, every one confirmed reachable from HEAD"
+              + (f" ({len(unver)} UNVERIFIED)" if unver else ""))
     for i, why in bad:
         print(f"    INVALID {i}: {why}")
     print()

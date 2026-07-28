@@ -218,6 +218,10 @@ is an ancestor of `HEAD`. Not a table in a README: a hand-written ledger is a se
 python3 validate_defects.py
 ```
 
+Downloaded the ZIP rather than cloning? The ancestry check reports **UNVERIFIED** and says so —
+it does not fail, and it does not claim the rows are wrong. There is no repository to check
+against, which is a fact about your directory and not about the ledger.
+
 ```
     INTERVENTION    2      what the operation physically writes / where / when
     CONTROL         4      what the control arm actually holds fixed
