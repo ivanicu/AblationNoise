@@ -72,3 +72,20 @@ afterwards. One cell cleared on the first model and four of six across three.
 
 **A consistency check that passed.** The in-run identification rule reproduced the previously
 established copy head exactly on the 1.5B, agreeing with an experiment that used a different method.
+
+## A fourth family was attempted and abandoned, and the reason is a scope statement
+
+An 8B cell was launched (bf16, tail layers spilled to CPU on a 16 GB card) and **killed after 23
+minutes without completing the item set**. R5's design is 4 cells × (1 baseline + 1 effect + 30
+null draws + 1 positive control) × 90 items ≈ **12,000 forward passes**; with weights streaming
+from CPU each pass costs seconds, which puts the cell in the tens of hours.
+
+**It was not shrunk to fit.** Cutting the draw count or the item count would change the estimator
+mid-round — R5's pre-registration contains no reduction clause, and the number that would come back
+is a floor measured with a different instrument than the three cells beside it. So the honest
+statement is the one recorded here: **on this hardware, R5's design does not extend to an 8B with
+offload.** Adding that family requires either a card that holds the model or a pre-registered
+reduction declared before the run, not after seeing how long it takes.
+
+R1's k=1 arm *did* run on the 8B, because it is one set size rather than four cells, and llama-3.1-8b
+therefore appears in R1 and not here.
