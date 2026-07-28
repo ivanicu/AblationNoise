@@ -630,6 +630,98 @@ def adversary_scoring():
                                                   'R18']}
 
 
+def selection_overlap():
+    """THE EIGHT WERE SELECTED, EVALUATED AND AUDITED ON THE SAME ITEMS. Established from source.
+
+        e132_read_head.py:29        SEEDS = list(range(3000, 3300))   <- head SELECTION
+        e132b_read_head_causal.py:27 SEEDS = list(range(3000, 3300))  <- causal EVALUATION of the 8
+        R10_exhaustive/run.py:72     SEEDS = list(range(3000, 3400))  <- THIS AUDIT, first 120
+        R11 set B                          range(3400, 3800)          <- the ONLY independent items
+
+    All three take the first items that pass the same baseline-correct filter starting from seed
+    3000, and R14 measured that filter as rejecting nothing on this task for this model. So the
+    selection set, the evaluation set and the audit set are the SAME 120 ITEMS. Winner's curse is
+    maximal and nothing in this repository had said so.
+
+    IT CUTS BOTH WAYS AND BOTH ARE STATED. The "not enriched" null is STRENGTHENED -- the eight fail
+    to beat matched-layer random on the very data they were chosen on, with full home advantage. But
+    every head-level number here except R11's set B is computed on the data the heads were selected
+    on, which is a scope on all of it.
+
+    THE SHRINKAGE TEST, on the only independent items available:
+
+        aggregation          the eight   matched-layer null median      p (shrink more)
+        sum-ratio               0.8425             1.0180                  0.0150
+        mean-of-ratios          0.8257             1.0085                  0.0098
+        median-of-ratios        0.9919             1.0135                  0.2769
+
+    TWO OF THREE FIRE AND THE MEDIAN DOES NOT, so the aggregation is reported rather than chosen:
+    L16H3 and L22H7 carry 75% of sum|c_A|, which makes the sum-ratio essentially a two-head
+    statistic. THE SET-LEVEL WINNER'S CURSE IS NOT A SET PROPERTY. It is one head.
+
+    L22H7 ALONE retains 0.0401 of its centred effect on independent items -- the LOWEST of all 168
+    band heads, 0.0th percentile, exact one-head p = 0.0118. Its own eleven layer-mates retain 0.59
+    to 1.22. That is what the rank move 41 -> 160 was, and it now has a name: the one head in this
+    repository with an independently established prior claim shows the strongest selection
+    inflation. Identifying it needs no peeking -- "the head with a prior claim" is specified by role,
+    not by the table -- but the threshold was not pre-registered and the reading is post hoc.
+
+    RTM CONTROL: regression to the mean shrinks whatever was extreme, and the eight are BELOW the
+    matched-layer null median on set A. So RTM predicts they shrink LESS than random, and the
+    observed direction runs against that prediction rather than being explained by it.
+    """
+    import random as _r
+    import statistics as _st
+    a = HERE / 'R11_instrument_noise' / 'results' / 'r11_itemsA_qwen2.5-1.5b.json'
+    b = HERE / 'R11_instrument_noise' / 'results' / 'r11_itemsB_qwen2.5-1.5b.json'
+    pe = r1_prior_effects()
+    if not (a.exists() and b.exists() and pe):
+        return None
+    A, B = json.load(open(a)), json.load(open(b))
+    LA = {int(k): v for k, v in A['layers'].items()}
+    LB = {int(k): v for k, v in B['layers'].items()}
+    NH = len(LA[14]['per_head'])
+    band = [(x, h) for x in range(14, 28) for h in range(NH)]
+    by_layer = {}
+    for k in band:
+        by_layer.setdefault(k[0], []).append(k)
+    va = {k: LA[k[0]]['per_head'][str(k[1])] for k in band}
+    vb = {k: LB[k[0]]['per_head'][str(k[1])] for k in band}
+    mua = sum(va.values()) / len(va)
+    mub = sum(vb.values()) / len(vb)
+    ca = {k: abs(va[k] - mua) for k in band}
+    cb = {k: abs(vb[k] - mub) for k in band}
+    eight = sorted((int(k[1:k.index('H')]), int(k[k.index('H') + 1:])) for k in pe['effects'])
+    eight = [k for k in eight if 14 <= k[0] < 28]
+    N = 50000
+    aggs = {
+        'sum_ratio': lambda S: sum(cb[k] for k in S) / max(1e-12, sum(ca[k] for k in S)),
+        'mean_of_ratios': lambda S: sum(cb[k] / max(1e-12, ca[k]) for k in S) / len(S),
+        'median_of_ratios': lambda S: _st.median([cb[k] / max(1e-12, ca[k]) for k in S])}
+    out = {}
+    for nm, f in aggs.items():
+        t = f(eight)
+        rng = _r.Random(41)
+        null = sorted(f([rng.choice(by_layer[k[0]]) for k in eight]) for _ in range(N))
+        out[nm] = {'observed': t, 'null_median': null[N // 2],
+                   'p': (1 + sum(1 for z in null if z <= t)) / (1 + N)}
+    ret = sorted(cb[k] / max(1e-12, ca[k]) for k in band if ca[k] > 1e-9)
+    r227 = cb[(22, 7)] / ca[(22, 7)]
+    return {
+        'selection_seeds': [3000, 3300], 'audit_seeds': [3000, 3400],
+        'independent_seeds': [3400, 3800], 'same_item_set': True,
+        'aggregations': out, 'n_replicates': N,
+        'top2_share_of_sum': (ca[(16, 3)] + ca[(22, 7)]) / sum(ca[k] for k in eight),
+        'L22H7_retention': r227,
+        'L22H7_percentile': 100 * sum(1 for z in ret if z < r227) / len(ret),
+        'L22H7_one_head_p': (1 + sum(1 for z in ret if z <= r227)) / (1 + len(ret)),
+        'band_median_retention': ret[len(ret) // 2],
+        'L22_layermates': sorted(round(cb[k] / max(1e-12, ca[k]), 2)
+                                 for k in by_layer[22] if k != (22, 7)),
+        'per_head': [{'head': f'L{x}H{h}', 'a': ca[(x, h)], 'b': cb[(x, h)],
+                      'retention': cb[(x, h)] / max(1e-12, ca[(x, h)])} for x, h in eight]}
+
+
 def set_enrichment():
     """THE TEST THIS PROJECT SHOULD HAVE RUN FIRST: are the eight ENRICHED against MATCHED random?
 
@@ -2646,6 +2738,7 @@ def main() -> int:
     R17 = r17()
     R18 = r18()
     SE = set_enrichment()
+    SO = selection_overlap()
     AS = adversary_scoring()
     EL = r11()
     PW = power()
@@ -2655,7 +2748,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -2871,6 +2964,33 @@ def main() -> int:
               f"{' '.join(AS['rounds_uncovered_before_this_step'])} -- now extended, A9-A13")
         print("      and its A1 row carried the composition error R16 fixed 4 rounds ago as D80,")
         print("      which had landed on the prior-effects note ONLY\n")
+
+    if SO:
+        print("SEL  THE EIGHT WERE SELECTED, EVALUATED AND AUDITED ON THE SAME ITEMS -- from source")
+        print(f"       e132_read_head.py:29         SEEDS = range(3000, 3300)   head SELECTION")
+        print(f"       e132b_read_head_causal.py:27 SEEDS = range(3000, 3300)   causal EVALUATION")
+        print(f"       R10_exhaustive/run.py:72     SEEDS = range(3000, 3400)   THIS AUDIT")
+        print(f"       R11 set B                          range(3400, 3800)     the ONLY "
+              f"independent items in the project")
+        print(f"     Winner's curse is MAXIMAL, and nothing here had said so. It cuts both ways:")
+        print(f"     the `not enriched` null is STRENGTHENED (they fail on their own home data), and")
+        print(f"     every head number here except set B is computed on the data they were CHOSEN on")
+        print(f"     shrinkage on the only independent items:")
+        print(f"       {'aggregation':<18}{'the eight':>11}{'null median':>13}{'p':>10}")
+        for nm, d_ in SO['aggregations'].items():
+            print(f"       {nm:<18}{d_['observed']:>11.4f}{d_['null_median']:>13.4f}{d_['p']:>10.4f}")
+        print(f"     TWO OF THREE FIRE, THE MEDIAN DOES NOT -- reported, not chosen. L16H3 and L22H7")
+        print(f"     carry {100 * SO['top2_share_of_sum']:.0f}% of sum|c_A|, so the sum-ratio is a "
+              f"two-head statistic. The set-level")
+        print(f"     winner's curse IS NOT A SET PROPERTY. It is one head.")
+        print(f"     L22H7 alone retains {SO['L22H7_retention']:.4f} -- the LOWEST of all 168 band "
+              f"heads, {SO['L22H7_percentile']:.1f}th percentile,")
+        print(f"     exact one-head p = {SO['L22H7_one_head_p']:.4f}; band median retention "
+              f"{SO['band_median_retention']:.2f}; its own layer-mates {SO['L22_layermates']}")
+        print(f"     THAT IS WHAT THE RANK MOVE 41 -> 160 WAS, and it now has a name.")
+        print(f"     RTM control: the eight are BELOW the null median on set A, so regression to the")
+        print(f"     mean predicts they shrink LESS than random -- the observed direction runs")
+        print(f"     AGAINST that prediction rather than being explained by it\n")
 
     if SE:
         print("SET  ARE THE EIGHT ENRICHED AGAINST MATCHED-LAYER RANDOM SETS?  -- the test this")
@@ -3558,7 +3678,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 27.733, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 28.275, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -3639,9 +3759,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 90, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 91, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 24, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.889, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.791, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

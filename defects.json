@@ -819,6 +819,15 @@
       "defect": "the repository quotes '100 positive, 68 negative of 168' to characterise the band's sign distribution, and that split is RAW. Every verdict here uses the CENTRED statistic, and centred on the band mean +0.0479 the split is 64 above and 104 below. The qualitative reading INVERTS: raw says 'ablation hurts more often than it helps', centred says 'most heads are LESS harmful than the average head'",
       "operation": "BOTH ARE TRUE OF DIFFERENT QUANTITIES AND ONLY ONE MATCHES THE ANALYSIS. Annotated in place at both sites rather than replaced, because the raw split is what the sign-matters argument was originally built on and deleting it would hide that the argument was made on a different quantity from the one the tests use. The centred counts are now emitted so either can be checked",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D91",
+      "round": "repo",
+      "bin": "SCOPE",
+      "commit": "663ca88",
+      "defect": "the eight heads were SELECTED, causally EVALUATED and then AUDITED on the same 120 items, and nothing in this repository said so. From source: e132_read_head.py:29 uses SEEDS = range(3000,3300) for selection, e132b_read_head_causal.py:27 uses the same range for the causal evaluation, and R10_exhaustive/run.py:72 uses range(3000,3400) taking the first 120 that pass the same baseline-correct filter -- which R14 measured as rejecting nothing on this task for this model. R11's set B, range(3400,3800), is the ONLY independent item set in the entire project",
+      "operation": "IT CUTS BOTH WAYS AND BOTH ARE NOW STATED. The 'not enriched' null is STRENGTHENED: the eight fail to beat matched-layer random sets on the very data they were chosen on, with full home advantage. But every head-level number here except set B is computed on the selection data, which is a scope on all of it. THE SHRINKAGE TEST ON THE INDEPENDENT ITEMS: sum-ratio 0.8425 against a matched-layer null median of 1.0180, p 0.0150; mean-of-ratios 0.8257 against 1.0085, p 0.0098; MEDIAN-of-ratios 0.9919 against 1.0135, p 0.2769. Two of three fire and the median does not, so all three are reported rather than one being chosen -- L16H3 and L22H7 carry 75% of sum|c_A|, which makes the sum-ratio essentially a two-head statistic. THE SET-LEVEL WINNER'S CURSE IS NOT A SET PROPERTY: L22H7 alone retains 0.0401 of its centred effect on independent items, the lowest of all 168 band heads at the 0.0th percentile, exact one-head p 0.0118, against a band median retention of 1.02 and its own eleven layer-mates at 0.59 to 1.22. That is what the rank move 41 -> 160 was. RTM control: the eight are BELOW the matched-layer null median on set A, so regression to the mean predicts they shrink LESS than random and the observed direction runs against that prediction rather than being explained by it",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

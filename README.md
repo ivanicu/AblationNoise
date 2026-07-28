@@ -42,6 +42,58 @@ git clone https://github.com/ivanicu/AblationNoise.git && cd AblationNoise && ma
 network, no dependencies, `2.6 s` on a stock `python3` with `numpy` confirmed absent. It was run
 from a fresh clone of this remote on 2026-07-28, not asserted.
 
+### The eight were **selected, evaluated and audited on the same `120` items**
+
+Established from the source project, not from memory:
+
+```
+e132_read_head.py:29           SEEDS = range(3000, 3300)     head SELECTION
+e132b_read_head_causal.py:27   SEEDS = range(3000, 3300)     causal EVALUATION of the eight
+R10_exhaustive/run.py:72       SEEDS = range(3000, 3400)     THIS AUDIT, first 120 that pass
+R11 set B                            range(3400, 3800)       the ONLY independent items here
+```
+
+All three take the first items passing the same baseline-correct filter from seed `3000`, and
+[R14](R14_position_vs_binding/) measured that filter as rejecting **nothing** on this task for this
+model. **So selection, evaluation and audit share one item set.** Nothing in this repository had
+said so.
+
+**It cuts both ways and both are stated.** The *not enriched* null is **strengthened** — the eight
+fail to beat matched-layer random sets on the very data they were chosen on, with full home
+advantage. But **every head-level number here except set B is computed on the selection data.**
+
+**On the only independent items, the shrinkage depends on the aggregation, so all three are
+reported:**
+
+```
+aggregation           the eight   matched-layer null median      p
+sum-ratio                0.8425            1.0180            0.0150
+mean-of-ratios           0.8257            1.0085            0.0098
+median-of-ratios         0.9919            1.0135            0.2769
+```
+
+**Two of three fire; the median does not.** `L16H3` and `L22H7` carry `75%` of `sum|c_A|`, which
+makes the sum-ratio essentially a two-head statistic. **The set-level winner's curse is not a set
+property — it is one head:**
+
+```
+L22H7 retains 0.0401 of its centred effect on independent items
+    lowest of all 168 band heads, 0.0th percentile, exact one-head p = 0.0118
+    band median retention  1.02
+    its own layer-mates    0.59 0.94 1.00 1.01 1.03 1.05 1.10 1.10 1.10 1.17 1.22
+```
+
+**That is what the rank move `41 → 160` was, and it now has a name.** The one head here with an
+independently established prior claim shows the strongest selection inflation.
+
+> **RTM control:** regression to the mean shrinks whatever was extreme, and the eight sit **below**
+> the matched-layer null median on set A. So RTM predicts they shrink *less* than random, and the
+> observed direction runs **against** that prediction rather than being explained by it.
+>
+> **The threshold was not pre-registered and the reading is post hoc.** Identifying `L22H7` needs no
+> peeking — *"the head with a prior claim"* is specified by role, not by the table — but this is a
+> descriptive result, not a confirmatory one.
+
 ### The right test, run last: **the eight are not enriched, and they sit below the median**
 
 Every earlier round compared each head, one at a time, against a **scalar** floor. That asks the
