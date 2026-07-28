@@ -1,0 +1,146 @@
+{
+  "schema": {
+    "id": "stable identifier",
+    "defect": "one sentence: what the LABEL said",
+    "operation": "one sentence: what the OPERATION actually did",
+    "bin": "INTERVENTION | CONTROL | STATISTIC | SCOPE | PROVENANCE | UNCLASSIFIED",
+    "commit": "SHA in this repository, must be an ancestor of HEAD",
+    "found_by": "instrument | outside_reader | author_writing_it_up | author_reading_the_object",
+    "round": "which round it was found in or about"
+  },
+  "note": "Bins were fixed in DEFECT_TAXONOMY_PREREGISTRATION.md before any row was written. UNCLASSIFIED is not a dumping ground; it is the pre-registered test of whether the bin set carves anything.",
+  "defects": [
+    {
+      "id": "D01", "round": "R4", "bin": "STATISTIC", "commit": "abe158b",
+      "defect": "the pre-registration 'fixed the estimator'",
+      "operation": "it fixed the gate and the target and left the predictor set a class; 60 of 324 admissible estimators return the opposite verdict",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D02", "round": "R4", "bin": "PROVENANCE", "commit": "abe158b",
+      "defect": "leave-one-model-out fold errors 2.2 / 5.0 / 10.5 / 18.7 / 155.9x",
+      "operation": "quoted from a commit message; the analysis was never saved as a script and no reconstruction over 324 feature sets exceeds 15.6x",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D03", "round": "R5", "bin": "PROVENANCE", "commit": "778110f",
+      "defect": "'the floor widens 2.4-5.2x while the effect changes 0.90-1.94x'",
+      "operation": "neither range reproduces under any floor definition; both quoted from a commit message",
+      "found_by": "instrument"
+    },
+    {
+      "id": "D04", "round": "R5", "bin": "STATISTIC", "commit": "778110f",
+      "defect": "the main results table's column is 'effect / floor'",
+      "operation": "two rows are |eff|/sd, two are |eff|/(p10-p90), two are neither -- three quantities under one column heading",
+      "found_by": "instrument"
+    },
+    {
+      "id": "D05", "round": "R1", "bin": "PROVENANCE", "commit": "778110f",
+      "defect": "Amendment 2's -18% raw sd / +11% floor",
+      "operation": "the original-vocabulary run was not checked into the repository, so nothing here could produce them",
+      "found_by": "instrument"
+    },
+    {
+      "id": "D06", "round": "R2", "bin": "PROVENANCE", "commit": "2f20f67",
+      "defect": "the sd column read 0.029 for qwen2.5-3b and 0.091 for llama-3.1-8b",
+      "operation": "true values 0.028 and 0.090; the first appears copied from the row above it",
+      "found_by": "instrument"
+    },
+    {
+      "id": "D07", "round": "R2", "bin": "PROVENANCE", "commit": "2f20f67",
+      "defect": "the table showed a null median and IQR per model",
+      "operation": "those result files predate the runner's percentile keys; the table rendered values the JSON did not contain",
+      "found_by": "instrument"
+    },
+    {
+      "id": "D08", "round": "R1", "bin": "PROVENANCE", "commit": "2f20f67",
+      "defect": "'2 sd of a random single head is 0.442 margin units' -- the floor the whole 'seven of eight' claim is measured against",
+      "operation": "no generator emitted it, and its provenance (the ORIGINAL room vocabulary, not the shipped one) was invisible",
+      "found_by": "instrument"
+    },
+    {
+      "id": "D09", "round": "R6", "bin": "STATISTIC", "commit": "f340317",
+      "defect": "ratio_k1 = band floor / sham floor is the pre-registered statistic",
+      "operation": "the sham arm sits in early layers where an on-distribution write is near-identity; its sd collapses 547x and the ratio divides by it, reporting up to 2133x",
+      "found_by": "instrument"
+    },
+    {
+      "id": "D10", "round": "R6", "bin": "INTERVENTION", "commit": "39fe2f3",
+      "defect": "mean- and resample-ablation are GENTLER interventions than zeroing",
+      "operation": "they displace the residual stream by 14-27% of what zeroing does -- three magnitudes, not three kinds",
+      "found_by": "instrument"
+    },
+    {
+      "id": "D11", "round": "R7", "bin": "UNCLASSIFIED", "commit": "750d258",
+      "defect": "'randdir separates D from M, the arm R6 did not have'",
+      "operation": "D and M have IDENTICAL prediction rows; randdir separates {D,M} from S and does nothing between D and M",
+      "found_by": "author_writing_it_up"
+    },
+    {
+      "id": "D12", "round": "R8", "bin": "UNCLASSIFIED", "commit": "6cda5f8",
+      "defect": "world F ('being off the manifold matters') predicts constant_only ~ mean",
+      "operation": "mean writes mu, ON the manifold; constant_only writes off it. The row was derived from the world's NAME and from a label carried over from R7",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D13", "round": "R7/R8", "bin": "CONTROL", "commit": "1bea2e5",
+      "defect": "pc_clears_own_floor means the positive control is live",
+      "operation": "|PC| > band sd -- magnitude only. randdir's control is sign-INVERTED on 7 of 7 cells across two rounds and passed every time",
+      "found_by": "outside_reader"
+    },
+    {
+      "id": "D14", "round": "repo", "bin": "CONTROL", "commit": "1bea2e5",
+      "defect": "this repository detects wrong-signed positive controls -- detectors/control_fitness.py",
+      "operation": "zero callers outside its own file; the detector was dead code while the defect it was written for ran in the data",
+      "found_by": "outside_reader"
+    },
+    {
+      "id": "D15", "round": "R1", "bin": "STATISTIC", "commit": "1bea2e5",
+      "defect": "'which component you ablate explains 2.7-12.3x more VARIANCE'",
+      "operation": "the statistic is a ratio of standard deviations; the variance ratio is the square, 7.5-151x",
+      "found_by": "outside_reader"
+    },
+    {
+      "id": "D16", "round": "R6/R7", "bin": "SCOPE", "commit": "1bea2e5",
+      "defect": "'R6 and R7 stopped because the mean arm's positive control failed'",
+      "operation": "true of phi, false of internlm2, which was dropped by the ZERO arm's ratio_k1 = 0.98 -- two exclusion reasons collapsed into one, sixty lines after the same file stated both correctly",
+      "found_by": "outside_reader"
+    },
+    {
+      "id": "D17", "round": "R1", "bin": "CONTROL", "commit": "4571031",
+      "defect": "internlm2 is 'EXCLUDED by its own sham control' -- the instrument failed there",
+      "operation": "its zero-arm positive control is 4.69 band sd, second strongest of four. ratio_k1 = 0.98 says early and late heads damage alike, a fact about the model, not a failed control",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D18", "round": "R7", "bin": "SCOPE", "commit": "1bea2e5",
+      "defect": "headline.py printed '-> DIRECTION-MATTERS' as R7's gate result",
+      "operation": "the pre-registered stopping rule returns NOT MET below 3 included-and-valid cells; the gate code never implemented it and evaluated the bands on 2, contradicting the shipped README",
+      "found_by": "outside_reader"
+    },
+    {
+      "id": "D19", "round": "R1", "bin": "CONTROL", "commit": "aefb0ee",
+      "defect": "the sham arm controls for THAT you ablated a head",
+      "operation": "band is the upper half and sham is the early layers, so it controls for that AND for where in the stack; eight rounds inherited the confound",
+      "found_by": "outside_reader"
+    },
+    {
+      "id": "D20", "round": "R7/R8", "bin": "INTERVENTION", "commit": "d9098bb",
+      "defect": "the arms' displacement is matched to 0.00%",
+      "operation": "matched in HEAD COORDINATES, a basis the model does not privilege; the model sees W_O.delta. Measured afterwards at 1.11x spread against 5.8x permitted, so the label survived -- but not by construction",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D21", "round": "repo", "bin": "PROVENANCE", "commit": "24484c6",
+      "defect": "'make verify needs no GPU, no network and no dependencies'",
+      "operation": "it died with ModuleNotFoundError on a fresh clone under the system interpreter; every prior test had been handed the project venv on the command line",
+      "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D22", "round": "repo", "bin": "UNCLASSIFIED", "commit": "2f20f67",
+      "defect": "detector 6 checks whether a prose number has a generator",
+      "operation": "its number regex was blind to every ratio in the repository (the 'x' suffix), then to a trailing period, then accepted any prose number whose OWN rounding appeared in the reference set -- 57.9% false-pass on the shape of nearly every number here",
+      "found_by": "author_reading_the_object"
+    }
+  ]
+}

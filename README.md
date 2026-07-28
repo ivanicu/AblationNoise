@@ -191,6 +191,50 @@ is **not** evidence that every `NOT MET` was an artifact.
 `d`, which R6 measured at 14–27% of it. It says nothing about direction. What it says is that the
 fraction is stable, which is the whole point.)*
 
+## The defect ledger — the repository's own error record, exhibited rather than asserted
+
+Every defect this project found in itself, each resolved to a commit that `make verify` re-checks
+is an ancestor of `HEAD`. Not a table in a README: a hand-written ledger is a self-report.
+
+```bash
+python3 validate_defects.py
+```
+
+```
+    INTERVENTION    2      what the operation physically writes / where / when
+    CONTROL         4      what the control arm actually holds fixed
+    STATISTIC       4      what quantity the number is
+    SCOPE           2      which population the claim covers
+    PROVENANCE      7      whether the number has a generator at all
+    UNCLASSIFIED    3
+
+    found by:  instrument 8 · author reading the object 7 · outside reader 6 · author writing it up 1
+```
+
+**Not one of the 22 is a statistics error.** Every one is the same shape: a *label* carried where a
+*derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
+thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
+commit message that no code emits.
+
+**Six of twenty-two were findable only by an outside reader** — 27%, and that is the number that
+bounds how far self-audit goes here.
+
+### The taxonomy test returned `AMBIGUOUS`, by one instance
+
+[Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
+classifying his own defects will group them until a taxonomy appears. `TAXONOMY-EXISTS` needed ≥3
+bins with ≥2 instances **and** `UNCLASSIFIED ≤ 2`. Five bins cleared the first; `UNCLASSIFIED` is 3.
+
+And the three do not split evenly: **two of them are the same unnamed type** — a prediction row
+derived from a *world's name* instead of from what the arms physically do, which happened in R7 and
+again in R8, in the round written to fix R7. The bin set was missing a sixth joint.
+
+> **The bins were themselves a label-carried-instead-of-derived defect.** They were taken from the
+> author's own one-sentence statement of the programme — *intervention, control, statistic, scope* —
+> rather than derived from the defects. The taxonomy test caught its own designer, in the design of
+> the test. The two rows stay `UNCLASSIFIED`: moving them into a new bin after seeing them is how
+> `AMBIGUOUS` becomes `TAXONOMY-EXISTS` without any evidence changing.
+
 ## What is open
 
 Not a roadmap — the questions this instrument raised and cannot yet answer, each tied to the round

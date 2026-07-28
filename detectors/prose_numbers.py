@@ -98,7 +98,8 @@ def generator_numbers(cmds=None) -> set:
     # dependency-free is what lets `make verify` run for a stranger with a stock python -- and a
     # verification step that needs a scientific stack to check a claim about verification is a
     # joke at this repository's own expense.
-    cmds = cmds or [[sys.executable, str(ROOT / 'headline.py'), '--json']]
+    cmds = cmds or [[sys.executable, str(ROOT / 'headline.py'), '--json'],
+                    [sys.executable, str(ROOT / 'validate_defects.py'), '--json']]
     out = []
     for c in cmds:
         try:
