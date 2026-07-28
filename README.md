@@ -77,6 +77,26 @@ the measurement at its own author's prior work.**
 > named that outcome as a kill aimed at my own steps and required it be reported as loudly as the
 > other one.
 
+> ### Every head-level number here is measured in **one** configuration — and the obvious repair would have been run wrong
+>
+> [R14](R14_position_vs_binding/) showed the model's accuracy is **position-dependent**. So every
+> head-level result in this repository — the `1 of 8`, the ranks, the `10` of `168` — is measured in
+> one cell of a space the model demonstrably treats differently: *the answer is always at line `0`*.
+>
+> [R15](R15_shuffled_scan/) is the repair, and **its design defect was caught before the compute**,
+> from R14's own per-item records. The exhaustive runner keeps only items answered **correctly**;
+> under shuffling `24` of `120` are wrong, and which ones is position-dependent:
+>
+> ```
+> ends L0,1,6,7   offered 49.2%  →  kept 59.4%      +10.2 points toward the easy half
+> ```
+>
+> **The floor it produced would be the easy half's floor, with nothing in the output saying so.**
+> The fix is free — drop the filter, because a `drop` is a change in *margin*, which is defined
+> whether or not the argmax is correct, and on the original task accuracy is `1.000`, so **the
+> filter has never rejected a single item there.** R15 is pre-registered and blocked on hardware,
+> not on design.
+
 > ### And [R12](R12_cross_model/) settled where the hump lives — a fixed **fraction** of the stack, not a fixed layer
 >
 > `qwen2.5-3b` has `36` layers against `qwen2.5-1.5b`'s `28`. At `28` a fixed layer *index* and a
@@ -721,22 +741,22 @@ against, which is a fact about your directory and not about the ledger.
 ```
     PROVENANCE     19      whether the number has a generator at all
     SCOPE          13      which population the claim covers
-    CONTROL        10      what the control arm actually holds fixed
+    CONTROL        11      what the control arm actually holds fixed
     STATISTIC      12      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 35 · instrument 16 · outside reader 7
+    found by:  author reading the object 36 · instrument 16 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 68 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 69 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 68 were findable only by an outside reader** — `10.3%`. That fraction was 27% at n=22 and
+**7 of 69 were findable only by an outside reader** — `10.1%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -749,7 +769,7 @@ joint            by the author   by an instrument   by an outside reader
 PROVENANCE            11                8                    0
 SCOPE                 13                2                    2
 STATISTIC              8                4                    1
-CONTROL                8                2                    4
+CONTROL                9                2                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
@@ -776,12 +796,12 @@ instruments' `2` and `2`.
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`68` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`69` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `19`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`68` a bin of `19` is `27.9%`, which is not domination
+> ledger; at n=`69` a bin of `19` is `27.5%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

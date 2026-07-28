@@ -621,6 +621,15 @@
       "defect": "qwen2.5-1.5b's clearing profile was described as a HUMP peaking at L16-L17, and the peak location was quoted as a fact about the model rather than about a rate measured on 12 heads",
       "operation": "THE PEAK DOES NOT TRANSFER AND ON THE SECOND MODEL IT IS NOT EVEN RESOLVED. qwen2.5-3b's profile has three near-equal maxima (56, 50, 50%) and a dead zone across L1-L11; with 16 heads per layer a rate carries +-24 points at 95%, so its four highest layers are statistically indistinguishable. What DOES transfer is the CENTROID: 22.833 with a bootstrap 95% CI of [21.52, 24.01], which excludes the ABSOLUTE prediction of 17.23 and contains the RELATIVE one of 22.34 -- depth fraction 0.6383 vs 0.6524. The pre-registered verdict RELATIVE fires on an interval rather than a point, which is more than it asked for; no peak-layer claim is made for the second model",
       "found_by": "instrument"
+    },
+    {
+      "id": "D69",
+      "round": "R15",
+      "bin": "CONTROL",
+      "commit": "8f036b0",
+      "defect": "the exhaustive runner's correctness filter would, on the SHUFFLED task, keep a population skewed 10.2 points toward the ends of the list -- exactly the positions the model handles best -- and the resulting floor would be the easy half's floor with nothing in the output saying so",
+      "operation": "CAUGHT BEFORE THE COMPUTE, from R14's own per-item records, in a run that has not happened. First time in this project a design was attacked before rather than after. The fix costs nothing: drop the filter, because a drop is a change in MARGIN and a margin is defined whether or not the argmax is correct -- and on the original task accuracy is 1.000, so the filter has never rejected a single item there. The separate MIN_ITEMS refusal branch, which exists for models that cannot do the task at all, is unaffected",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

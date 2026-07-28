@@ -549,6 +549,51 @@ def r11():
             'effects': rows}
 
 
+def r15_design():
+    """The design defect in a run that has NOT happened, caught from an earlier run's records.
+
+    R15 would re-run the exhaustive scan on R14's shuffled task. The runner keeps only items the
+    model answers CORRECTLY -- and under shuffling 24 of 120 are wrong, position-dependently. The
+    kept population would shift 10.2 points toward the ends of the list, i.e. toward exactly the
+    positions the model already handles best, and the resulting floor would be the easy half's floor
+    with nothing in the output to say so.
+
+    THE FIX COSTS NOTHING. Drop the filter: a `drop` is a change in MARGIN, which is defined whether
+    or not the argmax is correct. And the filter has never been load-bearing -- R14 measured
+    accuracy 1.000 over 120 consecutive seeds on the original task, so IT HAS NEVER REJECTED A
+    SINGLE ITEM there. Dropping it changes no existing number and prevents a 10.2-point selection
+    effect on the new one.
+
+    First time in this project a design was attacked BEFORE the compute rather than after.
+    """
+    p = HERE / 'R14_position_vs_binding' / 'results' / 'r14_probe_qwen2.5-1.5b.json'
+    if not p.exists():
+        return None
+    d = json.load(open(p))
+    rows = d['rows']
+    offered, kept = {}, {}
+    for r in rows:
+        L = r['answer_line_shuffled']
+        offered[L] = offered.get(L, 0) + 1
+        if r['shuf_ok']:
+            kept[L] = kept.get(L, 0) + 1
+    n_all, n_kept = len(rows), sum(kept.values())
+    ends = (0, 1, 6, 7)
+    oe = 100 * sum(offered.get(L, 0) for L in ends) / n_all
+    ke = 100 * sum(kept.get(L, 0) for L in ends) / n_kept
+    return {'n_offered': n_all, 'n_kept': n_kept,
+            'ends_offered_pct': oe, 'ends_kept_pct': ke, 'skew_points': ke - oe,
+            'filter_ever_rejected_on_original': d['accuracy_original'] < 1.0,
+            'accuracy_original': d['accuracy_original'],
+            'middle_offered_pct': 100 - oe, 'middle_kept_pct': 100 - ke,
+            'by_line': {L: {'offered': offered.get(L, 0), 'kept': kept.get(L, 0),
+                            'offered_pct': 100 * offered.get(L, 0) / n_all,
+                            'kept_pct': 100 * kept.get(L, 0) / n_kept,
+                            'skew': (100 * kept.get(L, 0) / n_kept
+                                     - 100 * offered.get(L, 0) / n_all)}
+                        for L in sorted(offered)}}
+
+
 def r12():
     """The cross-model separator: is the hump at a fixed LAYER or a fixed DEPTH FRACTION?
 
@@ -1737,6 +1782,7 @@ def main() -> int:
     TA = task_audit()
     FT = r14()
     TW = r12()
+    FD = r15_design()
     EL = r11()
     PW = power()
     RC = reference_class()
@@ -1745,7 +1791,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -1927,6 +1973,19 @@ def main() -> int:
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
               f"<=5 -- and it is the proven copy head\n")
+
+    if FD:
+        print("R15 a design defect in a run that has NOT happened, from an earlier run's records")
+        print(f"      the exhaustive runner keeps only items answered CORRECTLY. Under shuffling "
+              f"that is {FD['n_kept']} of {FD['n_offered']}, and WHICH ones is position-dependent:")
+        print(f"      ends L0,1,6,7  offered {FD['ends_offered_pct']:.1f}%  ->  kept "
+              f"{FD['ends_kept_pct']:.1f}%   ({FD['skew_points']:+.1f} points toward the easy half)")
+        print(f"      the floor it produced would be the EASY HALF's floor, with nothing in the "
+              f"output saying so")
+        print(f"      FIX, free: drop the filter. A drop is a change in MARGIN, defined whether or "
+              f"not the argmax is correct -- and on the original task accuracy is "
+              f"{FD['accuracy_original']:.3f}, so the filter has never rejected a single item there")
+        print(f"      first time in this project a design was attacked BEFORE the compute\n")
 
     if TW:
         print("R12 is the hump at a fixed LAYER or a fixed DEPTH FRACTION? -- pre-registered")
@@ -2332,6 +2391,8 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
+            ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
             ('R12 CI lower', TW['centroid_ci95_lo'] if TW else -1, 21.52, 0.01),
             ('R12 depth fraction', TW['depth_fraction'] if TW else -1, 0.6524, 0.0001),
@@ -2404,9 +2465,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 68, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 69, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 19, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 10.294, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 10.145, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
