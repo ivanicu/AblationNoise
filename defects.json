@@ -495,6 +495,15 @@
       "defect": "the eight drop values the entire project is about had never been checked against a second implementation",
       "operation": "REPRODUCE to 3.6e-06 under R10's exhaustive scan -- same items, same vocabulary, separately written runner. Float32 nondeterminism. Closure that could have failed and had never been run. The same comparison carries the method point: E132b asked about 8 heads and R10 about 336 on the same code path, 42x the questions for one 16-minute job, and asking about all of them is what produced every finding of the last five steps",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D55",
+      "round": "repo",
+      "bin": "CONTROL",
+      "commit": "6890700",
+      "defect": "the project's central claim is a MEASURED ZERO -- 0 of 8 distinguishable -- and no positive control for it had ever been stated, in violation of the repository's own rule that a measured zero is inadmissible until the same instrument has returned non-zero",
+      "operation": "IT PASSES, and the control was in the same run all along: 9 heads are BOTH resolvable at 2 sigma AND beyond the exhaustive floor, at 1.18x-2.54x the floor and 2.5x-22.1x their own SEM. Also a dynamic-range check that had never been run: for 167 of 168 heads the floor exceeds that head's own measurement noise. The exception is NAMED, not averaged away -- L26H7 has 2*SEM 0.4991 against a floor of 0.4870, so no verdict about it is possible at all",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

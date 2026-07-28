@@ -183,6 +183,65 @@ def _spearman(a, b):
     return num / den if den else float('nan')
 
 
+def power():
+    """THE POSITIVE CONTROL FOR THE PROJECT'S CENTRAL NULL, which had never been stated.
+
+    The headline is a measured ZERO: none of the eight published effects is distinguishable from a
+    random head. This repository's own rule -- **a measured 0 is INADMISSIBLE until that same
+    instrument has passed a positive control** -- was never applied to it. A zero from an instrument
+    that has never returned non-zero is silence, not an acquittal.
+
+    It passes, and the control was sitting in the same run. NINE heads are BOTH resolvable at 2
+    sigma AND beyond the exhaustive floor, at 1.18x to 2.54x the floor and 2.5x to 22.1x their own
+    SEM. The instrument returns non-zero on the same data that returns zero for the eight.
+
+    AND THE DESIGN HAS THE DYNAMIC RANGE. For 167 of 168 heads the floor EXCEEDS that head's own
+    measurement noise, so "measurable and distinguishable" is achievable in principle for nearly
+    every head. The exception is named rather than averaged away: L26H7's 2*SEM is 0.4991 against a
+    floor of 0.4870, so its own item-to-item variance exceeds the entire between-head spread and NO
+    VERDICT about it is possible. One head, stated, not swept in.
+
+    THE NULL IS ALSO NOT A LANDSLIDE, and saying so is part of reporting it. The largest published
+    effect reaches 96% of the threshold. Seven of the eight sit at 0.27x or below; one just missed.
+    """
+    a = HERE / 'R11_instrument_noise' / 'results' / 'r11_itemsA_qwen2.5-1.5b.json'
+    pe = r1_prior_effects()
+    if not (a.exists() and pe):
+        return None
+    import re as _re
+    A = json.load(open(a))
+    L = {int(k): v for k, v in A['layers'].items()}
+    band = [(x, int(h)) for x in range(14, 28) for h in L[x]['per_head']]
+    d = {k: L[k[0]]['per_head'][str(k[1])] for k in band}
+    sem = {k: L[k[0]]['per_head_sem'][str(k[1])] for k in band}
+
+    def sd(xs):
+        m = sum(xs) / len(xs)
+        return math.sqrt(sum((y - m) ** 2 for y in xs) / (len(xs) - 1))
+
+    floor = 2 * sd(list(d.values()))
+    both = [k for k in band if abs(d[k]) > floor and abs(d[k]) > 2 * sem[k]]
+    undecidable = [k for k in band if 2 * sem[k] >= floor]
+    eight = {(int(m.group(1)), int(m.group(2)))
+             for h in pe['effects'] if (m := _re.match(r'L(\d+)H(\d+)', h))}
+    ts = sorted(2 * sem[k] for k in band)
+    return {
+        'floor': floor, 'n_heads': len(band),
+        'two_sem_min': ts[0], 'two_sem_median': ts[len(ts) // 2], 'two_sem_max': ts[-1],
+        'n_with_room': len(band) - len(undecidable),
+        'pct_with_room': 100 * (len(band) - len(undecidable)) / len(band),
+        'undecidable': [{'head': f'L{x}H{h}', 'drop': d[(x, h)], 'two_sem': 2 * sem[(x, h)]}
+                        for x, h in undecidable],
+        'n_positive_control': len(both),
+        'positive_control': [{'head': f'L{x}H{h}', 'drop': d[(x, h)],
+                              'x_floor': abs(d[(x, h)]) / floor,
+                              'x_own_sem': abs(d[(x, h)]) / (2 * sem[(x, h)])}
+                             for x, h in sorted(both, key=lambda k: -abs(d[k]))],
+        'largest_published_pct_of_threshold': 100 * max(abs(d[k]) for k in eight) / floor,
+        'second_largest_x_floor': sorted((abs(d[k]) / floor for k in eight), reverse=True)[1],
+    }
+
+
 def r11():
     """R11 -- the instrument's own noise, MEASURED, and the ranking's stability across item sets.
 
@@ -1225,11 +1284,12 @@ def main() -> int:
     RV = rank_vs_role()
     IR = input_replication()
     EL = r11()
+    PW = power()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'r11': EL,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'r11': EL, 'power': PW,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -1314,6 +1374,27 @@ def main() -> int:
               f"{h['min_pct']:.1f}%-{h['max_pct']:.1f}%, and "
               f"{h['n_within_3pp_of_52']} land within 3pp of the retracted 52%")
         print(f"      -> the ESTIMATOR was free, so the held-out claim is WITHDRAWN, not weakened\n")
+
+    if PW:
+        print("PWR the POSITIVE CONTROL for the project's central null -- never previously stated")
+        print(f"      floor {PW['floor']:.4f};  2*SEM over {PW['n_heads']} heads: "
+              f"min {PW['two_sem_min']:.4f}  median {PW['two_sem_median']:.4f}  "
+              f"max {PW['two_sem_max']:.4f}")
+        print(f"      the floor exceeds a head's own measurement noise for "
+              f"{PW['n_with_room']} of {PW['n_heads']} ({PW['pct_with_room']:.1f}%) -- the design "
+              f"CAN produce 'measurable and distinguishable'")
+        for u in PW['undecidable']:
+            print(f"        except {u['head']}: 2*SEM {u['two_sem']:.4f} >= floor -- its own "
+                  f"item variance exceeds the whole between-head spread, NO VERDICT POSSIBLE")
+        print(f"      and {PW['n_positive_control']} heads ARE both, same run, same instrument:")
+        for c in PW['positive_control'][:3]:
+            print(f"        {c['head']:<8}{c['drop']:>+9.4f}  {c['x_floor']:.2f}x floor  "
+                  f"{c['x_own_sem']:.1f}x its own 2*SEM")
+        print(f"        ... {PW['n_positive_control']} in total -- SO THE MEASURED ZERO FOR THE "
+              f"EIGHT IS ADMISSIBLE")
+        print(f"      and it is not a landslide: the largest published effect reaches "
+              f"{PW['largest_published_pct_of_threshold']:.0f}% of the threshold, the second "
+              f"{PW['second_largest_x_floor']:.2f}x\n")
 
     if EL:
         print("R11 the instrument's own noise, MEASURED -- two exhaustive runs, disjoint item sets")
@@ -1672,6 +1753,9 @@ def main() -> int:
             ('SET copy circuit z vs null mean',
              SL['sets']['COPY']['z_from_null_mean'] if SL else -1, -3.291, 0.001),
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
+            ('PWR positive-control heads', PW['n_positive_control'] if PW else -1, 9, 0),
+            ('PWR heads with dynamic range', PW['n_with_room'] if PW else -1, 167, 0),
+            ('PWR undecidable heads', len(PW['undecidable']) if PW else -1, 1, 0),
             ('R11 resolvable at 2 sigma', EL['n_resolvable'] if EL else -1, 8, 0),
             ('R11 agreement inside the SEM band', EL['agree_within_sem'] if EL else -1, 164, 0),
             ('R11 floor divergence across item sets',
@@ -1696,9 +1780,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 56, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 54, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 55, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 17, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 12.963, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 12.727, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
