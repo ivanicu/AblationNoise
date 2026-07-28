@@ -283,6 +283,30 @@ def main() -> int:
               f"({100*rd:.1f}% apart) -> "
               f"{'REPRODUCES' if repro['reproduces'] else '*** DOES NOT REPRODUCE ***'}")
 
+    # THE SIGN CHECK BELONGS HERE, NOT IN A REPORT. detectors/control_fitness.py was written
+    # after a positive control fired INVERTED, carries a selftest that checks sign -- and until
+    # 2026-07-28 no runner had ever imported it. Meanwhile randdir's control came back inverted on
+    # every model of two rounds and `|PC| > sd` passed it every time, because that test is
+    # magnitude-only. A detector nobody calls is not a detector.
+    from detectors.control_fitness import check_control
+    anchor_sign = 1 if arms['zero']['positive_control'] >= 0 else -1
+    for a in ARMS:
+        rep_a = check_control(positive_control=arms[a]['positive_control'],
+                              positive_control_expected_sign=anchor_sign)
+        arms[a]['pc_sign_matches_anchor'] = bool(
+            (1 if arms[a]['positive_control'] >= 0 else -1) == anchor_sign)
+        arms[a]['control_fitness_verdict'] = rep_a.verdict
+        # ADMISSIBLE = the magnitude clears AND the sign points the way the anchor does. An arm
+        # failing either cannot have |PC|/sd read as readability: a dead control gives a ratio of
+        # two small noisy numbers, an inverted one gives a magnitude that reads as calibration
+        # while the instrument is measuring something else.
+        arms[a]['admissible'] = bool(arms[a]['pc_clears_own_floor']
+                                     and arms[a]['pc_sign_matches_anchor'])
+    inverted = [a for a in ARMS if not arms[a]['pc_sign_matches_anchor']]
+    if inverted:
+        print(f"  *** POSITIVE CONTROL SIGN-INVERTED vs the zero arm on: {', '.join(inverted)}"
+              f" -- those arms are INADMISSIBLE, |PC| > sd passes them anyway")
+
     dead = [a for a in ARMS if not arms[a]['pc_clears_own_floor']]
     print(f"  CHECK 3 every arm has a live positive control: "
           f"{'PASS' if not dead else 'FAIL on ' + ', '.join(dead)}")
@@ -302,6 +326,7 @@ def main() -> int:
            'check1_matched': c1, 'check1_spread': spread,
            'check2_zero_reproduces_r1': repro,
            'check3_dead_arms': dead,
+           'inadmissible_arms': [a for a in ARMS if not arms[a]['admissible']],
            'include': bool(inc_ratio and inc_pc),
            'include_fail': [] if inc_ratio and inc_pc else
                            ([] if inc_ratio else ['zero_ratio_k1<=1.5']) +
