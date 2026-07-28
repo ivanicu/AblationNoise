@@ -178,10 +178,38 @@ def r6():
         n = len(xs)
         return None if not n else (xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2)
     return {'rows': rows, 'n_informative': len(inf),
+            # Emitted into the JSON, not only into the human print. Detector 6 reads --json, and a
+            # quantity that exists in one output mode and not the other is how the two drift: the
+            # prose cites a number the machine-readable path never produced, and nothing notices.
+            'sham_collapse_max': max(r['shamsd_zero'] / r['shamsd_mean'] for r in rows),
             'median_rr_mean': med([r['rr_mean'] for r in inf]),
             'median_rr_resample': med([r['rr_resample'] for r in inf]),
             'n_valid_rounds': sum(r['round_valid'] for r in rows),
             'all_check1_pass': all(r['check1'] for r in rows if r['check1'] is not None)}
+
+
+def r6_diag():
+    """The pre-registered separator between 'gentler intervention' and 'nearly the identity'.
+
+    displacement_ratio = ||x_i - mean_over_items|| / ||x_i||, over band heads, from a capture pass
+    with no ablation at all. Its complement is the fraction of a head's final-position output that
+    does NOT vary across items -- which is what makes mean-ablation small there.
+    """
+    rows = []
+    for name, d in load('R6_intervention/results/r6_diag_item_variance_*.json').items():
+        rows.append({'model': name, 'median': d['displacement_ratio_median'],
+                     'p10': d['displacement_ratio_p10'], 'p90': d['displacement_ratio_p90'],
+                     'item_independent_pct': 100 * (1 - d['displacement_ratio_median']),
+                     'n_heads': d['n_heads_measured'], 'verdict': d['verdict']})
+    if not rows:
+        return None
+    meds = [r['median'] for r in rows]
+    return {'rows': rows, 'displacement_pct_min': 100 * min(meds),
+            'displacement_pct_max': 100 * max(meds),
+            'item_independent_pct_min': 100 * (1 - max(meds)),
+            'item_independent_pct_max': 100 * (1 - min(meds)),
+            'n_reaching_world_G': sum(m > 0.5 for m in meds),
+            'n_world_I': sum(m < 0.2 for m in meds)}
 
 
 def r4():
@@ -198,10 +226,10 @@ def main() -> int:
     args = ap.parse_args()
 
     A, B, E = r1(), r2(), r5()
-    D, V, S = r4(), r1_vocabulary(), r6()
+    D, V, S, G = r4(), r1_vocabulary(), r6(), r6_diag()
 
     if args.json:
-        print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S},
+        print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G},
                          indent=2, default=float))
         return 0
 
@@ -278,8 +306,22 @@ def main() -> int:
         deg = [f"{r['model']}/{iv}" for r in S['rows'] for iv in ('mean', 'resample')
                if r[f'ratio_k1_degenerate_{iv}']]
         if deg:
-            print(f"      pre-registered ratio_k1 DEGENERATE (sham sd collapsed) on: "
-                  f"{', '.join(deg)} -- see AMENDMENT 1")
+            worst = S['sham_collapse_max']
+            print(f"      pre-registered ratio_k1 DEGENERATE (sham sd collapses up to "
+                  f"{worst:.0f}x) on: {', '.join(deg)} -- see AMENDMENT 1")
+
+    if G:
+        print("\nR6' the pre-registered separator: gentler intervention, or nearly the identity?")
+        for r in G['rows']:
+            print(f"      {r['model']:<16} displacement ||x-mean||/||x||  median {r['median']:.3f}"
+                  f"  [p10 {r['p10']:.3f}, p90 {r['p90']:.3f}]  over {r['n_heads']:>3} band heads"
+                  f"  -> {r['verdict']}")
+        print(f"      mean-ablation displaces {G['displacement_pct_min']:.0f}-"
+              f"{G['displacement_pct_max']:.0f}% of what zeroing displaces; a head's final-position"
+              f" output is {G['item_independent_pct_min']:.0f}-"
+              f"{G['item_independent_pct_max']:.0f}% item-independent")
+        print(f"      {G['n_reaching_world_G']} of {len(G['rows'])} models reach the "
+              f"pre-registered threshold for 'gentler' -- so that world is refused")
 
     if args.check:
         claims = [

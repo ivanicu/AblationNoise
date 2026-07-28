@@ -10,8 +10,9 @@ independently established as the copy head for that task. Its apparent "redundan
 limit, and the limit is now a number.
 
 Everything here runs on one consumer GPU. Every round is pre-registered with a kill condition
-committed **before** the run, and **four of the five completed rounds killed the hypothesis their
-author preferred** — including one whose own verdict was later withdrawn by the round after it.
+committed **before** the run. **Five of the six completed rounds killed the hypothesis their author
+preferred** — one had its own verdict withdrawn by the round after it, and one was defeated by a
+diagnostic its author wrote to attack it.
 
 ```bash
 make verify     # the whole gate: 4 detector selftests, 11 recomputed numbers, 6 READMEs checked
@@ -42,21 +43,26 @@ Each round is a folder: its pre-registration, its amendments, its runner, its re
 | **[R3](R3_withdrawn/)** | is a sibling project's specificity control a single draw? | **withdrawn before spending compute** — its own records refuted the premise |
 | **[R4](R4_predictability/)** | can readability be predicted from cheap observables? | across models **UNVERIFIED** — the pre-registered gate is met by 60 of 324 admissible estimators, so its own first verdict was withdrawn. Within a model the floor is a power law and **two measured points fix the curve** (12/12 held-out within 2×) |
 | **[R5](R5_factorial/)** | which factor decides readability: site, readout, or mechanism size? | ablating at **every** position instead of one made the effect-to-floor ratio **worse in 6 of 6** model × readout cells |
-| **[R6](R6_intervention/)** | is the floor a property of ablation, or of *zeroing*? | **pre-registered, running.** See below — this one can retract the sentence at the top of this page |
+| **[R6](R6_intervention/)** | is the floor a property of ablation, or of *zeroing*? | **NOT MET** — its own control arm reproduced R1 to **0.0% on 4 of 4 models**, then a pre-registered diagnostic showed the comparison arms move the residual stream 4–7× less, so the design cannot decide. The question stays open |
 
-### R6 is the round that can break this repository, and it is pre-registered in public
+### R6 was the round that could break this repository. It did not — and it did not clear it either.
 
-Every number above came from setting a component's output to **zero**. A head's output is never
-zero in normal operation, so zeroing hands the downstream layers an input they never see — which
-would produce a large floor for every random component *without any of it being a fact about
-ablation*. R1's sham arm does not cover this: the sham ablates and restores, so it controls for
-*that a hook fired*, not for *what the hook wrote*. **Both arms zero.**
+Every number above came from setting a component's output to **zero**, which hands the downstream
+layers an input they never see. If the floor is that off-distribution damage, this work restates
+advice the field already publishes. [R6's pre-registration](R6_intervention/PREREGISTRATION.md)
+committed, before any result existed, to rewriting the sentence at the top of this page in the same
+commit as the result.
 
-R6 runs the same measurement under `zero`, `mean` and `resample` interventions.
-[Its pre-registration](R6_intervention/PREREGISTRATION.md) commits, before any result exists, to
-rewriting the first sentence of this README **in the same commit as the result** if the floor turns
-out to be a zeroing artifact — because then this work would be a restatement of advice the field
-already publishes, and would deserve to be described that way.
+**That sentence is not rewritten, and the reason is not that the test passed.** R6 compared `zero`
+against `mean` and `resample` — and a pre-registered diagnostic, run before the write-up, found that
+at the final position a head's output is **73–86% item-independent** on all four models. The
+comparison arms displace the residual stream by only **14–27%** of what zeroing does. Comparing
+those floors compares two *magnitudes*, not two *kinds*, so the round **cannot decide** and reports
+`NOT MET`. The off-distribution question is untested, not answered. [R6 in full](R6_intervention/).
+
+What R6 did establish, on the way: its zero arm reproduced R1's `ratio_k1` to **0.0% on four models
+out of four**, through a completely rewritten measurement path. R1's number is not an artifact of
+R1's own code.
 
 ## The result that is most useful to someone else
 
@@ -119,14 +125,15 @@ entitled to see the shape of the open ones.
 
 | | raised by | what would settle it |
 |---|---|---|
-| **Is the floor a property of ablation or of zeroing?** | every round — all of them zero | R6, pre-registered and running. Its gate can retract the first sentence of this page |
+| **Is the floor a property of ablation or of zeroing?** | every round — all of them zero | **still open after R6.** A norm-matched intervention comparison: hold the displacement size fixed and vary only its direction. R6 varied the description of the intervention and got a 4–7× size difference for free, which is what defeated it |
 | **Does readability transfer across models?** | R4, whose across-model verdict is `UNVERIFIED` | an order of magnitude more models. Five cannot decide it: the best of 324 admissible estimators fits three model-level parameters to four model-level observations |
 | **Which readout is more readable?** | R5, whose readout axis is **withdrawn as confounded** | a mechanism-**strength**-matched design. The identified head's attention was 0.244 on one model and 0.852/0.877 on the others, so the readout comparison is confounded with mechanism quality. More models do not fix this; matched mechanisms do |
 | **Does any of it hold outside attention heads?** | scope of every round | MLP neurons, SAE features, residual directions. Nothing here is evidence about them, and the two-point calibration is a hypothesis there, not a method |
 | **Does it hold off a synthetic task?** | scope of every round | a natural-text task with a known mechanism. The synthetic binding task was chosen so the answer key is not arguable, which is also why it is not a claim about language modelling |
 
 One item that is **not** open: whether R1's number is an artifact of R1's own code. R6's zero arm
-reproduced it to **0.0%** through a completely rewritten measurement path.
+reproduced it to **0.0%** on **four models out of four**, through a completely rewritten measurement
+path.
 
 ## Licence
 
