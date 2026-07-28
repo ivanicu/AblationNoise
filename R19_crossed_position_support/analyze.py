@@ -285,6 +285,48 @@ def main():
             'h_position': h_position, 'published': pub, 'h_published': h_published,
             'floor_final': ff, 'floor_all': fa}
 
+    # ---- the registered OV prediction. Written into the analysis BEFORE the data exists, so
+    # the test cannot be tuned to it: the 25 heads are a frozen list, the null is
+    # matched-layer, and BOTH halves must hold. A KL effect WITH a margin effect would mean the
+    # two metrics are redundant, not that OV has behavioural content.
+    pf = ROOT / 'R16_selection_vs_effect' / 'results' / 'ov_perfect_room_copiers.json'
+    if pf.exists():
+        from collections import Counter
+        cop = json.load(open(pf))['heads']
+        cop = [(int(k[1:k.index('H')]), int(k[k.index('H') + 1:])) for k in cop]
+        cop = [k for k in cop if k in band]
+        rngp = random.Random(20260728)
+        cnt = Counter(k[0] for k in cop)
+        pred = {}
+        for mi, mname in ((1, 'room_set_kl'), (0, 'signed_margin_drop')):
+            c = cells(d, 'all', mi)
+            tv = {k: sum(c[k]['base']) / nb for k in band}
+            mu = sum(tv.values()) / len(tv)
+            stat = sum(abs(tv[k] - mu) for k in cop) / len(cop)
+            nl = []
+            for _ in range(N_PERM):
+                st = []
+                for lay, n_ in cnt.items():
+                    st += rngp.sample(by_layer[lay], n_)
+                nl.append(sum(abs(tv[k] - mu) for k in st) / len(st))
+            pred[mname] = {'T': stat, 'null_median': sorted(nl)[N_PERM // 2],
+                           'p_one_sided': (1 + sum(1 for z in nl if z >= stat)) / (1 + N_PERM)}
+        ok_kl = pred['room_set_kl']['p_one_sided'] < ALPHA
+        ok_mg = pred['signed_margin_drop']['p_one_sided'] >= ALPHA
+        print()
+        print('  --- REGISTERED OV PREDICTION (%d frozen OV-perfect room copiers)' % len(cop))
+        for k, v in pred.items():
+            print('      %-20s T %.4f  matched-layer null median %.4f  one-sided p %.4f'
+                  % (k, v['T'], v['null_median'], v['p_one_sided']))
+        print('      room_set_kl LARGER than matched  -> %s   (needs p < %s)'
+              % ('PASS' if ok_kl else 'FAIL', ALPHA))
+        print('      margin INDISTINGUISHABLE          -> %s   (needs p >= %s)'
+              % ('PASS' if ok_mg else 'FAIL', ALPHA))
+        print('      BOTH HALVES -> %s'
+              % ('CONFIRMED' if (ok_kl and ok_mg) else 'NOT CONFIRMED'))
+        report['ov_prediction'] = {'n_heads': len(cop), 'tests': pred,
+                                   'kl_larger': ok_kl, 'margin_null': ok_mg,
+                                   'confirmed': bool(ok_kl and ok_mg)}
     out = HERE / 'results' / f"r19_analysis_{d['model']}.json"
     json.dump(report, open(out, 'w'), indent=1)
     print(f"\n  wrote {out}")

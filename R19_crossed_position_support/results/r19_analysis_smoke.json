@@ -98,5 +98,23 @@
    "floor_final": 0.09386947643025086,
    "floor_all": 0.13527865107114553
   }
+ },
+ "ov_prediction": {
+  "n_heads": 25,
+  "tests": {
+   "room_set_kl": {
+    "T": 0.024910736809523812,
+    "null_median": 0.029225110428571434,
+    "p_one_sided": 0.8580428391432171
+   },
+   "signed_margin_drop": {
+    "T": 0.2639207774880952,
+    "null_median": 0.268283868297619,
+    "p_one_sided": 0.5337093258134837
+   }
+  },
+  "kl_larger": false,
+  "margin_null": true,
+  "confirmed": false
  }
 }

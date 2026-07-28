@@ -331,6 +331,34 @@ hypothesis, not a result.
 > about mechanism. **The mechanistic reading it invited is withdrawn**: a head that copies every
 > token set is a generic copier, not a task-specific circuit.
 
+### A second prediction, from the weights, against a metric `R19` records and nothing else does
+
+The three instruments are **not three measurements of one quantity.** Attention and ablation are
+conditional on a prompt distribution; **the `OV` circuit is not — it is a statement about the weights
+and holds whatever the prompt.** So they cannot disagree the way three thermometers disagree: **they
+measure different objects, and *"no arbiter"* was the right conclusion for the wrong reason.**
+Task-invariance is not privilege — **an instrument that ignores the task cannot say what a head does
+*on* the task.**
+
+But that asymmetry makes something falsifiable. **If a head's `OV` really maps room tokens to room
+tokens, ablating it should move the ROOM DISTRIBUTION even when it does not move the margin.**
+`R10` and `R18` stored only the margin, so this was untestable. **`R19` records `room_set_kl` as its
+second metric.**
+
+```
+the 25 OV-perfect room copiers, frozen in results/ov_perfect_room_copiers.json
+```
+
+> **Registered now, with `results/` holding only the smoke file:** those `25` heads will show a
+> **larger mean `room_set_kl` under `I_all`** than a matched-layer random set of `25`, at one-sided
+> `p < 0.05` over `50,000` matched draws — **while their `signed_margin_drop` remains
+> indistinguishable**, which is what the `OV × ablation` null already says.
+>
+> **Both halves must hold.** A `KL` effect *with* a margin effect would mean the two metrics are
+> redundant, not that `OV` has behavioural content. **If neither half holds, `OV` is a weight
+> property with no behavioural correlate on this task, and the "third instrument" is a description
+> of the matrix rather than of the model's computation.**
+
 ### A control that ran, and could not decide
 
 The crossed design should behave like the old task where they overlap. Compared against
