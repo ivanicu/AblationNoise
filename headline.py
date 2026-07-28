@@ -549,6 +549,84 @@ def r11():
             'effects': rows}
 
 
+def r15():
+    """R15 -- the shuffled exhaustive scan. Pre-registered kill: does the head ranking transfer?
+
+    Thresholds committed BEFORE the run (R15_shuffled_scan/PREREGISTRATION.md): transfers at
+    Spearman >= 0.7, does not at <= 0.3, in between "report it, claim neither".
+
+        Spearman over the 168 band heads, shuffled vs unshuffled
+            on |centred drop|   +0.6092      <- the statistic this repo RANKS BY. Middle band.
+            on signed drop      +0.7175
+
+    THE KILL DID NOT FIRE AND THE PASS WAS NOT EARNED. Two statistics straddle the threshold and
+    picking the one that clears it is a narrative, so both are reported and neither is claimed.
+
+    POPULATION CONFOUND, CHECKED AND CLEARED. R15 changed TWO things against R10: line order AND the
+    correctness filter. A single contrast over two treatments cannot be decomposed -- except that the
+    second treatment is a measured no-op. R14 measured A_orig = 1.000 over 120 items: the filter has
+    never rejected a single item on the UNSHUFFLED task for this model, so filter-on and filter-off
+    are the same population there. Verified directly: same draw_seed 20260727, same 120 items, same
+    4 rooms, same sham band [0,7].
+
+    THE FINDING IS THE THIRD READING, NOT THE FIRST. The pre-registration also asked for per-answer-
+    line floors, on the grounds that "if the floor itself is position-dependent, a single number for
+    the shuffled task is the same mistake one level up". IT IS POSITION-DEPENDENT:
+
+        per-line floor spans 0.3011 to 0.4997 = 1.66x
+        Spearman(per-line baseline margin, per-line floor) = +0.8810 over 8 lines
+
+    SO THE FLOOR IS A FUNCTION OF TASK HEADROOM, not of the model and band alone. The repository has
+    been quoting 0.4870 as though it were the latter. It was measured at baseline margin 4.477.
+
+    BUT SUBLINEARLY, AND THAT MATTERS IN THE OTHER DIRECTION. Across lines the margin swings 7.54x
+    (0.567 to 4.273) while the floor swings 1.66x. As a FRACTION, floor/margin runs 0.108 to 0.633 --
+    a 5.84x spread. So the ABSOLUTE floor is comparatively robust, which is what a noise floor ought
+    to be if it measures head-to-head variability rather than task headroom; but `x floor`, the unit
+    this repository ranks published heads in, IS NOT PORTABLE ACROSS TASK CONFIGURATIONS.
+    """
+    f = HERE / 'R15_shuffled_scan' / 'results' / 'r15_shuffled_qwen2.5-1.5b.json'
+    g = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    if not (f.exists() and g.exists()):
+        return None
+    a = json.load(open(f))
+    b = json.load(open(g))
+    LA = {int(k): v for k, v in a['layers'].items()}
+    LB = {int(k): v for k, v in b['layers'].items()}
+    NH = a['n_heads_per_layer']
+    band = [(x, h) for x in range(14, 28) for h in range(NH)]
+    va = [LA[x]['per_head'][str(h)] for x, h in band]
+    vb = [LB[x]['per_head'][str(h)] for x, h in band]
+    mua, mub = sum(va) / len(va), sum(vb) / len(vb)
+    fa = 2 * math.sqrt(sum((v - mua) ** 2 for v in va) / (len(va) - 1))
+    fb = 2 * math.sqrt(sum((v - mub) ** 2 for v in vb) / (len(vb) - 1))
+    ca = [abs(v - mua) for v in va]
+    cb = [abs(v - mub) for v in vb]
+    pl = a['per_answer_line']
+    ks = sorted(pl, key=int)
+    marg = [pl[k]['baseline_margin'] for k in ks]
+    flo = [pl[k]['floor_2sd'] for k in ks]
+    return {'spearman_abs': _spearman(ca, cb), 'spearman_signed': _spearman(va, vb),
+            'threshold_transfers': 0.7, 'threshold_does_not': 0.3,
+            'floor_shuffled': fa, 'floor_unshuffled': fb, 'floor_ratio': fa / fb,
+            'margin_shuffled': a['base_margin'], 'margin_unshuffled': b['base_margin'],
+            'n_clear_shuffled': sum(1 for v in ca if v > fa),
+            'n_clear_unshuffled': sum(1 for v in cb if v > fb),
+            'same_draw_seed': a['draw_seed'] == b.get('draw_seed'),
+            'same_n_items': a['n_items'] == b.get('n_items'),
+            'per_line': [{'line': int(k), 'n': pl[k]['n_items'],
+                          'margin': pl[k]['baseline_margin'],
+                          'acc': pl[k]['accuracy'], 'floor': pl[k]['floor_2sd'],
+                          'floor_over_margin': pl[k]['floor_2sd'] / pl[k]['baseline_margin']}
+                         for k in ks],
+            'line_floor_spread': max(flo) / min(flo),
+            'line_margin_spread': max(marg) / min(marg),
+            'spearman_margin_vs_floor': _spearman(marg, flo),
+            'margin_ratio': b['base_margin'] / a['base_margin'],
+            'ratio_spread': max(x / y for x, y in zip(flo, marg))
+                            / min(x / y for x, y in zip(flo, marg))}
+
+
 def depth_sensitivity():
     """THE INSTRUMENT'S SENSITIVITY IS NOT FLAT IN DEPTH, AND R12's VERDICT TURNS ON DEPTH.
 
@@ -2155,6 +2233,7 @@ def main() -> int:
     TA2 = r2_task_audit()
     SV = selection_vs_effect()
     DS = depth_sensitivity()
+    R15 = r15()
     EL = r11()
     PW = power()
     RC = reference_class()
@@ -2163,7 +2242,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -2345,6 +2424,37 @@ def main() -> int:
         print(f"      the one exception is {EL['least_stable_published_head']}, moving "
               f"{abs(EL['least_stable_rank_move'])} places while every other published head moves "
               f"<=5 -- and it is the proven copy head\n")
+
+    if R15:
+        print("R15 the SHUFFLED exhaustive scan -- the pre-registered kill on head-ranking transfer")
+        v = 'TRANSFERS' if R15['spearman_abs'] >= .7 else (
+            'DOES NOT TRANSFER' if R15['spearman_abs'] <= .3 else 'IN BETWEEN -- claim neither')
+        print("      Spearman over 168 band heads, shuffled vs unshuffled:")
+        print(f"        on |centred drop|  {R15['spearman_abs']:+.4f}   <- the statistic this repo "
+              f"RANKS BY   -> {v}")
+        print(f"        on signed drop     {R15['spearman_signed']:+.4f}")
+        print(f"      thresholds committed BEFORE the run: >={R15['threshold_transfers']} transfers,"
+              f" <={R15['threshold_does_not']} does not. Two statistics straddle it and picking the")
+        print("      one that clears is a narrative, so both are reported and NEITHER is claimed.")
+        print(f"      population confound CHECKED: same draw_seed {R15['same_draw_seed']}, same n "
+              f"{R15['same_n_items']}; R14's A_orig=1.000 makes the dropped filter a measured no-op")
+        print(f"      floor {R15['floor_shuffled']:.4f} shuffled vs {R15['floor_unshuffled']:.4f} "
+              f"unshuffled = {R15['floor_ratio']:.3f}x, while base margin fell "
+              f"{R15['margin_unshuffled']:.3f} -> {R15['margin_shuffled']:.3f} "
+              f"({R15['margin_ratio']:.2f}x)")
+        print(f"      clearing the floor: {R15['n_clear_shuffled']} shuffled, "
+              f"{R15['n_clear_unshuffled']} unshuffled")
+        print("      THE FINDING IS THE THIRD READING -- the floor is POSITION-DEPENDENT:")
+        print(f"      {'line':>5}{'n':>5}{'margin':>9}{'acc':>7}{'floor':>9}{'floor/margin':>14}")
+        for r in R15['per_line']:
+            print(f"      {r['line']:>5}{r['n']:>5}{r['margin']:>9.3f}{r['acc']:>7.3f}"
+                  f"{r['floor']:>9.4f}{r['floor_over_margin']:>14.3f}")
+        print(f"      floor spans {R15['line_floor_spread']:.2f}x while margin spans "
+              f"{R15['line_margin_spread']:.2f}x; Spearman(margin, floor) = "
+              f"{R15['spearman_margin_vs_floor']:+.4f}")
+        print(f"      so the ABSOLUTE floor is robust, but floor/margin spreads "
+              f"{R15['ratio_spread']:.2f}x -- `x floor`, the unit this repo ranks published heads")
+        print("      in, IS NOT PORTABLE ACROSS TASK CONFIGURATIONS\n")
 
     if DS:
         print("R12C the instrument's sensitivity is MONOTONE IN DEPTH, and R12's verdict is a depth")
@@ -2869,6 +2979,10 @@ def main() -> int:
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
             # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
             # pre-registration has been edited after the fact and the build says so.
+            ('R15 spearman abs', R15['spearman_abs'] if R15 else -1, 0.6092, 0.0005),
+            ('R15 spearman signed', R15['spearman_signed'] if R15 else -1, 0.7175, 0.0005),
+            ('R15 floor shuffled', R15['floor_shuffled'] if R15 else -1, 0.4023, 0.0005),
+            ('R15 margin vs floor', R15['spearman_margin_vs_floor'] if R15 else -1, 0.8810, 0.0005),
             ('R12C 3b last-layer rate',
              DS['qwen2.5-3b']['last_layer_rate'] if DS else -1, 0.0, 0.0001),
             ('R12C 1.5b last-layer rate',
@@ -2890,7 +3004,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 24.639, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 25.286, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -2965,9 +3079,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 83, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 84, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 22, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.434, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.333, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
@@ -2976,8 +3090,10 @@ def main() -> int:
             # written to notice that is what noticed. Expected count updated, not the check.
             ('LDG instrument-found CONTROL defects',
              DL['cross_tab']['CONTROL']['instrument'] if DL else -1, 2, 0),
+            # -> 3 with D84: R15's own pre-registered third reading found that the floor is a
+            # function of the task's headroom. The instrument found the scope of its own number.
             ('LDG instrument-found SCOPE defects',
-             DL['cross_tab']['SCOPE']['instrument'] if DL else -1, 2, 0),
+             DL['cross_tab']['SCOPE']['instrument'] if DL else -1, 3, 0),
             ('VAR in-sample floor share', VD['in_sample']['floor_share_pct'] if VD else -1,
              72.05, 0.01),
             ('VAR held-out pairings near 52',

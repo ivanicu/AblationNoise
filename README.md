@@ -57,7 +57,7 @@ non-zero on exactly the data that returns near-zero for the eight.
 one synthetic task, one vocabulary, `n=120` items, `k=1`, exhaustive over `28 × 12` heads, and — see
 the correction immediately below — **one prompt configuration**, because the answer always sits at
 line `0`
-**and the ablation zeroes the *final position only***, so the unit measured throughout is not “a head” but **a head's write at the final position** — which is a scope on every number here, and is [the reason R12's depth verdict is `UNVERIFIED`](R12_cross_model/README.md#-the-verdict-is-unverified-because-the-instrument-has-a-depth-bias-shaped-like-the-winner).
+**the floor `0.4870` was measured at baseline margin `4.477` and [is a function of that headroom](R15_shuffled_scan/README.md)**, **and the ablation zeroes the *final position only***, so the unit measured throughout is not “a head” but **a head's write at the final position** — which is a scope on every number here, and is [the reason R12's depth verdict is `UNVERIFIED`](R12_cross_model/README.md#-the-verdict-is-unverified-because-the-instrument-has-a-depth-bias-shaped-like-the-winner).
 
 > ### This front page has been rewritten six times, and every version it replaced is still on it
 >
@@ -806,7 +806,7 @@ against, which is a fact about your directory and not about the ledger.
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 47 · instrument 17 · outside reader 7
+    found by:  author reading the object 47 · instrument 18 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
@@ -887,7 +887,7 @@ unreachable at n=`22`.** `THIRTEEN-ONE-OFFS` needs `≥5`, and even then the `�
 first and masks it. **One reachable outcome is not a test**, and `validate_defects.py` now prints
 the reachable set on every run so the collapse is stated rather than discovered.
 
-**What replaces it is the distribution, and that *is* informative.** Chi-square `24.639` against a
+**What replaces it is the distribution, and that *is* informative.** Chi-square `25.286` against a
 uniform null gives a permutation `p` of `0.0002` — `4` of `20000`.
 
 ```
