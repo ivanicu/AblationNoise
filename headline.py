@@ -168,6 +168,48 @@ def _spearman(a, b):
     return num / den if den else float('nan')
 
 
+def set_level_scale():
+    """The circuit result on the SAME statistic as the head result -- because a percentile hides size.
+
+    The front page's new lead says the k=5 COPY circuit is at the "0.0th percentile" of the null.
+    With n=30 draws a percentile has 3.3% resolution: "0.0th" means "below all thirty" and nothing
+    finer. It says the effect is extreme; it does not say by how much, and the sentence written
+    beside it -- "Not marginal. Not inside anything." -- asserted a magnitude the percentile cannot
+    carry. Committed one step after a step whose subject was overstatement.
+
+    Put both on `|effect| / (2*sd of its own null)`, the statistic k=1 already uses:
+
+        L22H7,  k=1 :  0.27x its floor
+        COPY,   k=5 :  1.45x its floor
+
+    That is the finding, and it survives -- but by 45%, not by an order of magnitude. The k=5 null
+    sd is 2.02x the k=1 sd, so moving to five heads roughly DOUBLES the floor, and the circuit
+    clears the larger floor anyway. Stated in numbers the claim is smaller and checkable; stated as
+    "not inside anything" it was neither.
+    """
+    p = HERE / 'R1_noise_floor' / 'results' / 'prior_effects' / 'e132d_set_null.json'
+    if not p.exists():
+        return None
+    d = json.load(open(p))
+    n, out = d['null'], {}
+    sd, mu, mn = n['sd'], n['mean'], n['min']
+    for name, v in d['sets'].items():
+        out[name] = {'drop': v['drop'], 'pct_in_null': v['pct_in_null'],
+                     'x_floor_2sd': abs(v['drop']) / (2 * sd),
+                     'z_from_null_mean': (v['drop'] - mu) / sd,
+                     'sd_beyond_null_min': (mn - v['drop']) / sd}
+    ib = item_noise_bound()
+    k1_sd = (ib['band_floor_raw'] / 2) if ib else None
+    return {'n_draws': d['n_draws'], 'percentile_resolution_pct': 100.0 / d['n_draws'],
+            'null_mean': mu, 'null_sd': sd, 'null_min': mn, 'null_max': n['max'],
+            # EMITTED because the prose quotes it. Computing 2*sd by hand in a sentence is how a
+            # number reaches a page with no generator behind it -- the defect this file exists for.
+            'floor_2sd': 2 * sd,
+            'base_margin': abs(d['base_margin']), 'sets': out,
+            'k1_exhaustive_sd': k1_sd,
+            'k5_over_k1_sd': (sd / k1_sd) if k1_sd else None}
+
+
 def item_noise_bound():
     """Is the floor HEAD CHOICE, or is it the finite item sample? And the distinction it forces.
 
@@ -947,11 +989,12 @@ def main() -> int:
     SR, TEN, NINE = r1_set_null_range(), r10(), r9()
     FA, VD, DL = r1_floor_audit(), variance_decomposition(), defect_ledger()
     IN = item_noise_bound()
+    SL = set_level_scale()
 
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -1029,6 +1072,19 @@ def main() -> int:
               f"{h['min_pct']:.1f}%-{h['max_pct']:.1f}%, and "
               f"{h['n_within_3pp_of_52']} land within 3pp of the retracted 52%")
         print(f"      -> the ESTIMATOR was free, so the held-out claim is WITHDRAWN, not weakened\n")
+
+    if SL:
+        print("SET the circuit result on the SAME statistic as the head result")
+        print(f"      k=5 null over {SL['n_draws']} draws: mean {SL['null_mean']:+.4f}  "
+              f"sd {SL['null_sd']:.4f}  min {SL['null_min']:+.4f}  max {SL['null_max']:+.4f}")
+        print(f"      a percentile from {SL['n_draws']} draws resolves to "
+              f"{SL['percentile_resolution_pct']:.1f}% -- '0.0th' means 'below all of them', no finer")
+        print(f"      {'set':<28}{'drop':>9}{'x floor':>9}{'z vs null mean':>16}{'sd past min':>13}")
+        for k, v in sorted(SL['sets'].items(), key=lambda kv: kv[1]['drop']):
+            print(f"      {k:<28}{v['drop']:>+9.4f}{v['x_floor_2sd']:>9.2f}"
+                  f"{v['z_from_null_mean']:>+16.2f}{v['sd_beyond_null_min']:>13.2f}")
+        print(f"      k=5 null sd is {SL['k5_over_k1_sd']:.2f}x the k=1 exhaustive sd -- five heads "
+              f"roughly DOUBLES the floor, and the circuit clears the larger one anyway\n")
 
     if IN:
         print("ITM is the floor HEAD CHOICE, or the finite item sample? -- and what that separates")
@@ -1298,9 +1354,14 @@ def main() -> int:
             ('ITM copy head vs item noise',
              next((e['x_item_noise'] for e in IN['effects'] if e['head'] == 'L22H7'), -1)
              if IN else -1, 3.33, 0.01),
-            ('LDG defect rows', DL['n'] if DL else -1, 45, 0),
+            ('SET copy circuit x floor',
+             SL['sets']['COPY']['x_floor_2sd'] if SL else -1, 1.454, 0.001),
+            ('SET copy circuit z vs null mean',
+             SL['sets']['COPY']['z_from_null_mean'] if SL else -1, -3.291, 0.001),
+            ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 46, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 14, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 15.556, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 15.217, 0.001),
             # THE FINDING THE WHOLE DETECTOR SUITE WAS BUILT FROM, asserted so it cannot rot:
             # at n=37 no instrument has yet caught a CONTROL or a SCOPE defect. If a detector
             # ever does, this assertion fails and the front page's claim must be rewritten --

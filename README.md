@@ -20,11 +20,30 @@ the evidence supports:
 > **`L22H7` was independently established as the copy head for this task. Ablating it moves the
 > answer by `0.27×` the noise floor — indistinguishable from ablating a random head.**
 >
-> **Ablate the whole copy circuit and it lands at the `0.0`th percentile of the `k=5` null**, at
-> `−1.4279` against a baseline margin of `4.477`. Not marginal. Not inside anything.
+> **Ablate the whole copy circuit and it clears its own floor by `1.45×`**, at `−1.4279` against a
+> `k=5` null whose `2 × sd` is `0.9822` — `3.29` standard deviations below that null's mean.
 >
 > So the mechanism is real, it is localised, and **the granularity at which it was reported —
-> one head — cannot see it.**
+> one head — cannot see it.** One statistic, both units:
+>
+> ```
+> L22H7      k=1     0.27× its floor      indistinguishable from a random head
+> COPY       k=5     1.45× its floor      clears, and the k=5 floor is 2.02× larger
+> ```
+
+> ### Corrected within an hour of being written — the first version of the paragraph above overstated it
+>
+> It said the circuit lands at the *"`0.0`th percentile of the `k=5` null"* and added: **"Not
+> marginal. Not inside anything."** The percentile is true and carries less than it sounds: with
+> `30` draws a percentile resolves to `3.3%`, so `0.0`th means **"below all thirty"** and nothing
+> finer. The circuit is beyond the most extreme of those thirty by `0.38` sd.
+>
+> Put on the statistic `k=1` already uses — `|effect| / (2 × sd of its own null)` — it is `1.45×`.
+> **It clears by `45%`, not by an order of magnitude.** The claim survives; the sentence did not.
+>
+> **Written in the step whose entire subject was overstatement.** A percentile that hides magnitude
+> is the same failure as a floor treated as measured when it was chosen: a number carrying a claim
+> its own construction cannot support.
 
 ### Two corrections to how this used to be worded, both predicted by [`ADVERSARY.md`](ADVERSARY.md) before they were made
 
@@ -429,21 +448,21 @@ against, which is a fact about your directory and not about the ledger.
     PROVENANCE     14      whether the number has a generator at all
     SCOPE           9      which population the claim covers
     CONTROL         8      what the control arm actually holds fixed
-    STATISTIC       8      what quantity the number is
+    STATISTIC       9      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 20 · instrument 8 · outside reader 7
+    found by:  author reading the object 21 · instrument 8 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 45 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 46 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 45 were findable only by an outside reader** — `15.6%`. That fraction was 27% at n=22 and
+**7 of 46 were findable only by an outside reader** — `15.2%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -456,12 +475,12 @@ joint            by the author   by an instrument   by an outside reader
 PROVENANCE             9                5                    0
 SCOPE                  7                0                    2
 CONTROL                4                0                    4
-STATISTIC              4                3                    1
+STATISTIC              5                3                    1
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**The overlap is one bin, and n=`45` has not changed it.** `SCOPE` has grown to `9` — the largest jump of any bin — entirely from the author attacking his own framing, and an instrument still has not caught one. Nine detectors now exist and **not one has
+**The overlap is one bin, and n=`46` has not changed it.** `SCOPE` has grown to `9` — the largest jump of any bin — entirely from the author attacking his own framing, and an instrument still has not caught one. Nine detectors now exist and **not one has
 ever caught a `CONTROL` or `SCOPE` defect** — those two joints were found only by another mind. That measurement is what
 [`arm_contrast`](detectors/arm_contrast.py) was built from: it is aimed at the joint the instruments
 had never reached, and its first selftest case is the real defect that eight rounds inherited.
@@ -470,12 +489,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`45` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`46` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `14`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`45` a bin of `14` is `31.1%`, which is not domination
+> ledger; at n=`46` a bin of `14` is `30.4%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The

@@ -414,6 +414,15 @@
       "defect": "both REFUSED branches of the exhaustive runner called Path('results').mkdir -- CWD-relative -- while writing to --out's full path, so a refusal into a not-yet-existing directory raises FileNotFoundError and writes NOTHING",
       "operation": "FIXED before the phi-3.5-mini job could hit it (phi has refused before, on n=0 items). The fossil was on disk: an empty untracked results/ in the repo root, created 03:02 by task 41 -- the R9 run that died on its last line with exactly this error. The one branch whose purpose is to leave an honest record of 'this model could not be measured' was the one that could leave nothing but a traceback in a job log",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D46",
+      "round": "repo",
+      "bin": "STATISTIC",
+      "commit": "c0c56f7",
+      "defect": "the NEW front-page lead, written one step earlier to fix an overstatement, said the k=5 COPY circuit is at the '0.0th percentile of the null' and added 'Not marginal. Not inside anything.'",
+      "operation": "OVERSTATED. A percentile from 30 draws resolves to 3.3%: '0.0th' means 'below all thirty' and nothing finer, and the circuit is beyond the most extreme of them by 0.38 sd. On the statistic k=1 already uses -- |effect|/(2*sd of its own null) -- it is 1.45x, i.e. it clears by 45%, not by an order of magnitude. The claim survives, the sentence did not. Both units now reported on one statistic: L22H7 at k=1 is 0.27x, COPY at k=5 is 1.45x, and the k=5 floor is 2.02x larger",
+      "found_by": "author_reading_the_object"
     }
   ]
 }
