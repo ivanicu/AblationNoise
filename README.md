@@ -313,8 +313,16 @@ R2 qwen2.5-3b                 10.378     8.3%     0.5%     15.10
 ```
 
 **The effects are comparable across both tasks — 2–46% of range. The floors span 0.5% to 50%, a
-91× spread.** The two rounds do not differ in signal. They differ in how noisy single-component
+91× spread.** These two rounds do not differ in signal. They differ in how noisy single-component
 ablation is on that task, model and readout.
+
+> **And that does not generalise inside one task — checked on held-out cells, and it failed.**
+> Decomposing `log(effect/floor)` into its two terms: across the two rounds the floor carries
+> **72%** of the variance (3.17 vs 1.23). On [R5](R5_factorial/)'s six margin cells, which were
+> never used to build this, it carries **52%** — a coin flip, with effects spanning 3.8× and floors
+> 5.2×. So *across tasks* the floor dominates; *within one task and readout* the two vary
+> comparably and neither decides. n=6 on both sides, and the in-sample six share only five distinct
+> floor values, so this is a scope correction rather than a measurement.
 
 **And `phi-3.5-mini` is the control that makes this internal.** Same task, same mechanism, same
 readout as the other three R2 cells — its effect is a perfectly ordinary 10.6% of range, and it is
