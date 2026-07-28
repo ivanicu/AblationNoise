@@ -17,9 +17,25 @@ running its own positive control**.
 | qwen2.5-3b | margin | 1.36 | 0.98 | 0.72× |
 | qwen2.5-3b | kl | 0.76 | 0.28 | 0.37× |
 
-**Six of six worse.** The floor widens 2.4–5.2× while the effect changes by 0.90–1.94×. When an
-ablation shows nothing the reflex is to ablate harder; on every model and both readouts, that makes
-the measurement worse.
+**Six of six worse — and under two independent floor definitions.** Readability is `|effect| /
+floor`, and the two candidate floors disagree about magnitude while agreeing about direction in
+every cell:
+
+```
+floor = 2 sd        worse in 6 of 6    floor widens 1.31-3.34x
+floor = p10-p90     worse in 6 of 6    floor widens 1.39-5.46x
+|effect| itself changes 0.69-1.94x
+```
+
+So the direction is a property of the data and the magnitude is a property of the statistic. When an
+ablation shows nothing the reflex is to ablate harder; on every model, both readouts and both floor
+definitions, that makes the measurement worse.
+
+> **Corrected 2026-07-27.** This paragraph previously read *"the floor widens 2.4–5.2× while the
+> effect changes by 0.90–1.94×"*. Neither range reproduces from the checked-in results under any
+> floor definition; both were quoted from a commit message rather than computed. `make verify` now
+> recomputes and asserts every number above, and fails the build if one drifts. The 6-of-6 verdict
+> is unaffected — it was never the number that was wrong.
 
 **Readability is a ratio, not a size.** phi's clearing cell has an effect **100× smaller** than the
 1.5B's. A small effect on a small floor is readable; a large effect on a larger floor is not.

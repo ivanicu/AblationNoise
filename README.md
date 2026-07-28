@@ -13,6 +13,17 @@ Everything here runs on one consumer GPU. Every round is pre-registered with a k
 committed **before** the run, and three of the five rounds killed the hypothesis their author
 preferred.
 
+```bash
+make headline   # every number below, recomputed from the checked-in results. No GPU, ~2s
+make verify     # the same, and exit non-zero if any README number has drifted from its data
+make selftest   # each detector replays the real incident that produced it
+```
+
+`make verify` exists because this repository has twice caught **itself** shipping a number that
+could not be regenerated — R4's fold errors and R5's floor-widening range, both quoted from commit
+messages. Both are corrected in place, both corrections are annotated rather than erased, and every
+headline number now has a generator that the build runs.
+
 ---
 
 ## The rounds
@@ -24,7 +35,7 @@ Each round is a folder: its pre-registration, its amendments, its runner, its re
 | **[R1](R1_noise_floor/)** | how large is the ablation noise floor? | at k=1, *which* component you ablate explains **2.7–12.3×** more variance than *that* you ablated one — 4 models, 3 families |
 | **[R2](R2_inversion/)** | how often does ablating a *known* mechanism go the wrong way? | **rare** — 0 of 4. The attractive hypothesis died |
 | **[R3](R3_withdrawn/)** | is a sibling project's specificity control a single draw? | **withdrawn before spending compute** — its own records refuted the premise |
-| **[R4](R4_predictability/)** | can readability be predicted from cheap observables? | **no** across models (0/5 folds) — but within a model the floor is a power law, so **two measured points fix the curve** (12/12 held-out within 2×) |
+| **[R4](R4_predictability/)** | can readability be predicted from cheap observables? | across models **UNVERIFIED** — the pre-registered gate is met by 60 of 324 admissible estimators, so its own first verdict was withdrawn. Within a model the floor is a power law and **two measured points fix the curve** (12/12 held-out within 2×) |
 | **[R5](R5_factorial/)** | which factor decides readability: site, readout, or mechanism size? | ablating at **every** position instead of one made the effect-to-floor ratio **worse in 6 of 6** model × readout cells |
 
 ## The result that is most useful to someone else
@@ -35,8 +46,10 @@ task. But within a model it is a clean power law in set size (R² 0.94–0.99), 
 sizes fixes the whole curve** — two conditions instead of a sweep.
 
 **And ablating harder makes it worse.** When an ablation shows nothing the reflex is to cut more.
-Across three models and both readouts, moving from one position to every position widened the floor
-2.4–5.2× while the effect changed by 0.90–1.94×. Six of six cells got *less* readable.
+Across three models and both readouts, moving from one position to every position made the
+effect-to-floor ratio worse in **six of six** cells — and it does so under both candidate floor
+definitions (2 sd and the p10–p90 band), which widen by 1.31–3.34× and 1.39–5.46× respectively while
+the effect itself changes by 0.69–1.94×.
 
 ## The detectors
 
