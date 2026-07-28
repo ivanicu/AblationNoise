@@ -14,6 +14,38 @@
 > Split out of `README.md` on 2026-07-28 without rewriting: the sections below are the same
 > bytes, moved. Status, scope and the runnable command are on the [front page](README.md).
 
+## A scalar floor does not transport — and that, not the eight heads, is the result
+
+Transport one configuration's **whole decision rule** — `|x − mu_A| > floor_A` — into three others,
+each differing from `A` in **exactly one** factor, and compare what it says against what that
+configuration's own reference class says.
+
+```
+configuration                        own floor   own    A-rule   ratio    differs by
+A  I_final @ unshuffled                 0.4870  10/168  10/168    1.00    (same) POSITIVE CONTROL
+D  I_final @ unshuffled, NEW items      0.4891  10/168  10/168    1.00    item sample only
+C  I_all   @ unshuffled                 0.9766  14/168  33/168    2.36    intervention support only
+B  I_final @ SHUFFLED                   0.4023  12/168   6/168    0.50    task / answer position only
+```
+
+**Row `D` is the positive control and the discriminator.** A completely fresh item draw — seeds
+`3400`–`3800` against `3000`–`3400` — transports at ratio **`1.00`**. The instrument *is* stable in
+the way [R11](R11_instrument_noise/) established, **so a failure on the other rows cannot be blamed
+on sampling noise.**
+
+> **The two failures point in opposite directions.** Believing `A`'s floor under a different
+> **intervention** calls `33` of `168` heads distinguishable where that configuration's own reference
+> says `14` — the rate inflates `2.36×`. Believing it under a different **task** calls `6` where its
+> own reference says `12` — you miss half.
+>
+> **A scalar floor is not merely imprecise. Its bias depends on which way the configuration moved,
+> so no safety factor fixes it.**
+
+**What this is not:** the `own` column is the same `2σ` rule on a heavy-tailed distribution, so this
+compares **two applications of one rule**, not a calibration against a nominal `α`. That is exactly
+the transportability question — which is the one being asked — but it is not a `5%` false-positive
+guarantee. One model, one band `L14`–`27`, one task family, `k=1`, one contrast per axis.
+
 ### The eight were **selected, evaluated and audited on the same `120` items**
 
 Established from the source project, not from memory:

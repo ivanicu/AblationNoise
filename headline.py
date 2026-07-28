@@ -630,6 +630,72 @@ def adversary_scoring():
                                                   'R18']}
 
 
+def floor_transport():
+    """DOES A SCALAR FLOOR TRANSPORT? Out-of-sample calibration across four configurations.
+
+    This is the one result here that is not about the eight heads at all. It is about the method.
+
+    A "noise floor" is only a floor if the decision rule it defines means the same thing somewhere
+    else. Transport A's WHOLE rule -- |x - mu_A| > floor_A -- into three other configurations, each
+    differing from A in EXACTLY ONE factor, and compare what it says against what that
+    configuration's own reference class says.
+
+        configuration                        own floor  own rate  A-rule rate  ratio   differs by
+        A  I_final @ unshuffled                 0.4870     5.95%       5.95%   1.00    (positive ctrl)
+        D  I_final @ unshuffled, NEW items      0.4891     5.95%       5.95%   1.00    item sample
+        C  I_all   @ unshuffled                 0.9766     8.33%      19.64%   2.36    intervention
+        B  I_final @ SHUFFLED                   0.4023     7.14%       3.57%   0.50    task/position
+
+    THE POSITIVE CONTROL IS ROW D AND IT IS ALSO THE DISCRIMINATOR. A completely fresh item draw --
+    seeds 3400-3800 against 3000-3400 -- transports at ratio 1.00. So the instrument IS stable in the
+    way R11 established, and a failure elsewhere cannot be blamed on sampling noise.
+
+    AND THE TWO FAILURES POINT IN OPPOSITE DIRECTIONS. Believing A's floor under a different
+    INTERVENTION calls 33 of 168 heads distinguishable where that configuration's own reference says
+    14 -- the false-positive rate inflates 2.36x. Believing it under a different TASK calls 6 where
+    its own reference says 12 -- you miss half. A SCALAR FLOOR IS NOT MERELY IMPRECISE; ITS BIAS
+    DEPENDS ON WHICH WAY THE CONFIGURATION MOVED, so no safety factor fixes it.
+
+    WHAT THIS IS NOT. The "own rate" is itself a 2*sd threshold on a heavy-tailed distribution, so
+    this compares TWO APPLICATIONS OF THE SAME RULE rather than testing against a true alpha. That is
+    the right comparison for transportability, which is the question, but it is not a calibration
+    against a nominal 5%. One model, one band L14-27, one task family, k=1, and one contrast per axis.
+    """
+    import math as _m
+    files = [
+        ('A  I_final @ unshuffled', 'R10_exhaustive/results/r10_exhaustive_qwen2.5-1.5b.json',
+         'same configuration -- POSITIVE CONTROL'),
+        ('D  I_final @ new items', 'R11_instrument_noise/results/r11_itemsB_qwen2.5-1.5b.json',
+         'item sample ONLY'),
+        ('C  I_all   @ unshuffled', 'R18_all_positions/results/r18_allpos_qwen2.5-1.5b.json',
+         'intervention support ONLY'),
+        ('B  I_final @ shuffled', 'R15_shuffled_scan/results/r15_shuffled_qwen2.5-1.5b.json',
+         'task / answer position ONLY')]
+    rows = []
+    ref = None
+    for name, rel, why in files:
+        f = HERE / rel
+        if not f.exists():
+            return None
+        d = json.load(open(f))
+        L = {int(k): v for k, v in d['layers'].items()}
+        NH = len(L[14]['per_head'])
+        b = [(x, h) for x in range(14, 28) for h in range(NH)]
+        v = [L[x]['per_head'][str(h)] for x, h in b]
+        mu = sum(v) / len(v)
+        fl = 2 * _m.sqrt(sum((z - mu) ** 2 for z in v) / (len(v) - 1))
+        if ref is None:
+            ref = (mu, fl)
+        own = sum(1 for z in v if abs(z - mu) > fl)
+        transported = sum(1 for z in v if abs(z - ref[0]) > ref[1])
+        rows.append({'config': name, 'differs_by': why, 'n': len(v),
+                     'own_floor': fl, 'own_mu': mu,
+                     'own_n': own, 'own_pct': 100 * own / len(v),
+                     'transported_n': transported, 'transported_pct': 100 * transported / len(v),
+                     'ratio': transported / own if own else float('nan')})
+    return {'reference_mu': ref[0], 'reference_floor': ref[1], 'rows': rows}
+
+
 def selection_overlap():
     """THE EIGHT WERE SELECTED, EVALUATED AND AUDITED ON THE SAME ITEMS. Established from source.
 
@@ -2739,6 +2805,10 @@ def main() -> int:
     R18 = r18()
     SE = set_enrichment()
     SO = selection_overlap()
+    # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
+    # assignment shadowed it. It failed loudly only because the two dicts share no key;
+    # had they shared one, the wrong number would have printed silently.
+    FTR = floor_transport()
     AS = adversary_scoring()
     EL = r11()
     PW = power()
@@ -2748,7 +2818,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -2964,6 +3034,28 @@ def main() -> int:
               f"{' '.join(AS['rounds_uncovered_before_this_step'])} -- now extended, A9-A13")
         print("      and its A1 row carried the composition error R16 fixed 4 rounds ago as D80,")
         print("      which had landed on the prior-effects note ONLY\n")
+
+    if FTR:
+        print("FLR  DOES A SCALAR FLOOR TRANSPORT? -- the one result here that is about the METHOD")
+        print(f"     transport A's WHOLE rule  |x - mu_A| > floor_A  (mu {FTR['reference_mu']:+.4f}, "
+              f"floor {FTR['reference_floor']:.4f}) into three configurations")
+        print(f"     each differing from A in EXACTLY ONE factor:")
+        print(f"     {'configuration':<26}{'own floor':>10}{'own':>8}{'A-rule':>9}{'ratio':>7}"
+              f"   differs by")
+        for r in FTR['rows']:
+            print(f"     {r['config']:<26}{r['own_floor']:>10.4f}"
+                  f"{r['own_n']:>5}/{r['n']:<3}{r['transported_n']:>6}/{r['n']:<3}"
+                  f"{r['ratio']:>7.2f}   {r['differs_by']}")
+        print(f"     ROW D IS THE POSITIVE CONTROL AND THE DISCRIMINATOR: a completely fresh item")
+        print(f"     draw transports at ratio 1.00, so a failure elsewhere is not sampling noise.")
+        print(f"     THE TWO FAILURES POINT OPPOSITE WAYS -- intervention inflates the rate "
+              f"{FTR['rows'][2]['ratio']:.2f}x,")
+        print(f"     task deflates it to {FTR['rows'][3]['ratio']:.2f}x. A scalar floor is not merely "
+              f"imprecise: its BIAS")
+        print(f"     DEPENDS ON WHICH WAY THE CONFIGURATION MOVED, so no safety factor fixes it.")
+        print(f"     NOT a calibration against a nominal alpha -- the `own` column is the same 2*sd")
+        print(f"     rule on a heavy-tailed distribution, so this compares two APPLICATIONS of one")
+        print(f"     rule. That is the transportability question, which is the one being asked\n")
 
     if SO:
         print("SEL  THE EIGHT WERE SELECTED, EVALUATED AND AUDITED ON THE SAME ITEMS -- from source")
@@ -3678,7 +3770,7 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 30.495, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 31.125, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -3759,9 +3851,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 95, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 96, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 25, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.421, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.333, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

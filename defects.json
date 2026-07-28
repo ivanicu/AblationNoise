@@ -864,6 +864,15 @@
       "defect": "I reported 'pueue 232 still running' in FOUR consecutive steps. The job started 12:48:50 and ENDED 13:11:37 -- it had been dead for over two hours. I read the STATUS WORD from `pueue status` and never read the End timestamp in `pueue log`. Worse, I monitored the queue with a hardcoded id grep (`^ (232|237)`), so a duplicate 3b job sitting in the same queue was invisible to every check I ran, and pueue task ids are not stable identifiers for a job I care about",
       "operation": "A STATUS WORD IS NOT A STATE; THE End TIMESTAMP IS. Three fixes. (1) The queue is now read BY LABEL, not by remembered id -- `pueue status -g gpu | grep -iE 'R18-|R19-'` -- which immediately surfaced the duplicate 3b job that four id-greps had missed; the duplicate was removed. (2) The retry runs under `python3 -u`: 232's entire stdout was lost to buffering when it took SIGKILL, so the log held nothing but the weight-loading progress bar and the cause is UNVERIFIED rather than diagnosed. The most likely cause is memory -- another project's job holds 5.2 GB of the 16.3 GB card and a 3B model in float32 needs about 12.4 GB -- but that is inference from the current state, not evidence about 13:11:37, and it is recorded as such. (3) dtype stays float32 even though bfloat16 would halve the footprint, because R10's 3b run was float32 and the centroid comparison R12 turns on is only valid dtype-matched",
       "found_by": "instrument"
+    },
+    {
+      "id": "D96",
+      "round": "repo",
+      "bin": "SCOPE",
+      "commit": "4b0bd29",
+      "defect": "the repository measured four separate floors -- across items, across intervention support, across task position, across layer band -- and never once asked the question that makes them a claim rather than a list: DOES A SCALAR FLOOR TRANSPORT? Every verdict here applies a floor measured in one configuration as though the decision rule it defines means the same thing in another",
+      "operation": "MEASURED, WITH A POSITIVE CONTROL THAT IS ALSO THE DISCRIMINATOR. Transport A's whole rule |x - mu_A| > floor_A into three configurations each differing in exactly one factor. Item sample only: 10/168 both ways, ratio 1.00 -- so the instrument IS stable across draws and a failure elsewhere is not sampling noise. Intervention support only: own reference says 14/168, the transported rule says 33/168, ratio 2.36. Task/answer position only: own says 12/168, transported says 6/168, ratio 0.50. THE TWO FAILURES POINT IN OPPOSITE DIRECTIONS, so a scalar floor is not merely imprecise -- its bias depends on which way the configuration moved and no safety factor fixes it. This is the one result in the repository that is about the METHOD rather than about the eight heads, and it is what survives D94's finding that seven of the eight carried no positive claim to deflate. HONEST LIMIT: the `own` column is the same 2-sigma rule on a heavy-tailed distribution, so this compares two applications of one rule rather than calibrating against a nominal alpha; one model, one band, one task family, k=1, one contrast per axis",
+      "found_by": "author_reading_the_object"
     }
   ]
 }
