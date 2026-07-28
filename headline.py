@@ -243,6 +243,17 @@ def reference_class():
             'spearman_layer_vs_clearing_rate': _spearman(
                 sorted(L), [sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
                             / len(L[x]['per_head']) for x in sorted(L)]),
+            # THE QUANTITIES R12'S PRE-REGISTRATION PREDICTS FROM, emitted so its thresholds are
+            # machine-checkable rather than editable prose. Writing them out caught an arithmetic
+            # slip in the pre-registration itself: 0.644 x 35 is 22.54, not the 20.5 first written.
+            # 20.5 is the MIDPOINT between the two worlds' predictions and is the right window edge;
+            # the annotation calling it the relative prediction was wrong.
+            'clearing_centroid_layer': (
+                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                    / len(L[x]['per_head']) for x in sorted(L)) /
+                sum(sum(1 for v in L[y]['per_head'].values() if abs(v) > fs)
+                    / len(L[y]['per_head']) for y in sorted(L))),
+            'n_layers': len(L),
             'peak_layers': [x for x in sorted(L)
                             if sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
                             / len(L[x]['per_head']) == max(
@@ -260,6 +271,28 @@ def reference_class():
                 1 for h in pe['effects']
                 if int(h[1:h.index('H')]) in (16, 17)),
             'band_heads_clearing_sham': sum(1 for v in band if abs(v) > fs),
+            # For a 36-layer model: ABSOLUTE predicts the same centroid LAYER, RELATIVE the same
+            # DEPTH FRACTION. At 28 layers those coincide; at 36 they are ~5 layers apart, which is
+            # why the second model separates worlds the first cannot.
+            'clearing_centroid_depth_fraction': (
+                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                    / len(L[x]['per_head']) for x in sorted(L)) /
+                sum(sum(1 for v in L[y]['per_head'].values() if abs(v) > fs)
+                    / len(L[y]['per_head']) for y in sorted(L)) / (len(L) - 1)),
+            # R12'S PRE-REGISTERED WINDOW EDGES, emitted so they are checked constants rather than
+            # prose a later edit could move. They are half a layer either side of the midpoint
+            # between the two worlds' predictions (17.39 and 22.54).
+            'r12_window_absolute_max': 19.5, 'r12_window_relative_min': 20.5,
+            'predicted_centroid_absolute_36L': (
+                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                    / len(L[x]['per_head']) for x in sorted(L)) /
+                sum(sum(1 for v in L[y]['per_head'].values() if abs(v) > fs)
+                    / len(L[y]['per_head']) for y in sorted(L))),
+            'predicted_centroid_relative_36L': (
+                sum(x * sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                    / len(L[x]['per_head']) for x in sorted(L)) /
+                sum(sum(1 for v in L[y]['per_head'].values() if abs(v) > fs)
+                    / len(L[y]['per_head']) for y in sorted(L)) / (len(L) - 1) * 35),
             'pct_band_clearing_sham': 100 * sum(1 for v in band if abs(v) > fs) / len(band),
             'rows': rows}
 
@@ -1866,6 +1899,16 @@ def main() -> int:
             ('SET copy circuit z vs null mean',
              SL['sets']['COPY']['z_from_null_mean'] if SL else -1, -3.291, 0.001),
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
+            # R12'S PREDICTIONS, ASSERTED BEFORE ITS RUN LANDS. If either moves, the
+            # pre-registration has been edited after the fact and the build says so.
+            ('R12 absolute-world prediction',
+             RC['predicted_centroid_absolute_36L'] if RC else -1, 17.388, 0.001),
+            ('R12 relative-world prediction',
+             RC['predicted_centroid_relative_36L'] if RC else -1, 22.540, 0.001),
+            ('R12 ambiguous window lower edge',
+             RC['r12_window_absolute_max'] if RC else -1, 19.5, 0.0),
+            ('R12 ambiguous window upper edge',
+             RC['r12_window_relative_min'] if RC else -1, 20.5, 0.0),
             ('REF depth vs clearing rate',
              RC['spearman_layer_vs_clearing_rate'] if RC else -1, 0.645, 0.001),
             ('REF copy head rank in its layer clearing set',
