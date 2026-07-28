@@ -70,6 +70,14 @@ pre-registered worlds had identical predictions.
 > current, and is treated as standard in at least one active programme — which is enough to kill
 > *"almost none"*.
 >
+> **Is *that* narrower thing novel? UNVERIFIED, and the check failed its own positive control.**
+> A second query aimed at "does anyone report how the random-ablation null SCALES with the number
+> of components ablated" returned **zero relevant papers** — and returned **none of the ten above**,
+> which are known to exist and are known to be relevant. An instrument that cannot retrieve its own
+> known positives returns silence, not absence. The narrower claim is therefore **not** asserted as
+> novel here. Abstracts are also an unfit instrument for it: whether a null was swept across set
+> sizes is a methods detail.
+>
 > **What survives is narrower and is what this repository actually measured:** not *that* a random
 > baseline should be reported, but **what that baseline is like** — a power law in set size, moving
 > 1.7× when four nouns change, varying tenfold between adjacent layers, and sitting at a tenth of
