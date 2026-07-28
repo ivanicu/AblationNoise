@@ -513,6 +513,15 @@
       "defect": "the distinguishability verdict uses the STUDIED BAND's own heads as the null -- a distribution of heads that DO things -- and the alternative null R1 originally used (the sham band, L0-7) had never been applied to the eight",
       "operation": "PRE-REGISTERED >=4 of 8 clearing the sham floor as 'the reference class decides the verdict'; observed 3, DID NOT FIRE, so that claim is not made. But the shape is sharper: the two floors are 6.15x apart from reference class alone, and 78 of 168 band heads (46%) also clear the sham floor. Clearing it is not distinction, it is being in the second half of the network. With R9's depth result the reading is exact -- L22H7 is distinguishable from an early-layer head and indistinguishable from a late-layer one, so its ablation number carries DEPTH information, not ROLE information",
       "found_by": "author_reading_the_object"
+    },
+    {
+      "id": "D57",
+      "round": "repo",
+      "bin": "SCOPE",
+      "commit": "27dfa7b",
+      "defect": "'clearing the sham floor is being in the second half of the network' -- written one step earlier as the interpretation of the 46% figure",
+      "operation": "TOO COARSE, and the direct measurement shows why. The per-layer clearing rate rises with depth (Spearman +0.645 over 28 layers) but NOT monotonically: it peaks at 83% in L16-L17 and falls back to 8% by L25, so L25 clears LESS often than L11. A hump, not a half. Two facts place the copy head exactly: L22's own rate is 42%, the band average, and within its layer L22H7 is the 5th of 5 heads that clear -- the smallest. And 4 of the 8 published heads live in the PEAK layers where 83% of heads clear, which is why they clear the sham floor and why it establishes nothing",
+      "found_by": "author_reading_the_object"
     }
   ]
 }

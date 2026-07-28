@@ -228,6 +228,37 @@ def reference_class():
             'n_clear_band': sum(r['x_band'] > 1 for r in rows),
             'n_clear_sham': sum(r['clears_sham'] for r in rows),
             'preregistered_threshold': 4, 'fired': sum(r['clears_sham'] for r in rows) >= 4,
+            # THE PROFILE, because "the second half of the network" was too coarse and was
+            # written one step before this measured it. Clearing rate rises with depth (Spearman
+            # +0.645 over 28 layers) but NOT monotonically: it peaks at 83% in L16-L17 and falls
+            # back to 8-17% by L25/L27, so L25 clears LESS often than L11. A hump, not a half.
+            'clearing_rate_by_layer': {x: sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                                       / len(L[x]['per_head']) for x in sorted(L)},
+            # PERCENT AS WELL AS FRACTION, because the prose quotes percentages and 0.5833 does
+            # not back "58%". A unit mismatch between generator and page is the same defect class
+            # as a hand-computed 2*sd: the number is right and nothing can check it.
+            'clearing_pct_by_layer': {x: 100 * sum(1 for v in L[x]['per_head'].values()
+                                                   if abs(v) > fs) / len(L[x]['per_head'])
+                                      for x in sorted(L)},
+            'spearman_layer_vs_clearing_rate': _spearman(
+                sorted(L), [sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                            / len(L[x]['per_head']) for x in sorted(L)]),
+            'peak_layers': [x for x in sorted(L)
+                            if sum(1 for v in L[x]['per_head'].values() if abs(v) > fs)
+                            / len(L[x]['per_head']) == max(
+                                sum(1 for v in L[y]['per_head'].values() if abs(v) > fs)
+                                / len(L[y]['per_head']) for y in L)],
+            # AND WHERE THE COPY HEAD SITS INSIDE ITS OWN LAYER'S CLEARING SET.
+            'L22_clearing': sorted(
+                [{'head': f'L22H{h}', 'drop': v}
+                 for h, v in L[22]['per_head'].items() if abs(v) > fs],
+                key=lambda r: -abs(r['drop'])),
+            'copy_head_rank_in_its_layer_clearing_set': sorted(
+                [abs(v) for v in L[22]['per_head'].values() if abs(v) > fs],
+                reverse=True).index(abs(L[22]['per_head']['7'])) + 1,
+            'n_published_in_peak_layers': sum(
+                1 for h in pe['effects']
+                if int(h[1:h.index('H')]) in (16, 17)),
             'band_heads_clearing_sham': sum(1 for v in band if abs(v) > fs),
             'pct_band_clearing_sham': 100 * sum(1 for v in band if abs(v) > fs) / len(band),
             'rows': rows}
@@ -1441,6 +1472,19 @@ def main() -> int:
         print(f"      but {RC['band_heads_clearing_sham']} of {RC['n_band']} band heads "
               f"({RC['pct_band_clearing_sham']:.0f}%) also clear the sham floor -- clearing it is "
               f"not distinction, it is being in the second half of the network")
+        pk = ', '.join(f"L{x}" for x in RC['peak_layers'])
+        print(f"      the clearing rate rises with depth -- Spearman "
+              f"{RC['spearman_layer_vs_clearing_rate']:+.3f} over 28 layers -- but NOT monotonically:")
+        print(f"        peak {pk} at "
+              f"{100*max(RC['clearing_rate_by_layer'].values()):.0f}%, falling to "
+              f"{100*RC['clearing_rate_by_layer'][25]:.0f}% by L25. A HUMP, not a half")
+        print(f"        L22's own rate {100*RC['clearing_rate_by_layer'][22]:.0f}% -- at the band "
+              f"average -- and within it the copy head is #"
+              f"{RC['copy_head_rank_in_its_layer_clearing_set']} of "
+              f"{len(RC['L22_clearing'])}, the SMALLEST that clears")
+        print(f"        and {RC['n_published_in_peak_layers']} of the 8 published heads live in the "
+              f"PEAK layers, where 83% of heads clear -- which is why they clear, and why it means "
+              f"nothing")
         print(f"      -> the copy head's ablation number carries DEPTH information, not ROLE "
               f"information\n")
 
@@ -1822,6 +1866,12 @@ def main() -> int:
             ('SET copy circuit z vs null mean',
              SL['sets']['COPY']['z_from_null_mean'] if SL else -1, -3.291, 0.001),
             ('SET k5 over k1 sd', SL['k5_over_k1_sd'] if SL else -1, 2.017, 0.001),
+            ('REF depth vs clearing rate',
+             RC['spearman_layer_vs_clearing_rate'] if RC else -1, 0.645, 0.001),
+            ('REF copy head rank in its layer clearing set',
+             RC['copy_head_rank_in_its_layer_clearing_set'] if RC else -1, 5, 0),
+            ('REF published heads in the peak layers',
+             RC['n_published_in_peak_layers'] if RC else -1, 4, 0),
             ('REF sham floor', RC['sham_floor'] if RC else -1, 0.0792, 0.0001),
             ('REF band over sham ratio', RC['ratio'] if RC else -1, 6.1508, 0.0001),
             ('REF eight clearing sham', RC['n_clear_sham'] if RC else -1, 3, 0),
@@ -1854,9 +1904,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 56, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 56, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 57, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 17, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 12.5, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 12.281, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

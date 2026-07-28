@@ -165,12 +165,26 @@ RESOLVABLE at 2σ      8 of 8            DISTINGUISHABLE from a random head     
 > class decides the verdict. Observed `3`. It did not fire**, so that claim is not made.
 >
 > **But the shape is sharper than the threshold it was testing.** `78` of the `168` band heads —
-> **`46%`** — also clear the sham floor. Clearing it is not a mark of distinction; it is what
-> roughly half of all late-layer heads do. Put beside [R9](R9_depth_profile/)'s result that the
-> floor *grows with depth*, the reading is exact:
+> **`46%`** — also clear the sham floor. Clearing it is not a mark of distinction.
+>
+> **And "late-layer" was too coarse — corrected the step after it was written.** The fraction of a
+> layer's heads that clear the sham floor rises with depth (Spearman `+0.645` over `28` layers) but
+> **not monotonically**: it peaks at `83%` in `L16–L17` and falls back to `8%` by `L25`. `L25`
+> clears *less* often than `L11`. It is a **hump**, not a half, and the earlier wording — *"being
+> in the second half of the network"* — described a monotone rise that the data does not show.
+>
+> ```
+> L0–7    0–8%        L11–14   33–42%       L18–22   42–58%
+> L8–10   8–17%       L15–17   67–83% ←peak L23–27    8–42%
+> ```
 >
 > > **`L22H7` is distinguishable from an early-layer head and indistinguishable from a late-layer
 > > one. Its ablation number carries *depth* information, not *role* information.**
+>
+> Two facts place it exactly. `L22`'s own clearing rate is `42%` — the band average — and **within
+> that layer the proven copy head is the `5`th of `5` heads that clear: the smallest one.** And
+> `4` of the `8` published heads live in `L16–L17`, the **peak** layers where `83%` of heads clear —
+> which is why those four clear the sham floor, and why it establishes nothing about them.
 >
 > Both floors are defensible and answer different questions. The front page's verdict is against the
 > band floor — *is this head special among the heads I might have picked instead?* — and it stands
@@ -548,23 +562,23 @@ against, which is a fact about your directory and not about the ledger.
 
 ```
     PROVENANCE     17      whether the number has a generator at all
-    SCOPE           8      which population the claim covers
+    SCOPE           9      which population the claim covers
     CONTROL        11      what the control arm actually holds fixed
     STATISTIC      10      what quantity the number is
     UNCLASSIFIED    4
     INTERVENTION    2      what the operation physically writes / where / when
 
-    found by:  author reading the object 28 · instrument 12 · outside reader 7
+    found by:  author reading the object 29 · instrument 12 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
                author writing it up 1 · detector 6 1
 ```
 
-**Not one of the 56 is a statistics error.** Every one is the same shape: a *label* carried where a
+**Not one of the 57 is a statistics error.** Every one is the same shape: a *label* carried where a
 *derivation* was needed — an intervention called gentle that was smaller, a control said to hold one
 thing fixed that held two, a ratio of standard deviations called a variance, a number quoted from a
 commit message that no code emits.
 
-**7 of 56 were findable only by an outside reader** — `12.5%`. That fraction was 27% at n=22 and
+**7 of 57 were findable only by an outside reader** — `12.3%`. That fraction was 27% at n=22 and
 falls as the author keeps finding more, which is the right direction and also a reminder that a
 ceiling estimated from a small sample moves. **Every count in this section is now generated from
 [`defects.json`](defects.json) by `make headline`** — they were maintained by hand, and a hand-kept
@@ -575,14 +589,14 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 ```
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE            10                7                    0
-SCOPE                  8                0                    2
+SCOPE                  9                0                    2
 STATISTIC              6                4                    1
 CONTROL                7                1                    4
 UNCLASSIFIED           4                0                    0
 INTERVENTION           1                1                    0
 ```
 
-**An instrument has finally caught a `CONTROL` defect — the first, at n=`56`.** It was the
+**An instrument has finally caught a `CONTROL` defect — the first, at n=`57`.** It was the
 provenance validator, firing on its own during a routine gate run, and what it revealed was a
 false-conviction rule **inside itself**. The `--check` line asserting `0` had been written at n=`37`
 precisely so the build would fail the day this happened; it failed, and the expected count was
@@ -597,12 +611,12 @@ had never reached, and its first selftest case is the real defect that eight rou
 
 [Pre-registered](DEFECT_TAXONOMY_PREREGISTRATION.md) before any row was written, because the author
 classifying his own defects will group them until a taxonomy appears. At n=22 the verdict was
-`AMBIGUOUS` by one instance. At n=`56` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
+`AMBIGUOUS` by one instance. At n=`57` it is **`ONE-JOINT-DOMINATES`**, because `PROVENANCE` reached
 the pre-registered threshold of ≥8 and now stands at `17`.
 
 > **That threshold is an absolute count, not a proportion, and that is a defect in the
 > pre-registration itself — discovered by the gate firing.** At n=22 a bin of 8 was 36% of the
-> ledger; at n=`56` a bin of `17` is `30.4%`, which is not domination
+> ledger; at n=`57` a bin of `17` is `29.8%`, which is not domination
 > by any reasonable reading, and the same threshold fires. **An absolute threshold on a growing
 > ledger makes this verdict inevitable.** It is *not* changed here: choosing a threshold after
 > seeing which verdict it produces is the single move the pre-registration exists to refuse. The
