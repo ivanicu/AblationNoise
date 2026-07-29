@@ -1332,6 +1332,24 @@
    "defect": "detectors/prose_numbers.py was blind to scientific notation in BOTH directions, and had been for the whole life of the repository",
    "operation": "Found by a true number reading as unbacked: the front page quoted 0.0000499975 against a generator that emits exactly that value. The tokenizer's regex had no exponent alternation, and json.dump writes small floats in scientific notation. Measured on the live reference set: 21 distinct emitted values were invisible, so prose quoting any of them raised a FALSE ALARM -- and in the unsound direction the regex shredded each into fragments, putting 26 mantissas and bare exponents ('05','06','09') into the BACKING set as if they had been emitted, so a prose number could be backed by an exponent. backs() carried the same bug a second time: it computed the prose's precision as digits-after-the-dot, which is 2 for '1.93e-08', then rounded the generated value to two decimals -- 0.0 -- and rejected a correct quotation. Both fixed, selftest re-run, power re-measured (36.76% unchanged on x.xx, 27.39 -> 27.41 on xx.x). THE TIGHTENED DETECTOR IMMEDIATELY FLAGGED 13 PROSE NUMBERS ACROSS THREE FILES THAT HAD NEVER BEEN CHECKED. Nine were backed by emitting the control magnitudes they quote; four are exempted with a written reason, because hook_identity loads a model and the reference set is deliberately dependency-free.",
    "found_by": "instrument"
+  },
+  {
+   "id": "D148",
+   "round": "R20",
+   "bin": "CONTROL",
+   "commit": "112e7a8",
+   "defect": "R20's registered positive control was built on a false premise about the architecture and could never have passed, and my two repairs of it introduced two further errors of my own",
+   "operation": "The registration said 'layer 27 has nothing downstream, so direct_renorm must equal the measured total for its 12 heads'. A decoder block is h = h + attn(ln1(h)); h = h + mlp(ln2(h)), so layer L's attention is followed by LAYER L's OWN MLP -- there is no head anywhere in the stack with zero downstream computation. It failed at 0.224991 against a 0.012176 limit, 18x over. Repair 1, re-running the block's own MLP, got WORSE (0.324917): the pre-MLP capture hook lives on the very layernorm the control re-invokes, so from the second head onward the cache held the PREVIOUS head's modified residual and each head subtracted from an already-damaged vector -- head 0 exact at 0.0034, head 1 near, every later head pinned around 0.6. A CAPTURE HOOK FIRES AGAIN WHEN YOU RE-INVOKE THE MODULE TO ANALYSE IT. Repair 2 read the cache once. Repair 3 was the fourth confound this file registered before the run collecting on itself: the decomposition holds the clean comparator fixed while R10 recomputes max-over-other-rooms after every ablation, and L27H02 -- comparator-flip rate 0.25, the highest of the twelve -- was the single head still failing at 0.3249 while the other eleven sat under 0.031. With R10's own convention the decomposition reproduces its measured ablation to 4.069010416662966e-06 on all twelve heads. Every repair was made after seeing a failure, which is weaker than a registered pass and is labelled as such.",
+   "found_by": "instrument"
+  },
+  {
+   "id": "D149",
+   "round": "R20",
+   "bin": "STATISTIC",
+   "commit": "112e7a8",
+   "defect": "R20's registered verdict rule returned SELF-REPAIR-PRESENT on data showing the opposite, because the rule keyed on the median of a zero-crossing ratio and on a sign test whose direction it never read",
+   "operation": "median(suppression) <= 0.80 was written expecting a ratio in [0,1]. suppression = total/direct_renorm is a ratio of two SIGNED quantities whose denominator crosses zero -- Cauchy-like, observed median -0.1417 with quartiles from -31.192590857095606 to +49.46868057891072. A large NEGATIVE ratio means the total has the OPPOSITE SIGN to the direct path, which is not suppression, and it satisfies <= 0.80 trivially. Second break: the sign test is two-sided and the rule read only its p-value. |total| < |direct| holds on 53 of 168, so the significant direction is |total| > |direct| at p = 1.953788031425443e-06 -- which the registration's OWN null reasoning says World N predicts. A claim whose test is not its own statement, committed inside a pre-registration, for the second time in this repository (R10's POWER_PREREGISTRATION has the first). Verdict recorded as UNVERIFIED_REGISTERED_STATISTIC_UNFIT rather than silently re-specified. On statistics with no zero-crossing denominator: self-repair is dead (|total| > |direct| at p 2e-06), systematic amplification is dead (sign agreement 79 of 168, p 0.4876), and what survives is an indirect term 3.3251x larger in magnitude than the head's own readout contribution and uncorrelated with it in sign (pooled Spearman +0.0166).",
+   "found_by": "author_reading_the_object"
   }
  ]
 }

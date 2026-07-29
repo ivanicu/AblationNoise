@@ -474,6 +474,59 @@ distribution — `8` under the repository's own preferred uncorrected method, `0
 where `0` is an artifact of `n`. **This does not touch the transport result above**, which compares
 counts under a *fixed* rule across configurations and never claims per-head significance.
 
+### `I_final` is mostly **not** the head — the rest of the network's response is `3.3x` larger and its sign is a coin flip
+
+For a full session this repository's open sentence was *"what remains is not a property of the head —
+it is a property of what the rest of the network does when the head is gone. **That is
+compensation**, and the experiment is co-ablation."* **Co-ablation asks whether two heads compose. It
+does not measure repair.** The decomposition does, and it needs **no ablation runs at all** —
+[`R20`](R20_direct_indirect/), `120` clean forward passes against the `40,320` R10 spent:
+
+```
+total(h)     the measured I_final drop            READ from R10's frozen result, never recomputed
+direct(h)    delete h's write from the FINAL residual, nothing else recomputed
+indirect(h)  total - direct                       the rest of the network's response
+```
+
+**The positive control is exact and it is what makes this readable.** Once the last block's own MLP
+is re-run and R10's own comparator convention is used, the decomposition reproduces R10's *measured*
+ablation on all `12` last-layer heads to `4.069010416662966e-06`. **The direct-path arithmetic is
+right, proved on the case where it must be.** Getting there cost three failures, all mine, and they
+are in [the amendment](R20_direct_indirect/PREREGISTRATION.md) — the registered control's premise was
+false (every attention block is followed by *its own* MLP), then my capture hook fired on my own
+re-invocation and corrupted its cache, then my comparator differed from R10's.
+
+```
+|total| > |direct|                        115 of 168      sign-test p 0.000001953788031425443
+sign(total) == sign(direct)                79 of 168      p 0.4876   -- a coin flip
+median |total| 0.0663   median |direct| 0.0199            ratio 3.3251x
+pooled Spearman(|total|, |direct|)                        +0.0166
+within-layer partial(|centred total|, |direct| | mean_norm)   +0.2265   p 0.0078
+```
+
+> ### **Self-repair is dead, systematic amplification is dead, and the first half of that sentence is stronger than it claimed.**
+>
+> **World R (self-repair)** requires `|total| < |direct|`. The opposite holds at `p = 2e-06`.
+> **World A (amplification)** requires the indirect term to push the *same way* as the direct one.
+> Sign agreement is `47%`, indistinguishable from chance.
+>
+> **What survives is a term nobody had sized.** The rest of the network's response is `3.3x` larger
+> in magnitude than the head's own contribution to the readout, and **uncorrelated with it in sign**.
+> Pooled, `|total|` and `|direct|` are unrelated (`+0.0166`). So `I_final(L,h)` is **not** mostly a
+> measurement of what head `h` writes.
+>
+> **And `direct` is nonetheless the second-strongest predictor found.** Within layer, controlling
+> `mean_norm`, `+0.2265` at `p = 0.0078`, clearing its own depth-preserving null — behind magnitude
+> (`+0.3388`) and ahead of readout reach (`+0.1712`). Pooling destroys it completely (`-0.0000`),
+> which is the third predictor in a row whose pooling bias runs in its own direction.
+>
+> **⚠ The registered verdict word was `SELF-REPAIR-PRESENT` and it is wrong.** The rule keyed on the
+> median of `total/direct` — a ratio whose denominator crosses zero, observed median `-0.1417` with
+> quartiles from `-31.19` to `+49.47` — and on a two-sided sign test whose **direction it never
+> read**. A large *negative* ratio satisfies `<= 0.80` while meaning the opposite. **A claim whose
+> test is not its own statement, inside a pre-registration, for the second time here.** `D149`. The
+> verdict is `UNVERIFIED`: unfit, which is not an acquittal and specifically not evidence for repair.
+
 ### The repository's own family of decision rules — and a correction would make its headline *stronger*
 
 `ADVERSARY.md`'s `A18` was confirmed by two reviewers and left standing: `31` registered decision
@@ -734,7 +787,7 @@ because the query that killed the `OV` claim was not aimed at transport. **Aimed
 > cited here or trivially findable.
 >
 > **What it still is:** a worked audit of one prior experiment, carried out in public, with an
-> unusually complete error record — `147` rows, each naming what was wrong and what the operation on
+> unusually complete error record — `149` rows, each naming what was wrong and what the operation on
 > it was.
 >
 > > **⚠ `D123` — this said `120` for two rows, and BOTH of this repository's checkers are blind to
