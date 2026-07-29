@@ -42,6 +42,27 @@ DIRECTION = [
     # AFTER the first run, which had them as UNCLASSIFIED; recorded as post hoc. It cannot move the
     # verdict, which depends only on the PRESENCE family, and `resolution_limit()` already reports
     # that its 8 uncorrected rows yield ZERO BH discoveries -- they are explicitly not claimed.
+    # --- NOT_A_PVALUE: the name rule is not the concept. `p_total_positive` and
+    # `p_direct_positive` are MARGINAL PROPORTIONS from a 2x2 sign table; they begin with `p_` and
+    # would have been folded into a multiple-testing family as if they were tail probabilities.
+    # Caught only because UNCLASSIFIED is printed rather than dropped -- the repository's own
+    # overshoot #2, a lexicon whose match rule is not the concept, inside the instrument built to
+    # audit its families. D158.
+    ('.fisher_sign_independence.p_total_positive', 'NOT_A_PVALUE', 'a marginal proportion'),
+    ('.fisher_sign_independence.p_direct_positive', 'NOT_A_PVALUE', 'a marginal proportion'),
+    # --- RETRACTED: claims withdrawn on 2026-07-29 (D151, D152). They are NOT excluded silently --
+    # a retracted rule that stayed in the family would make the correction look harsher than it is,
+    # and one that vanished from the inventory would hide that it was ever counted.
+    ('.r20_direct_indirect.sign_test_p', 'RETRACTED', 'D151: manufactured by the excluded heads'),
+    ('.adversary_retraction.sign_test_all_168.p', 'RETRACTED', 'D151: the same withdrawn number'),
+    ('.r20_direct_indirect.direct_partial.p', 'RETRACTED', 'D152: the null destroyed an identity'),
+    # --- DIAGNOSTIC: numbers that describe a defect rather than assert a finding.
+    ('.adversary_retraction.sign_test_excluded_46.p', 'DIAGNOSTIC', 'the size of D151 artifact'),
+    ('.adversary_retraction.sign_test_usable_122.p', 'DIAGNOSTIC', 'D151 corrected: does not fire'),
+    ('.adversary_retraction.shared_term_null.p', 'DIAGNOSTIC', 'D152 corrected: does not fire'),
+    ('.adversary_retraction.fisher_sign_independence.fisher_two_sided_p', 'DIAGNOSTIC',
+     'D155 corrected sign-independence test'),
+    ('.r20_direct_indirect.p_sign_agreement', 'RETRACTED', 'D155: p=0.5 assumed 50/50 marginals'),
     ('.ov_permutation_null.p_floor', 'RESOLUTION', 'the floor of a 2000-draw null'),
     ('.resolution_limit.', 'RESOLUTION', 'per-head attainable p; 0 BH discoveries, not a claim'),
     # --- absence: the verdict is "not enriched" / "no position effect" / "not the published set"
@@ -173,6 +194,9 @@ def main():
 
     pres = [r for r in rows if r['direction'] == 'PRESENCE']
     reso = [r for r in rows if r['direction'] == 'RESOLUTION']
+    retr = [r for r in rows if r['direction'] == 'RETRACTED']
+    diag = [r for r in rows if r['direction'] == 'DIAGNOSTIC']
+    nonp = [r for r in rows if r['direction'] == 'NOT_A_PVALUE']
     absn = [r for r in rows if r['direction'] == 'ABSENCE']
     ctrl = [r for r in rows if r['direction'] == 'CONTROL']
     uncl = [r for r in rows if r['direction'] == 'UNCLASSIFIED']
@@ -194,6 +218,9 @@ def main():
 
     out = {'alpha': ALPHA, 'n_p_values_found': len(rows),
            'n_presence': len(pres), 'n_absence': len(absn), 'n_resolution': len(reso),
+           'n_retracted': len(retr), 'n_diagnostic': len(diag), 'n_not_a_pvalue': len(nonp),
+           'retracted_paths': [r['path'] for r in retr],
+           'not_a_pvalue_paths': [r['path'] for r in nonp],
            'n_control': len(ctrl), 'n_unclassified': len(uncl),
            'n_surviving_presence': len(surviving),
            'n_surviving_presence_at_instrument_floor': len(surv_at_floor),
@@ -222,7 +249,8 @@ def main():
 
     print(f'  p-values found by the walk: {len(rows)}   '
           f'PRESENCE {len(pres)}  ABSENCE {len(absn)}  RESOLUTION {len(reso)}  '
-          f'CONTROL {len(ctrl)}  UNCLASSIFIED {len(uncl)}')
+          f'CONTROL {len(ctrl)}  RETRACTED {len(retr)}  DIAGNOSTIC {len(diag)}  '
+          f'NOT_A_PVALUE {len(nonp)}  UNCLASSIFIED {len(uncl)}')
     if uncl:
         for r in uncl:
             print(f'      UNCLASSIFIED {r["path"]} = {r["p"]:.6g}')

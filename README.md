@@ -605,47 +605,61 @@ last-layer heads: ATT is exactly 0, and 0 from any later layer      structural c
 OWN vs R20's independently measured `direct`:  Spearman +0.9068
 ```
 
-> ### **`MIXED` — and the confound registered before the run decides how to read it.**
+> ### ⚠ **RETRACTED, `D159`–`D167`. An independent reviewer returned `9` confirmed findings, and the predictions I registered before dispatching it caught `5`.**
 >
-> No class reaches `0.50`. `ATT` is largest at `0.4845`, **but it wins the sum by membership**: its
-> `335` members contribute `0.000167` each while `MLP`'s `28` contribute `0.001698` each — **`10x`
-> more per member.** *"Attention dominates"* would be counting members, not effects.
+> **① There are ZERO non-tautological controls left in this round.** `D157` retracted the first as a
+> tautology and the amendment then asserted the other two *"were always the real ones and both are
+> non-trivial"*. Both are forced too. Last-layer `ATT = 0` is causality, proved from this round's own
+> data — `att_abs`, a sum of **absolute** values, is exactly `0.0` on all `12` heads, so every element
+> was exactly zero on all `120` items. And `OWN` is not validated against anything independent:
+> `Spearman(OWN, R20 direct_linear) = 0.9998810493974013` — **`OWN` *is* `direct_linear`**, so the
+> control measures `R20` against itself, and the `0.0068` by which it clears its registered `0.90` is
+> **smaller than `R20`'s own internal convention gap**. *"Nothing in the round checks the `OWN`/`ATT`
+> boundary or the `ATT`-vs-`MLP` class assignment — the two partitions the entire result consists
+> of."*
 >
-> **`85%` of the motion cancels inside each class.** Cancellation factor — signed sum over sum of
-> absolute contributions — is `0.1734` for `ATT` and `0.1392` for `MLP`. **Removing one head at one
-> position moves a great deal downstream, and almost all of it cancels. The indirect term is a small
-> net residue of a large amount of motion.** That was a confound control, not the registered
-> statistic, and it is the most substantive thing in the round.
+> **② Both per-member counts include components that cannot contribute.** Ablating at layer `L`
+> cannot move any attention head at layer `<= L` or any MLP at layer `< L`; live members are
+> `(27-L)*12` and `28-L`, medians `78` and `7.5`. **`ATT` per-member is wrong by `7.5x`, `MLP` by
+> `3.7x`, and *"`10x` more per member"* is `4.97x`.** That figure is the round's own **registered
+> confound control** — the number it exists to produce is the one that is wrong.
 >
-> **World NORM is dead, and it was the deflationary one.** The renormalisation gain carries `0.1706`,
-> not the majority — so `R20`'s `3.3x` is *not* mostly a gain change.
+> **③ The `44`-head rescue subgroup selects the low-signal heads.** `Spearman(flip_rate, |own|) =
+> +0.5762`, Mann-Whitney `p = 6.1322e-08`, `3.2x` smaller `|own|` — the same near-zero population that
+> manufactured `R20`'s `p = 2e-06`. Against a **depth-matched** null its `0.5294` sits at the `20`th
+> percentile while `0.90265` of random same-depth draws reach `>= 0.50`. **Less attention-dominated
+> than chance. Withdrawn, not merely un-promoted.**
 >
-> **⚠ `D157` — the control this round called its strongest is a TAUTOLOGY, and I found it by
-> attacking it.** `components()` defines `emb = tot_v - att.sum() - mlp.sum()`, so `EMB` is a
-> **residue** and `OWN+ATT+MLP+EMB+NORM` telescopes to the measured drop **by construction**. The
-> pre-registration's *"a discrepancy is not noise, it is a missing component"* is false: a missing
-> component is absorbed into `EMB` and produces no discrepancy. Attacked rather than argued —
-> [`attacks/plant_missing_component.py`](R21_indirect_attribution/attacks/plant_missing_component.py)
-> deletes layer `20`'s MLP from the enumeration:
+> **④ `85%` cancellation is at or below its own null.** The factor pools within-class cancellation
+> with **across-item sign flipping** — proved by a **one-member** class at `L27` reporting `0.672`,
+> where there is nothing to cancel against. Against `1/sqrt(n_live)`, `ATT` cancels *less* than
+> independent random signs at `11` of `13` layers. The sentence *"a small net residue of a large
+> amount of motion"* carries no information for `ATT`.
 >
-> ```
-> control as published    honest 1.089e-07     PLANTED 1.275e-07     <- STILL PASSES
-> the EMB residue         honest 8.447e-08     PLANTED 2.398e-02     <- caught, five orders
-> published class number  L14H00 mlp -0.11901 -> -0.11502            <- moved, unremarked
-> ```
+> **⑤ `NORM` is undersized about `2x` and mis-signed.** Its share's denominator is `SUM|class|`, not
+> the indirect term. Against the indirect term it is `0.3033`, and `0.4279` of the whole drop; it
+> exceeds the entire indirect term on `39` of `168` heads and is the largest class on `21`. Its median
+> **signed** share is **`-0.0625`** — the gain typically *opposes* the drop, and the absolute-value
+> convention turned opposition into *"carrying 17% of it"*. **World NORM is not dead.**
 >
-> **The real control was on the page as the least interesting row.** `EMB` at
-> `5.4270862529885256e-08` is what actually establishes that every component whose write changes is
-> enumerated — so the shares stand, and what is retracted is the claim that the identity verified
-> them. **The control and the finding were in the same table and I labelled the wrong one.**
-
-> **⚠ The registered cross-run control failed at `1.971574097241418` against a `0.012175927323649789`
-> limit, and this round's own pre-registration says why.** It holds the clean comparator fixed to keep
-> the split additive, while `R10` recomputes it after every ablation — **so the control and the
-> confound section contradict each other, and the control could not pass.** `D150`. Diagnosed:
-> `Spearman(error, comparator_flip_rate) = +0.4831`, worst head `L26H07` at flip rate `0.6167`; on the
-> `44` heads whose comparator **never** moved the error is `0.0064725687330357`, inside the limit.
-> That subgroup is selected on a covariate registered before the run, and it is **still post hoc**.
+> **⑥ The shares do not sum to `1`** (`0.8892`), and two aggregations that do move `MLP` by `+30%` to
+> `+52%`. **⑦ `3.8417x` mixes the two comparator conventions Amendment 1 calls incommensurable**
+> (same-convention `4.1502x`; on the usable population `2.0052x`) **and its `(R20 reported 3.3251x)`
+> anchor is retracted** — it should read `1.8960x`. **⑧ The class share is largely a count of
+> downstream components**: redrawing the band as `L14`–`L21` gives `ATT ~0.62` and flips the verdict
+> to `ATTENTION-DOMINATED`, and no depth control is reported.
+>
+> **What survived:** the additivity algebra, the `W_O` column-block decomposition, the MLP capture
+> point, `EMB` as a genuine control against *omission*, the item set — and **the registered verdict
+> `MIXED`, which held under every reaggregation the reviewer tried.**
+>
+> **The calibration score, registered before dispatch**
+> ([`ADVERSARY_PREDICTIONS.md`](R21_indirect_attribution/ADVERSARY_PREDICTIONS.md)): recall
+> `5/9`, precision `5/8 = 0.6250` → **`CALIBRATED`**. And the rule flatters me: **recall
+> counts findings, it does not weigh them.** The two largest numeric corrections — the live-member
+> counts and `NORM`'s denominator — are both ones I did not predict, and the sentence I registered
+> under *"what I expect to be WRONG about"* named `0.001698` as the number I had inspected least.
+> **It is wrong by `3.7x`.**
 
 ### The repository's own family of decision rules — and a correction would make its headline *stronger*
 
@@ -661,8 +675,20 @@ is the one that must not be applied blind**, and this is the reason:
 
 So the family is split by direction before it is corrected (`detectors/multiplicity.py`, registered
 in [`MULTIPLICITY_PREREGISTRATION.md`](MULTIPLICITY_PREREGISTRATION.md)). The inventory is derived by
-walking the emitter, not hand-listed; `48` p-values, `14` presence, `21` absence, `10` resolution
-statements, `3` controls, `0` unclassified.
+walking the emitter, not hand-listed; `58` p-values, `14` presence, `21` absence, `10` resolution
+statements, `3` controls, `4` retracted, `4` diagnostic, `2` **not p-values at all**, `0` unclassified.
+
+> **`D158` — the walk's name rule is not the concept, and its own `UNCLASSIFIED` bin caught it.**
+> `p_total_positive` and `p_direct_positive` are **marginal proportions** from a `2x2` sign
+> table. They begin with `p_`, so the inventory would have folded them into a multiple-testing
+> family as if they were tail probabilities — the repository's own overshoot #2, *a lexicon whose
+> match rule is not the concept*, **inside the instrument built to audit families.** Found only
+> because the pre-registration required `UNCLASSIFIED` to be printed rather than dropped.
+>
+> The same pass classified `4` **retracted** rules (`D151`, `D152`, `D155`) and `4`
+> **diagnostics** — the corrected numbers that replaced them. A retracted rule left in the family
+> would make the correction look harsher than it is; one deleted from the inventory would hide
+> that it was ever counted. Both are wrong, so it carries its own class.
 
 The statistic is family-size-free, because the family size is bookkeeping — `12`? `31`? `33`? —
 
@@ -907,7 +933,7 @@ because the query that killed the `OV` claim was not aimed at transport. **Aimed
 > cited here or trivially findable.
 >
 > **What it still is:** a worked audit of one prior experiment, carried out in public, with an
-> unusually complete error record — `157` rows, each naming what was wrong and what the operation on
+> unusually complete error record — `167` rows, each naming what was wrong and what the operation on
 > it was.
 >
 > > **⚠ `D123` — this said `120` for two rows, and BOTH of this repository's checkers are blind to

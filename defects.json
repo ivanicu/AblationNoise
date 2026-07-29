@@ -1422,6 +1422,96 @@
    "defect": "R21's headline positive control -- 'OWN+ATT+MLP+EMB+NORM must reproduce the measured total' -- is an algebraic tautology that cannot fail",
    "operation": "components() defines emb = tot_v - att.sum() - mlp.sum(), so EMB is a RESIDUE and the five terms telescope to the measured drop by construction. The pre-registration's sentence 'a discrepancy is not noise, it is a missing component' is therefore false: a missing component is absorbed into EMB and produces no discrepancy whatsoever. Attacked rather than argued (attacks/plant_missing_component.py, one line changed): layer 20's MLP deleted from the enumeration. First attempt ran it on L27 heads, where ablating a head cannot change layer 20's MLP -- the plant was a no-op and proved nothing, so an attack that cannot reach the mechanism is not an attack. Rerun on L14 heads, n=120: control as published honest 1.089e-07 vs PLANTED 1.275e-07, STILL PASSING with a whole MLP gone; the EMB residue honest 8.447e-08 vs PLANTED 2.398e-02, caught by five orders of magnitude; and the published class number moved unremarked, L14H00 mlp -0.11901 -> -0.11502. THE REAL CONTROL WAS ON THE PAGE AS THE LEAST INTERESTING ROW: EMB's 5.4270862529885256e-08 class share is the only quantity establishing that every component whose write changes under ablation is enumerated. The shares stand because that control passes; what is retracted is the claim that the identity verified them. Repository's own named class -- a check that cannot fail -- committed in a pre-registration, in a round whose Amendment 1 already recorded a control built on a false premise. Two unfit controls in one round.",
    "found_by": "author_reading_the_object"
+  },
+  {
+   "id": "D158",
+   "round": "REPO",
+   "bin": "SCOPE",
+   "commit": "59afae6",
+   "defect": "detectors/multiplicity.py's inventory rule matches any key beginning p_ or ending _p, so two MARGINAL PROPORTIONS were about to be folded into a multiple-testing family as tail probabilities",
+   "operation": "is_p_key() accepts leaf == 'p', leaf.startswith('p_') or leaf.endswith('_p'). fisher_sign_independence.p_total_positive = 0.5952380952380952 and p_direct_positive = 0.39880952380952384 are the marginals of a 2x2 sign table, not p-values -- they are the SAME class as the repository's own overshoot #2, a lexicon whose match rule is not the concept, committed INSIDE the instrument built to audit multiple-testing families. Found only because MULTIPLICITY_PREREGISTRATION.md required UNCLASSIFIED to be counted and printed rather than dropped: the walk grew from 48 to 58 rows when R20's emitter landed, and all ten new rows arrived UNCLASSIFIED where they could be read one at a time. The same pass added two classes the inventory had no way to express: RETRACTED (4 rules withdrawn by D151/D152/D155 -- leaving them in the family would make the correction look harsher than it is, deleting them would hide that they were ever counted) and DIAGNOSTIC (4 numbers that describe a defect rather than assert a finding). Final counts: 58 found, 14 PRESENCE, 21 ABSENCE, 10 RESOLUTION, 3 CONTROL, 4 RETRACTED, 4 DIAGNOSTIC, 2 NOT_A_PVALUE, 0 UNCLASSIFIED. The verdict MULTIPLICITY-BITES and the 5-dying-below-6 count are unchanged.",
+   "found_by": "instrument"
+  },
+  {
+   "id": "D159",
+   "round": "R21",
+   "bin": "CONTROL",
+   "commit": "59afae6",
+   "defect": "all three of R21's surviving controls are tautologies -- after D157 retracted the first as one, Amendment 2 asserted 'the other two were always the real ones and both are non-trivial', and both are also forced",
+   "operation": "Control 2, last-layer ATT == 0: ablation writes only z[0,-1,h*HD:(h+1)*HD] at layer L, so datt is elementwise zero for every row <= L by causality and dattd[L,h'] = 0 for h' != h because those slices are untouched. Proved from the round's own data: at L27, att_abs -- a sum of ABSOLUTE values -- is exactly 0.0 on all 12 heads, so every element was exactly zero on all 120 items. Claim F is the same object: att and att_late differ only in summation order over provably-zero rows, max|att - att_late| = 2.40e-08, and the gate ll < 1e-9 is applied only at L27 where the slice dattd[28:] is EMPTY. Control 3, 'OWN reproduces R20's INDEPENDENTLY measured direct at +0.9068': Spearman(OWN, R20 direct_linear) = 0.9998810493974013 -- OWN IS direct_linear, same o_proj-input capture, same W_O column block, same seeds, same filter, same comparator. The control measures R20 against itself, and the 0.0068 by which it clears its registered 0.90 is SMALLER than R20's own internal convention gap Spearman(direct_linear, direct_renorm) = 0.9062. It also validates against direct_renorm, which this repository's README already declares fails R20's control by 18.4783x. NUMBER OF NON-TAUTOLOGICAL CONTROLS IN R21: 2 as claimed, 0 as measured. Nothing checks the OWN/ATT boundary or the ATT-vs-MLP assignment -- the two partitions the entire result consists of. EMB is invariant to any relabelling between ATT and MLP and to any error in the per-head split within a layer. A real control was available and not run: at L27 the decomposition is complete and R10's ablation exists; under R21's fixed comparator max|own+mlp+norm+emb - total_r10| = 0.32491715344183714.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D160",
+   "round": "R21",
+   "bin": "SCOPE",
+   "commit": "59afae6",
+   "defect": "the 44-head comparator-stable subgroup that rescued R21's failed control selects the LOW-SIGNAL heads, and its ATTENTION-DOMINATED 0.5294 sits at the 19th percentile of a depth-matched null",
+   "operation": "Amendment 1 claimed the subgroup is 'selected on a covariate registered before the run and NOT on the size of the error'. True of the error, false of the effect: Spearman(comparator_flip_rate, |own|) = +0.5762, Mann-Whitney z = -5.415 p = 6.13e-08, stable heads have 3.2x smaller median |own| (0.006724 vs 0.021723). That is the same definitionally-near-zero population D151 identified as what manufactured R20's p = 2e-06. Spearman(flip_rate, |att|) = -0.013, so ATT is flat while OWN collapses -- which is the entire mechanism of the share shift. The subgroup is also depth-skewed (L26:0, L27:1), and ATT's share is a monotone function of depth because it counts what exists downstream. Resampling 20000 random head sets with the IDENTICAL layer composition: null mean 0.5744, 95% [0.4750, 0.6609], and 90.84% of draws reach ATT >= 0.50. The observed 0.5294 is at the 19th percentile -- LESS attention-dominated than chance. The sentence must be withdrawn, not merely un-promoted.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D161",
+   "round": "R21",
+   "bin": "STATISTIC",
+   "commit": "59afae6",
+   "defect": "R21's cancellation factor is not 'inside each class' -- it pools within-class cancellation with across-item sign flipping, and a ONE-MEMBER class reports 0.672 of it",
+   "operation": "att and att_abs accumulate |mean over 120 items of (signed sum over members)| and mean over items of (sum of |per-member|), so the ratio mixes two different cancellations. Proof from the round's own data: at L = 27 the MLP class has exactly ONE live member and its cancellation factor is 0.672 -- with one member there is nothing to cancel against, so all of it is item-level. MLP cancellation is monotone in live-member count: L14 0.037 (n=14), L18 0.128 (10), L21 0.194 (7), L24 0.424 (4), L27 0.672 (1). Against the iid random-sign null 1/sqrt(n_live), ATT cancels LESS than independent random signs at 11 of 13 layers (median 0.1734 vs null 0.113 at 78 live members), so the headline '85% of the motion cancels' is at or below its own null and carries no information; MLP cancels ~7x more than chance at shallow layers. The median hides an 18x range: ATT p10 0.0216 median 0.1734 p90 0.3683 max 0.8158; MLP p10 0.0257 median 0.1392 p90 0.6199 max 0.9753 with 35 of 168 above 0.40. The 12 L27 heads are silently dropped from the ATT median (att_abs > 0 filter), so it is over 156 heads while the share median is over 168. The within-class vs across-item split is UNVERIFIED and needs one extra per-item accumulator.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D162",
+   "round": "R21",
+   "bin": "STATISTIC",
+   "commit": "59afae6",
+   "defect": "R21's per-member figures divide by member counts that include components which CANNOT contribute, making the registered confound control's own number wrong by 7.5x and 3.7x",
+   "operation": "run.py emits n_att_members = NL*NH - 1 = 335 and n_mlp_members = NL = 28, and analyze.py divides by those constants. But ablation at layer L cannot change any attention head at layer <= L or any MLP at layer < L: live members are (27-L)*12 and 28-L, with medians 78 and 7.5. Corrected per-member: ATT 0.001255 not 0.000167, MLP 0.006231 not 0.001698, and the headline 'MLP contributes 10x more per member' is 4.97x. The direction survives; the magnitude halves and both absolute numbers are meaningless as written. THIS IS THE ROUND'S OWN REGISTERED CONFOUND CONTROL -- the number it exists to produce is the one that is wrong. It is also exactly what the author registered in ADVERSARY_PREDICTIONS.md as the thing expected to be missed: 'MLP 0.2341 and its per member 0.001698 are the numbers I have inspected least'.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D163",
+   "round": "R21",
+   "bin": "SCOPE",
+   "commit": "59afae6",
+   "defect": "R21's 3.8417x mixes the two comparator conventions its own Amendment 1 says are incommensurable, and its published comparison anchor is retracted",
+   "operation": "analyze.py takes the numerator from total_r10 (R10's MOVING-comparator ablation) and the denominator from own (this round's FIXED-comparator quantity), while Amendment 1 measured those two conventions disagreeing by up to 1.9716 -- and the prose says the ratio is 'under its fixed-comparator convention'. Same-convention value: median|total_here| / median|own| = 4.150213604813891. On the usable population (|own| >= 0.01, 117 of 168) the per-head median ratio is 2.0052 (here/own) or 1.8138 (r10/own). And the anchor: the README already states R20's 3.3251x is wrong twice -- wrong order statistic (true median 3.2978) and wrong population (honest 1.8960x) -- yet analyze.py prints '(R20 reported 3.3251x)' and the README reprints it as the live comparison. The honest sentence is ~2.0x vs ~1.9x, not 3.84x vs 3.33x.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D164",
+   "round": "R21",
+   "bin": "STATISTIC",
+   "commit": "59afae6",
+   "defect": "'World NORM is dead' rests on a share whose denominator is not the indirect term, and NORM's SIGNED contribution is negative",
+   "operation": "The registered share divides by SUM_C |class|, which is inflated by cross-class cancellation and is not the indirect term. Against the indirect term itself (att+mlp+emb+norm): median |norm|/|indirect| = 0.3033 against the published 0.1706; ratio-of-medians 0.3689; median|norm|/median|total_here| = 0.4279. |norm| exceeds the entire indirect term on 39 of 168 heads, exceeds the whole drop on 46, exceeds |own| on 103, and NORM is the single largest class on 21. At the last layer median|norm| = 0.079269 against median|total_here| = 0.026499 -- the gain term alone is 3x the entire measured drop. And the sign inverts the story: median signed shares are ATT +0.1393, MLP +0.0513, NORM -0.0625, with sign(norm) == sign(indirect) on only 98 of 168. The renorm gain typically OPPOSES the drop and the absolute-value convention converts opposition into 'carrying' 17% of it. World NORM is not dead on this evidence; it is undersized by ~2x and mis-signed.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D165",
+   "round": "R21",
+   "bin": "STATISTIC",
+   "commit": "59afae6",
+   "defect": "R21's four class shares do not sum to 1, and two equally defensible aggregations move MLP by up to 52%",
+   "operation": "A median of per-head ratios does not aggregate. median of shares (published) ATT 0.4845 MLP 0.2341 NORM 0.1706 EMB 0.0000, SUM = 0.8892. mean of shares ATT 0.4755 MLP 0.3045 NORM 0.2200, SUM = 1.0000. share of the medians ATT 0.4185 MLP 0.3556 NORM 0.2260, SUM = 1.0000. median of SIGNED shares ATT 0.1393 MLP 0.0513 NORM -0.0625, SUM = 0.1281. MLP moves 0.2341 -> 0.3045/0.3556 (+30% to +52%), NORM 0.1706 -> 0.2200/0.2260. The prose 'roughly half, a quarter on MLPs, a sixth on the normalisation gain' is only true of the one aggregation that does not sum to 1; under the two that do it is half, a third and a fifth. The registered verdict MIXED holds under all three -- ATT never reaches 0.50 at 0.4845 / 0.4755 / 0.4185.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D166",
+   "round": "R21",
+   "bin": "SCOPE",
+   "commit": "59afae6",
+   "defect": "R21's class share is mostly a count of downstream components, so its verdict is a function of where the band was cut and no depth control is reported",
+   "operation": "ATT's median share by layer: L14 0.6979, L21 0.5150, L24 0.4010, L26 0.2214, L27 0.0000; MLP's runs the other way, L14 0.1533 to L27 0.6243. A head at L14 has 156 live ATT members and 14 live MLPs; a head at L27 has 0 and 1. So the band-level ATT 0.4845 / MLP 0.2341 is a statement about the L14-L27 depth composition of the band. Re-drawing the band as L14-L21 gives ATT ~0.62 and MLP ~0.17, i.e. ATTENTION-DOMINATED. The verdict word depends on the band boundary and the round reports no depth control for it.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D167",
+   "round": "R21",
+   "bin": "PROVENANCE",
+   "commit": "59afae6",
+   "defect": "three smaller defects at the object: an unregistered gate constant, a retraction presented below what it retracts, and ledger rows that exist only in JSON",
+   "operation": "analyze.py gates control 1a on a hard-coded 1e-4 that appears nowhere in the pre-registration, which registers only the 0.05 x band sd limit. README.md still leads R21's three-control block with the tautological identity 1.7878479721677998e-07 formatted as evidence, with the D157 retraction 20 lines below it -- self-caught, but the presentation order was never changed. And DEFECT_LEDGER.md contains no D150 or D157 row (grep 'D15[0-9]' returns nothing); both exist only in README prose and defects.json, so a reader of the ledger document cannot find them.",
+   "found_by": "outside_reader"
   }
  ]
 }

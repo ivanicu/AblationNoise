@@ -3244,6 +3244,17 @@ def r21():
     return out
 
 
+def r21_adversary():
+    """D159-D167 -- the reviewer's figures on R21, RE-DERIVED from the frozen results.
+
+    An agent's report is not evidence. Every number the page quotes from that review is recomputed by
+    R21_indirect_attribution/tools/adversary_recompute.py and read from here, so the retraction cites
+    the object rather than a transcript.
+    """
+    f = HERE / 'R21_indirect_attribution' / 'results' / 'r21_adversary_recompute.json'
+    return json.load(open(f)) if f.exists() else None
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -4722,6 +4733,7 @@ def main() -> int:
     MULT = multiplicity()
     R20 = r20()
     R21 = r21()
+    R21A = r21_adversary()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -4767,7 +4779,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -6085,7 +6097,7 @@ def main() -> int:
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
             # 39.810 at 121 rows; filing D122 moved it. The taxonomy statistic is a function of the
             # ledger, so every row changes it -- that is the design, not drift.
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 56.89808917197452, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 62.18562874251497, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -6169,9 +6181,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 157, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 40, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 18.471337579617835, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 167, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 44, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 22.75449101796407, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
@@ -6183,7 +6195,7 @@ def main() -> int:
             # -> 3 with D84: R15's own pre-registered third reading found that the floor is a
             # function of the task's headroom. The instrument found the scope of its own number.
             ('LDG instrument-found SCOPE defects',
-             DL['cross_tab']['SCOPE']['instrument'] if DL else -1, 3, 0),
+             DL['cross_tab']['SCOPE']['instrument'] if DL else -1, 4, 0),
             ('VAR in-sample floor share', VD['in_sample']['floor_share_pct'] if VD else -1,
              72.05, 0.01),
             ('VAR held-out pairings near 52',

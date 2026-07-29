@@ -1,0 +1,130 @@
+{
+ "L27_att_abs_max": 0.0,
+ "max_abs_att_minus_att_late": 2.404813992384902e-08,
+ "n_heads_where_att_differs_from_att_late": 129,
+ "spearman_own_vs_direct_linear": 0.9998810493974013,
+ "spearman_direct_linear_vs_direct_renorm": 0.9062061844189896,
+ "spearman_own_vs_direct_renorm": 0.9068059991597532,
+ "L27_max_abs_complete_minus_total_r10": 0.32491715344183714,
+ "n_stable": 44,
+ "spearman_flip_vs_abs_own": 0.5761577389780653,
+ "spearman_flip_vs_abs_att": -0.012630659707245636,
+ "median_abs_own_stable": 0.006724463443765434,
+ "median_abs_own_unstable": 0.02172262428544524,
+ "mannwhitney_p_abs_own": 6.132150918946421e-08,
+ "mannwhitney_z_abs_own": -5.414904257426333,
+ "att_share_stable": 0.5293898084677938,
+ "depth_matched_null": {
+  "mean": 0.5742630691201922,
+  "p025": 0.47273918025475326,
+  "p975": 0.6618644006108334,
+  "frac_reaching_0.50": 0.90265,
+  "percentile_of_observed": 0.20025,
+  "n_draw": 20000
+ },
+ "median_live_att_members": 78.0,
+ "median_live_mlp_members": 7.5,
+ "per_member_att_live": 0.001254963049010049,
+ "per_member_mlp_live": 0.006231190507974825,
+ "per_member_ratio_live": 4.965238229834868,
+ "per_member_ratio_published": 10.1664864976106,
+ "cancellation": {
+  "att": {
+   "n": 156,
+   "p10": 0.02157224383875328,
+   "median": 0.1734144591930309,
+   "p90": 0.368254296277948,
+   "max": 0.8158104783062411,
+   "median_null_1_over_sqrt_n_live": 0.1091089451179962,
+   "n_layers_below_own_null": 13
+  },
+  "mlp": {
+   "n": 168,
+   "p10": 0.0257034140504762,
+   "median": 0.13917990320068188,
+   "p90": 0.6198603180529644,
+   "max": 0.9752992406073346,
+   "median_null_1_over_sqrt_n_live": 0.36575893180125046,
+   "n_layers_below_own_null": 14
+  }
+ },
+ "L27_mlp_cancellation_head0": 0.971577971648189,
+ "L27_mlp_cancellation_median": 0.6721076052851775,
+ "mlp_cancellation_by_layer": {
+  "L14": 0.036916068413526446,
+  "L15": 0.09000281100492882,
+  "L16": 0.07567720849290505,
+  "L17": 0.0991290891499235,
+  "L18": 0.12811642280866667,
+  "L19": 0.11306392842036267,
+  "L20": 0.1260885285008274,
+  "L21": 0.1940980204335109,
+  "L22": 0.10847070450905842,
+  "L23": 0.3085167799867486,
+  "L24": 0.42435575578022655,
+  "L25": 0.5774456162502102,
+  "L26": 0.5590955753143867,
+  "L27": 0.6721076052851775
+ },
+ "median_norm_over_indirect": 0.3033184609436277,
+ "ratio_of_medians_norm_over_indirect": 0.3689105123139619,
+ "median_norm_over_total_here": 0.42786317675725816,
+ "n_norm_exceeds_indirect": 39,
+ "n_norm_exceeds_total": 46,
+ "n_norm_exceeds_own": 103,
+ "n_norm_largest_class": 21,
+ "n_norm_sign_agrees_with_indirect": 98,
+ "aggregations": {
+  "median_of_shares": {
+   "att": 0.48449364120947014,
+   "mlp": 0.23411699209817016,
+   "emb": 2.7004887810757786e-07,
+   "norm": 0.17062222293275803
+  },
+  "mean_of_shares": {
+   "att": 0.4754739156873977,
+   "mlp": 0.3045066971701756,
+   "emb": 5.780956401057487e-07,
+   "norm": 0.22001880904678636
+  },
+  "share_of_medians": {
+   "att": 0.4184542599065252,
+   "mlp": 0.35557572635762713,
+   "emb": 4.057855990020185e-07,
+   "norm": 0.22596960795024856
+  },
+  "median_signed_share": {
+   "att": 0.1393236228977711,
+   "mlp": 0.05133733121413439,
+   "emb": -7.3204575240779494e-09,
+   "norm": -0.06253786214297376
+  },
+  "sum_median_of_shares": 0.8892331262892765,
+  "sum_mean_of_shares": 0.9999999999999998,
+  "sum_share_of_medians": 0.9999999999999999,
+  "sum_median_signed": 0.12812308464847422
+ },
+ "att_share_by_layer": {
+  "L14": 0.697917723247862,
+  "L15": 0.680082816017011,
+  "L16": 0.6677742204522621,
+  "L17": 0.5513794635034519,
+  "L18": 0.5956004278539009,
+  "L19": 0.6819372819954543,
+  "L20": 0.6256672707358362,
+  "L21": 0.5149753716519851,
+  "L22": 0.46748245177351105,
+  "L23": 0.5105564778812839,
+  "L24": 0.40095702474390843,
+  "L25": 0.3668100971335171,
+  "L26": 0.22136109432411863,
+  "L27": 0.0
+ },
+ "att_share_band_L14_L21": 0.6448672856429254,
+ "mlp_share_band_L14_L21": 0.178376880407646,
+ "n_usable_own": 117,
+ "ratio_same_convention": 4.150213604813891,
+ "ratio_published_mixed_convention": 3.841677040672535,
+ "per_head_ratio_here_over_own_usable": 2.00524578751535,
+ "per_head_ratio_r10_over_own_usable": 1.8137750711599876
+}
