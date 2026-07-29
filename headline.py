@@ -3180,6 +3180,24 @@ def r19():
     # supports being different objects. Both reliabilities are split-half over R19's own 64 bases --
     # same task, same items, same model, same run -- so the ceiling is not borrowed from another
     # experiment the way the R10/R11 disattenuation had to be.
+    # D138: the published CI resampled 64 bases as if independent; the design has 8 aliased
+    # (query, answer-room) groups. The group-clustered interval is the honest one and both
+    # are emitted, because hiding the narrow one would hide the size of the error.
+    fc = HERE / 'R19_crossed_position_support' / 'results' / 'r19_clustered_ci.json'
+    if fc.exists():
+        cc = json.load(open(fc))
+        out['clustering'] = {'n_groups': cc['n_groups'], 'group_size': cc['group_size'],
+                             'grouping': cc['grouping']}
+        for name, v in out['metrics'].items():
+            c = cc['per_metric'].get(name)
+            if not c:
+                continue
+            v['ci_group_clustered_lo'] = c['ci_group_clustered'][0]
+            v['ci_group_clustered_hi'] = c['ci_group_clustered'][1]
+            v['ci_width_ratio_group_over_base'] = c['width_ratio']
+            v['clustered_upper_reaches_0_9'] = c['clustered_upper_reaches_0_9']
+        out['h_support_survives_clustering'] = not any(
+            v.get('clustered_upper_reaches_0_9') for v in out['metrics'].values())
     fm = HERE / 'R19_crossed_position_support' / 'results' / 'r19_reliability_of_magnitude.json'
     rel = json.load(open(fm)) if fm.exists() else None
     if rel:

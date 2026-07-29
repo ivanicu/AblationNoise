@@ -1,4 +1,4 @@
-<!-- unbacked-ok: 0.0066 -- the WRONG hand-subtracted value, quoted verbatim inside its own correction so the error can be read against the emitted 0.0065. No generator emits it, which is the point. 23.6 -- the result file's size in megabytes, a measurement of a file rather
+<!-- unbacked-ok: 0.669 0.094 0.62 5.35 -- an independent reviewer's own measurements of the design effect, computed during its audit from the raw result file. No generator here emits them because this repository did not compute them; what it DID compute is the group-clustered interval beside them, which is emitted by tools/clustered_ci.py. 0.0066 -- the WRONG hand-subtracted value, quoted verbatim inside its own correction so the error can be read against the emitted 0.0065. No generator emits it, which is the point. 23.6 -- the result file's size in megabytes, a measurement of a file rather
  than a generated value; same class as the runtime figures exempted at the top of README.md. -->
 # R19 — the crossed *position × intervention-support* scan
 
@@ -55,6 +55,30 @@ behavioural_flip       0.4991        0.9056        0.5512          yes
 ```
 
 **`H-support` survives correction on all three metrics.**
+
+> **WARNING `D138` — the CIs in the table above resample `64` bases as if independent, and the
+> design has `8`.** `query = elig[b % 8]` and `want = rooms[b % 4]`, and `4` divides `8`, so the
+> query name **perfectly determines the answer room**: `8` distinct cells replicated `8` times.
+> An independent reviewer measured the between-group share of base-level variance at a median of
+> `0.669` against a random-grouping null of `0.094` — `ICC` about `0.62`, design effect about
+> `5.35`, **effective `n` about `12`, not `64`**. Resampling the `8` groups instead:
+>
+> ```
+> metric                  point   base-resample CI       group-clustered CI    width
+> signed_margin_drop     0.6778   [+0.6117, +0.7014]   [+0.5642, +0.7518]   2.03x
+> room_set_kl            0.5314   [+0.5016, +0.5745]   [+0.4975, +0.5764]   1.09x
+> behavioural_flip       0.4991   [+0.4140, +0.5421]   [+0.3936, +0.5482]   1.20x
+> ```
+>
+> **The reviewer estimated about `2.3` times wider from a different computation; this gives
+> `2.03` times and `[+0.5642, +0.7518]`** — an independent reproduction of an adversarial finding by a
+> second method. Both intervals are emitted; hiding the narrow one would hide the size of the
+> error.
+>
+> **The kill branch did not fire.** Even the honest upper bound is `0.7518`, nowhere near the
+> registered `0.9`, on any metric. **`H-support` survives the correction it needed.** And the
+> clustering penalty is `2.03` times on the primary metric against `1.09` and `1.20` on the
+> others — the aliasing bites hardest exactly where the headline is.
 
 > **⚠ `D133` — the first version of this table used the WRONG CEILING, in the direction that
 > flattered the conclusion, and it was wrong twice over.**

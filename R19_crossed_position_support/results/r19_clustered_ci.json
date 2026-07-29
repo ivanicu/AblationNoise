@@ -1,0 +1,53 @@
+{
+ "n_groups": 8,
+ "group_size": 8,
+ "n_boot": 2000,
+ "grouping": "b % 8 -- fixes query name AND answer room simultaneously",
+ "per_metric": {
+  "signed_margin_drop": {
+   "point": 0.6778134348378476,
+   "ci_base_resample": [
+    0.6130992452963896,
+    0.7056301597987458
+   ],
+   "width_base": 0.09253091450235618,
+   "ci_group_clustered": [
+    0.5641700538061662,
+    0.7518234874291992
+   ],
+   "width_group": 0.187653433623033,
+   "width_ratio": 2.0280079866524465,
+   "clustered_upper_reaches_0_9": false
+  },
+  "room_set_kl": {
+   "point": 0.5314206751332501,
+   "ci_base_resample": [
+    0.5017440826784142,
+    0.5738835093970976
+   ],
+   "width_base": 0.07213942671868345,
+   "ci_group_clustered": [
+    0.4974615435232663,
+    0.576439681921027
+   ],
+   "width_group": 0.07897813839776069,
+   "width_ratio": 1.0947985309856374,
+   "clustered_upper_reaches_0_9": false
+  },
+  "behavioural_flip": {
+   "point": 0.499122530974401,
+   "ci_base_resample": [
+    0.41476733735621285,
+    0.5430572422112102
+   ],
+   "width_base": 0.12828990485499736,
+   "ci_group_clustered": [
+    0.3935957974006217,
+    0.548159588781208
+   ],
+   "width_group": 0.15456379138058624,
+   "width_ratio": 1.204800888700366,
+   "clustered_upper_reaches_0_9": false
+  }
+ }
+}
