@@ -89,3 +89,84 @@ small on this particular draw.
 One model, one vocabulary, one metric, `8` heads. The replay recovers head *identities*, not effect
 values; every effect value used below is `R10`'s, admitted only by control 2. Nothing here re-runs
 the model, and nothing here says which floor should replace the published one.
+
+---
+
+# Amendment 1 — the outcome, and the second leaked head was undetectable
+
+Appended 2026-07-29. **No threshold above was changed.**
+
+## Both chained controls pass, and the second one passes exactly
+
+```
+CONTROL 1  the replay contains L16H3                                        PASS
+CONTROL 2  substituting R10's per-head values for the recovered draw list
+           gives sd = 0.22088667589755384 against a stored 0.22088667589755384
+           abs err  0.000e+00                                               PASS
+```
+
+**Bit-identical.** The replay recovered the exact `30` heads, and `R10`'s exhaustive per-head values
+**are** `R1`'s per-draw values — the same measurements, reached by two different code paths on two
+different days. That validates the replay and the substitution in one step, which is what the
+chaining was for.
+
+## `k_leak = 2`, and `World A` is dead
+
+```
+the eight                L16H03 L17H00 L17H07 L17H11 L18H09 L19H00 L19H05 L22H07
+in the reference draws   L16H03, L19H00
+expected under the design                    1.3119
+the 30 draws cover                           26 distinct heads of 168
+```
+
+**Two of the eight are inside their own reference, and the design predicted `1.31`.** `L16H3` was
+never an accident.
+
+> **And `L19H00` was undetectable.** Its effect is `0.0154` — nowhere near the extremes — so it is
+> neither the `min` nor the `max`, and those are the only order statistics the artifact stores.
+> **`D176`'s detection method has a ceiling of exactly one head**, and the repository could not have
+> learned about the second by any inspection of what it published. `World S` is confirmed: the
+> contamination was not merely unnoticed, it was **unknowable from the artifact.**
+
+## Registered verdict: `CONTAMINATION-MATERIAL` — and the confound control deflates it
+
+```
+floor                0.4417733517951077  ->  leave-all-eight-out 0.413088   (28 draws kept)
+shift                6.4933%   against the 5.667495896844854% margin that decides the count
+n_inside             7  ->  7            unchanged
+matched-rank null    median 2.3010%   p95 13.1339%   observed at percentile 0.7710
+```
+
+The shift clears the registered threshold, so the rule fires. **But the confound registered before
+the run is what the number has to be read against**, and it says the shift is *inside* its own null:
+removing any eight rank-matched heads from `30` draws moves the floor by `2.30%` at the median and up
+to `13.13%` at `p95`, and the observed `6.49%` sits at the `77`th percentile.
+
+> **So the shift is the price of removing eight of thirty draws, not a fact about these eight.**
+> The registered verdict stands as written; the honest reading of it does not support *"the floor was
+> `6.5%` too high because of the tested heads"*. **`n_inside` is `7` either way** and nothing
+> published flips.
+
+## What survives, at the size it supports
+
+**The number does not move the conclusion. The design flaw does not need it to.**
+
+- The reference for judging `k` heads is drawn **from the population containing them**, with nothing
+  excluding them (`R1_noise_floor/run.py:246`).
+- `2` of `8` were in it, against `1.3119` expected — **the modal outcome, not a mishap.**
+- **Only one of the two could ever have been detected** from the published artifact, because only
+  `min` and `max` are stored.
+- `resolution_limit()` already states the leave-one-out rule for the per-head test and it was never
+  applied here.
+
+**The repair is not leave-one-out on whichever head happened to be extreme.** It is that a reference
+must be drawn from a pool that excludes what it judges, and that a stored `n / mean / sd / min / max`
+cannot support any later audit of who was in it.
+
+## Boundary
+
+One model, one vocabulary, one metric, `8` heads, `30` draws. The replay recovers head *identities*;
+every effect value is `R10`'s, admitted by control 2 at `abs err 0.000e+00`. The matched-rank null
+jitters each rank by `+-5` and draws `2000` times; a different matching rule would give a different
+percentile. Nothing here re-runs the model, and nothing here proposes a replacement floor —
+`0.413088` is a leave-out computation on a contaminated design, not a corrected measurement.

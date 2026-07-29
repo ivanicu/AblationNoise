@@ -698,7 +698,20 @@ the floor.* [`R22`](R22_floor_identification/) asks it. No GPU — arithmetic on
 the grid required to land on the published cell exactly before anything else is read (it does:
 `0.4417733517951077`, `n_inside 7`).
 
-> **① The head that decides the count was inside its own reference distribution.** The stored `min`
+> **① TWO of the eight were inside their own reference, and only one of them was ever detectable.**
+> `R1_noise_floor/run.py:246` draws the reference from the **whole band, including the eight heads
+> the floor judges**. The draws were never lost — `random.Random(20260727)` over a deterministic
+> pool — so replaying the seed recovers them, and two chained controls make the replay admissible:
+> it contains `L16H3`, and substituting `R10`'s per-head values for the recovered list reproduces
+> `R1`'s stored `sd` at **`abs err 0.000e+00`**, bit-identical. `k_leak = 2` — `L16H03` and
+> `L19H00` — against `1.3119` expected under the design. **`L19H00`'s effect is `0.0154`, neither
+> `min` nor `max`, and those are the only order statistics the artifact stores: it was
+> unknowable.** Leave-all-eight-out gives `0.413088`, a `6.4933%` shift — but the confound
+> registered before the run puts that at percentile `0.771` of a matched-rank removal null
+> (`median 2.3010%`, `p95 13.1339%`), **inside its own null**, so the shift is the price of removing
+> eight of thirty draws and not a fact about these eight. `n_inside` is `7` either way. `D177`.
+>
+> **The original single-head reading, kept because it is how this was found.** The stored `min`
 > of the `30` random band draws is `-0.4668109973271688`; `L16H3`'s published drop is
 > `-0.4668108383814494`. **They agree to `1.589e-07` — the same head, measured in two runs.** So the
 > floor `L16H3` is judged against was computed partly *from* `L16H3`. `resolution_limit()` already
@@ -1011,7 +1024,7 @@ because the query that killed the `OV` claim was not aimed at transport. **Aimed
 > cited here or trivially findable.
 >
 > **What it still is:** a worked audit of one prior experiment, carried out in public, with an
-> unusually complete error record — `176` rows, each naming what was wrong and what the operation on
+> unusually complete error record — `177` rows, each naming what was wrong and what the operation on
 > it was.
 >
 > > **⚠ `D123` — this said `120` for two rows, and BOTH of this repository's checkers are blind to
