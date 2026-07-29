@@ -1,3 +1,6 @@
+<!-- unbacked-ok: 2307.15771 2402.15390 2607.01940 -- arXiv identifiers for the self-repair
+ literature, not measurements. Same class as the identifiers exempted at the top of README.md: no
+ generator here could emit a paper number. -->
 # Pre-registration — WHY is the reference distribution wide? Two mechanical candidates, on frozen data
 
 Written 2026-07-28, **before the statistic was computed**, committed alone so git ordering rather than
@@ -84,3 +87,94 @@ computed on its own item set** — if that differs from `R10`'s, the two vectors
 identical data and the correlation is attenuated by that mismatch. **This is checked in the code and
 reported, not assumed.** Nothing here is about `I_all`, and nothing here establishes causation between
 the predictors and the effect: three quantities measured on the same heads can share a cause.
+
+---
+
+# Amendment 1 — the outcome, and why the verdict WORD is misleading on its own
+
+Appended 2026-07-28 after running `mechanism()`. Thresholds above unchanged.
+
+## Positive controls, all three
+
+| control | returned |
+|---|---|
+| predictors have spread | `mean_norm` `0.6735` → `20.1064` (`30×`); `displacement_ratio` `0.0314` → `0.7535` (`24×`) |
+| a planted relationship is recovered | effect built as `mean_norm` + noise returns partial `0.9288` for norm, `0.0764` for disp |
+| `cv` should track `displacement_ratio` | **Spearman `0.9998`** — see below, this is a finding, not a pass |
+
+## The registered verdict: `MAGNITUDE-DOMINATED`
+
+```
+within-layer partial (|centred effect|, mean_norm | displacement)   +0.3388   p = 0.00015
+within-layer partial (|centred effect|, displacement | mean_norm)   +0.0869   p = 0.3028
+                              depth-preserving null, 97.5th          0.1625 / 0.1643
+```
+
+Magnitude clears `0.30`; informativeness sits below `0.15` and inside its own null. By the rule as
+written, that is `MAGNITUDE-DOMINATED`.
+
+## **Read the size, not the label — and the size says the opposite**
+
+A rank partial of `0.3388` is `0.1148` of the rank variance.
+
+```
+rank variance attributable to magnitude          0.1148
+rank variance attributable to informativeness    0.0075
+UNEXPLAINED                                      0.8777
+```
+
+**`88%` of the ordering is explained by neither.** So the honest statement is not *"the floor is a
+distribution of head sizes"*. It is:
+
+> **Of the two cheapest mechanical explanations of the reference distribution's width, one accounts
+> for about a ninth of it and the other for nothing. The width is mostly caused by something this
+> repository has not measured.**
+
+That is materially the `NEITHER` branch's meaning arriving through the `MAGNITUDE-DOMINATED` branch's
+door, and it is recorded that way rather than quoted by its verdict word. The emitter now returns
+`rank_variance_unexplained` beside the verdict so the two cannot be separated.
+
+## The depth control ran in the direction I did not expect
+
+```
+pooled partial (effect, norm | disp)        +0.1299
+within-layer                                +0.3388     2.61x LARGER
+```
+
+Pooling across `L14`–`L27` **masks** the magnitude relationship rather than manufacturing it. The
+reason is visible in the data: `mean_norm` and effect both rise with depth, but not in step, so the
+between-layer spread adds variance to both axes without adding covariance. **Every previous use of a
+pooled correlation in this repository was defended on the grounds that pooling inflates. Here it
+deflates**, so "pooled is the conservative choice" is not a general fact and was being used as one.
+
+## `cv` and `displacement_ratio` are one measurement with two names
+
+Spearman `0.9998` between them. `displacement_ratio` was introduced as a manifold-geometry quantity
+and `cv` as a normalised variability; **on these 168 heads they order the heads identically.** So the
+`INFORMATIVENESS` arm of this test was, operationally, normalised output variability — a legitimate
+proxy, but not the geometric quantity its name implies, and `D103`'s critique of
+`displacement_ratio` therefore applies to `cv` too. Two names for one number is how a repository
+convinces itself it has two independent measurements.
+
+## What is now open, and it is the real question
+
+The residual `0.8777` is the object. Neither how much a head writes nor how variable its output is
+predicts how much removing it moves the answer. **Candidates this repository has never touched, in
+the order they are cheapest to test:**
+
+1. **Self-repair / the Hydra effect** — `2307.15771`, `2402.15390`, and `2607.01940` (published `25`
+   days before this project began), which states the mechanism directly: *"first-order scoring is
+   natural when component importance is additive, but becomes misleading when a transformer
+   self-repairs."* **This literature is cited nowhere in this repository** and it supplies exactly
+   the missing term: the measured effect is the true contribution *minus what the network restores*.
+   It also predicts the sign result — `L16H3` and `L22H7` improve the margin when removed, which is
+   over-compensation, not absence of a role.
+2. **Alignment of the head's write with the readout direction** — a large write orthogonal to the
+   room-token logit difference moves nothing. Computable from weights, no GPU.
+3. **Position of the head's write relative to where the query is read** — `R19`, running now.
+
+## Boundary
+
+One model, one metric, one task, `I_final`, `168` band heads, `n = 12` per layer so each within-layer
+statistic is noisy and only their mean is read. Correlation, not causation: three quantities measured
+on the same heads can share a cause.

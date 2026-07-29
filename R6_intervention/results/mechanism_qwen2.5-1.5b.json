@@ -1,0 +1,52 @@
+{
+ "n_heads": 168,
+ "n_band": 168,
+ "spread_norm": {
+  "min": 0.6734539866447449,
+  "q1": 3.56201434135437,
+  "med": 5.1710405349731445,
+  "q3": 6.991865158081055,
+  "max": 20.106422424316406
+ },
+ "spread_disp": {
+  "min": 0.03143048658967018,
+  "q1": 0.11547493934631348,
+  "med": 0.14156992733478546,
+  "q3": 0.20476529002189636,
+  "max": 0.7534619569778442
+ },
+ "spread_effect": {
+  "min": 0.0011913474590059328,
+  "q1": 0.03468254568084838,
+  "med": 0.07957089581186809,
+  "q3": 0.17959442299509804,
+  "max": 1.1881870730528754
+ },
+ "pooled": {
+  "raw_norm": 0.12988899631000045,
+  "raw_disp": 0.0034014810615455478,
+  "raw_cv": 0.001943703463740313,
+  "partial_norm_given_disp": 0.12987603662618344,
+  "partial_disp_given_norm": -0.002854096950824551,
+  "norm_vs_disp": 0.04794974716669788,
+  "cv_vs_disp": 0.9997570370670325
+ },
+ "within_layer_partial_norm": 0.3388141076614903,
+ "within_layer_partial_disp": 0.08688961095864978,
+ "within_layer_raw_norm": 0.3196803196803197,
+ "within_layer_raw_disp": 0.004995004995004994,
+ "null_p_norm": 0.00014999250037498125,
+ "null_p_disp": 0.30278486075696215,
+ "null_975_norm": 0.16252219829889897,
+ "null_975_disp": 0.1642536706579601,
+ "positive_control": {
+  "planted_partial_norm": 0.9288411412671079,
+  "planted_partial_disp": 0.07635256378819093
+ },
+ "n_layers_used": 14,
+ "rank_variance_explained_norm": 0.11479499955045193,
+ "rank_variance_explained_disp": 0.0075498044925455116,
+ "rank_variance_unexplained": 0.8776551959570026,
+ "pooling_masks_by": 2.6087499777706045,
+ "verdict": "MAGNITUDE-DOMINATED"
+}

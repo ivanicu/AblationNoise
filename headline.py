@@ -3033,6 +3033,151 @@ def defect_ledger():
             'cross_tab': inst}
 
 
+def _rank(v):
+    order = sorted(range(len(v)), key=lambda i: v[i])
+    r = [0.0] * len(v)
+    i = 0
+    while i < len(order):
+        j = i
+        while j + 1 < len(order) and v[order[j + 1]] == v[order[i]]:
+            j += 1
+        avg = (i + j) / 2.0 + 1
+        for k in range(i, j + 1):
+            r[order[k]] = avg
+        i = j + 1
+    return r
+
+
+def _partial(x, y, z):
+    """Partial Spearman of x and y controlling z: Pearson on ranks, standard formula.
+
+    The whole verdict rests on this rather than on bare correlations, because mean_norm and
+    displacement_ratio are not independent and a bare Spearman would confirm whichever world was
+    looked at first.
+    """
+    rx, ry, rz = _rank(x), _rank(y), _rank(z)
+    rxy, rxz, ryz = _corr(rx, ry), _corr(rx, rz), _corr(ry, rz)
+    den = math.sqrt(max(1e-12, (1 - rxz ** 2) * (1 - ryz ** 2)))
+    return (rxy - rxz * ryz) / den
+
+
+def mechanism():
+    """WHY IS THE REFERENCE DISTRIBUTION WIDE? Magnitude or informativeness, on frozen data.
+
+    Registered in R6_intervention/MECHANISM_PREREGISTRATION.md, committed before this code.
+
+    Every one of this repository's 123 ledger rows asks "is this number right". None asks what the
+    distribution IS. R6 stored per-head mean_norm and displacement_ratio for all 168 band heads and
+    no analysis has ever used them together with the effect.
+
+    MAGNITUDE says the floor is wide because heads differ in how big their writes are.
+    INFORMATIVENESS says it is wide because they differ in how much VARIABLE content they carry --
+    a head whose output barely moves across items contributes a constant the readout absorbed.
+
+    BOTH CONFOUNDS ARE BUILT IN RATHER THAN MENTIONED. The predictors are correlated, so only
+    PARTIAL correlations decide. And depth drives both, so everything is computed pooled AND
+    within-layer, with the within-layer version deciding -- this repository has already had one edge
+    go -0.1885 pooled to +0.0060 within-layer, a sign flip.
+    """
+    import random as _r
+    f6 = HERE / 'R6_intervention' / 'results' / 'r6_diag_item_variance_qwen2.5-1.5b.json'
+    f10 = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    if not (f6.exists() and f10.exists()):
+        return None
+    d6, d10 = json.load(open(f6)), json.load(open(f10))
+    L = {int(k): v for k, v in d10['layers'].items()}
+    band = [(x, h) for x in range(14, 28) for h in range(len(L[14]['per_head']))]
+    eff = {k: L[k[0]]['per_head'][str(k[1])] for k in band}
+    mu = sum(eff.values()) / len(eff)
+    d = {(r['layer'], r['head']): r for r in d6['per_head']}
+    keys = [k for k in band if k in d]
+    if len(keys) < 100:
+        return {'error': 'R6 diagnostic covers %d of %d band heads' % (len(keys), len(band))}
+    Y = [abs(eff[k] - mu) for k in keys]
+    NORM = [d[k]['mean_norm'] for k in keys]
+    DISP = [d[k]['displacement_ratio'] for k in keys]
+    CV = [d[k]['cv'] for k in keys]
+
+    def spread(v):
+        w = sorted(v)
+        n = len(w)
+        return {'min': w[0], 'q1': w[n // 4], 'med': w[n // 2], 'q3': w[3 * n // 4], 'max': w[-1]}
+
+    pooled = {'raw_norm': _spearman(Y, NORM), 'raw_disp': _spearman(Y, DISP),
+              'raw_cv': _spearman(Y, CV),
+              'partial_norm_given_disp': _partial(Y, NORM, DISP),
+              'partial_disp_given_norm': _partial(Y, DISP, NORM),
+              'norm_vs_disp': _spearman(NORM, DISP), 'cv_vs_disp': _spearman(CV, DISP)}
+
+    # WITHIN-LAYER. Depth drives norms AND effects, so a pooled correlation can be produced entirely
+    # by both rising with layer. Averaging the per-layer statistics removes that channel; n=12 per
+    # layer, so each one is noisy and only their mean is read.
+    def within(a, b, c=None):
+        out = []
+        for x in range(14, 28):
+            idx = [i for i, k in enumerate(keys) if k[0] == x]
+            if len(idx) < 4:
+                continue
+            ya, yb = [a[i] for i in idx], [b[i] for i in idx]
+            out.append(_partial(ya, yb, [c[i] for i in idx]) if c else _spearman(ya, yb))
+        return sum(out) / len(out), out
+
+    wl_norm, per_norm = within(Y, NORM, DISP)
+    wl_disp, per_disp = within(Y, DISP, NORM)
+    wl_raw_norm, _ = within(Y, NORM)
+    wl_raw_disp, _ = within(Y, DISP)
+
+    # PERMUTATION NULL that preserves depth: shuffle the effect WITHIN each layer.
+    rng = _r.Random(20260728)
+    N = 20000
+    by_layer = {x: [i for i, k in enumerate(keys) if k[0] == x] for x in range(14, 28)}
+    nulls_n, nulls_d = [], []
+    for _ in range(N):
+        Yp = list(Y)
+        for x, idx in by_layer.items():
+            vals = [Y[i] for i in idx]
+            rng.shuffle(vals)
+            for i, val in zip(idx, vals):
+                Yp[i] = val
+        nulls_n.append(within(Yp, NORM, DISP)[0])
+        nulls_d.append(within(Yp, DISP, NORM)[0])
+    nulls_n.sort(); nulls_d.sort()
+
+    # POSITIVE CONTROL 2 -- a planted relationship must be recovered. A partial-correlation routine
+    # that cannot find a relationship it was handed is not an instrument.
+    rc = _r.Random(7)
+    planted = [NORM[i] + 0.05 * rc.gauss(0, 1) * (max(NORM) - min(NORM)) for i in range(len(keys))]
+    pc = {'planted_partial_norm': _partial(planted, NORM, DISP),
+          'planted_partial_disp': _partial(planted, DISP, NORM)}
+
+    v = ('MAGNITUDE-DOMINATED' if (wl_norm >= 0.30 and wl_disp < 0.15) else
+         'INFORMATION-DOMINATED' if (wl_disp >= 0.30 and wl_norm < 0.15) else
+         'BOTH' if (wl_norm >= 0.30 and wl_disp >= 0.30) else
+         'NEITHER -- both cheap mechanical explanations fail; the width is caused by something '
+         'this repository has not measured'
+         if (abs(wl_norm) < 0.15 and abs(wl_disp) < 0.15) else
+         'MIXED -- between the registered thresholds')
+    return {'n_heads': len(keys), 'n_band': len(band),
+            'spread_norm': spread(NORM), 'spread_disp': spread(DISP), 'spread_effect': spread(Y),
+            'pooled': pooled,
+            'within_layer_partial_norm': wl_norm, 'within_layer_partial_disp': wl_disp,
+            'within_layer_raw_norm': wl_raw_norm, 'within_layer_raw_disp': wl_raw_disp,
+            'null_p_norm': (1 + sum(1 for z in nulls_n if abs(z) >= abs(wl_norm))) / (1 + N),
+            'null_p_disp': (1 + sum(1 for z in nulls_d if abs(z) >= abs(wl_disp))) / (1 + N),
+            'null_975_norm': nulls_n[int(.975 * N)], 'null_975_disp': nulls_d[int(.975 * N)],
+            'positive_control': pc, 'n_layers_used': len(per_norm),
+            # THE LABEL IS NOT THE SIZE. A rank partial of 0.34 leaves ~89% of the ordering
+            # unexplained, so 'MAGNITUDE-DOMINATED' means 'magnitude is the only one of the
+            # two that registers at all', NOT 'magnitude explains the floor'. Emitted so the
+            # verdict word can never be quoted without it.
+            'rank_variance_explained_norm': wl_norm ** 2,
+            'rank_variance_explained_disp': wl_disp ** 2,
+            'rank_variance_unexplained': 1 - wl_norm ** 2 - wl_disp ** 2,
+            'pooling_masks_by': (wl_norm / pooled['partial_norm_given_disp']
+                                 if pooled['partial_norm_given_disp'] else float('nan')),
+            'verdict': v}
+
+
 def additivity():
     """DOES THE SINGLE-HEAD REFERENCE DISTRIBUTION PREDICT THE MULTI-HEAD ONE? The frame, tested.
 
@@ -3905,6 +4050,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    MECH = mechanism()
     ADD = additivity()
     MEA = measurability()
     CSR = condition_shape_rank()
@@ -3946,7 +4092,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
