@@ -431,3 +431,32 @@ after `262` finishes: an `O_EXCL` lockfile beside the checkpoint, holding the pi
 rather than interleaving.
 
 Filed as `D126`.
+
+---
+
+# Amendment 5 — the checkpoint guard and the runner improvements are mutually exclusive
+
+Appended 2026-07-28 after the tenth preemption, with `26` of `28` layers done and layers `26` and
+`27` — **both inside the band** — still missing.
+
+`_CODE_VERSION = sha256(run.py)[:8]`, and the resume path refuses any checkpoint whose version
+differs. That reasoning is right: mixing two code versions' cells is a silent corruption.
+
+**It also means the runner cannot be improved while the job it serves is partially done.** The two
+repairs this run needs —
+
+- a `--layers` range, so each attempt completes one layer inside the `5`–`20` minute window between
+  another session's preemptions;
+- the `O_EXCL` lock owed to `D126`;
+
+— **both require editing `run.py`, which discards all `26` layers.**
+
+**Resolved by resubmitting unmodified and deferring both.** The tempting argument — *"this edit
+changes no number, so migrate the checkpoint"* — is verbatim the claim I made about moving the batch
+size from `32` to `64`, which changed whether the job could run at all. A guard bypassed on the
+grounds that the change is harmless is a guard that has never refused anything.
+
+Filed as `D129`. The tension is general and worth stating once: **a version-hashed checkpoint creates
+lock-in precisely when a job is long enough to need a checkpoint.** The resolution is not to weaken
+the hash but to get the runner right *before* the long run — which is what a smoke test is for, and
+this one passed `--n-base 2` in five minutes without ever exercising a preemption.

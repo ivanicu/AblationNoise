@@ -1161,6 +1161,15 @@
    "defect": "task 270 read as 'Queued, waiting its turn' for 17 minutes while the pueue GPU GROUP was PAUSED and the GPU sat idle -- it would have waited forever",
    "operation": "`pueue status` showed 270 Queued and nothing Running; nvidia-smi showed no compute apps. The enclosing state was 'Group \"gpu\" (1 parallel): paused', set by another session. A task's status is meaningless without its group's. THIS IS THE FOURTH VARIANT OF ONE DEFECT: D95 read a status WORD for a job that had ended two hours earlier; D121 read a LOG TAIL for a process dead 25 minutes; D126 read MY OWN MEMORY of submissions instead of the queue; D128 read a task's status without the group's. The unifying statement is that each read a LOCAL indicator without its ENCLOSING state -- a task inside a group, a log inside a process, a submission inside a queue. Resolved with `pueue start -g gpu`; 270 began immediately.",
    "found_by": "author_reading_the_object"
+  },
+  {
+   "id": "D129",
+   "round": "R19",
+   "bin": "CONTROL",
+   "commit": "e2259c3",
+   "defect": "the checkpoint's own version guard makes the runner UNIMPROVABLE while a long job is partially done -- the fix that would let the job survive costs the work the guard protects",
+   "operation": "_CODE_VERSION is sha256(run.py)[:8] and the resume path refuses any checkpoint whose version differs, on the correct reasoning that mixing two code versions' cells is a silent corruption. After ten preemptions the job stands at 26 of 28 layers with 26 and 27 -- both INSIDE the band the four hypotheses are scoped to -- still missing. The obvious repair is a --layers range so each attempt finishes one layer inside the ~5-20 minute window between preemptions, plus an O_EXCL lock for D126. BOTH REQUIRE EDITING run.py, WHICH DISCARDS ALL 26 LAYERS. The guard is not wrong; the tension is real and general: a version-hashed checkpoint creates lock-in exactly when a job is long enough to need one. Resolved by resubmitting UNMODIFIED and deferring both improvements until the run lands, because bypassing the guard on the grounds that 'this edit changes no number' is the same claim I made about batch 32 to 64, which changed whether the job could run at all.",
+   "found_by": "author_reading_the_object"
   }
  ]
 }
