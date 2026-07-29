@@ -34,12 +34,12 @@ it does not fail, and it does not claim the rows are wrong. There is no reposito
 against, which is a fact about your directory and not about the ledger.
 
 ```
-    PROVENANCE     22      whether the number has a generator at all
-    SCOPE          20      which population the claim covers
-    CONTROL        18      what the control arm actually holds fixed
-    STATISTIC      15      what quantity the number is
-    UNCLASSIFIED    4
-    INTERVENTION    2      what the operation physically writes / where / when
+    STATISTIC      45      what quantity the number is
+    PROVENANCE     41      whether the number has a generator at all
+    SCOPE          40      which population the claim covers
+    CONTROL        40      what the control arm actually holds fixed
+    UNCLASSIFIED   4
+    INTERVENTION   4      what the operation physically writes / where / when
 
     found by:  author reading the object 47 · instrument 18 · outside reader 7
                author attacking own detector 6 · author writing the adversary predictions 2
@@ -61,12 +61,12 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 
 ```
 joint            by the author   by an instrument   by an outside reader
-PROVENANCE            13                9                    0
-SCOPE                 16                2                    2
-STATISTIC             11                4                    1
-CONTROL               12                2                    4
-UNCLASSIFIED           4                0                    0
-INTERVENTION           1                1                    0
+PROVENANCE          19               14                    4
+SCOPE               21                4                   12
+STATISTIC           22                3                   15
+CONTROL             20                4                   12
+UNCLASSIFIED         3                0                    0
+INTERVENTION         2                2                    0
 ```
 
 **Both halves of the claim this detector suite was built from are now dead — and the same two
@@ -122,12 +122,12 @@ unreachable at n=`22`.** `THIRTEEN-ONE-OFFS` needs `≥5`, and even then the `�
 first and masks it. **One reachable outcome is not a test**, and `validate_defects.py` now prints
 the reachable set on every run so the collapse is stated rather than discovered.
 
-**What replaces it is the distribution, and that *is* informative.** Chi-square `62.18562874251497` against a
+**What replaces it is the distribution, and that *is* informative.** Chi-square `65.24137931034483` against a
 uniform null is reached by `0` of `20000` draws, so the permutation `p` is below this test's own
 resolution floor rather than equal to any number.
 
 ```
-PROVENANCE 39   SCOPE 39   STATISTIC 44   CONTROL 37   UNCLASSIFIED 4   INTERVENTION 4
+PROVENANCE 41   SCOPE 40   STATISTIC 45   CONTROL 40   UNCLASSIFIED 4   INTERVENTION 4
                                                      expected 24.0000 each
 ```
 
@@ -140,6 +140,21 @@ PROVENANCE 39   SCOPE 39   STATISTIC 44   CONTROL 37   UNCLASSIFIED 4   INTERVEN
 > *"0 unbacked"* report here, and it was never stated. The rule is not changed inside this step,
 > for the same reason the power breach was acknowledged rather than patched: a detector rewritten
 > in passing is a detector nobody measured.
+
+> **⚠ `D168` — both tables above were stale by a factor of `2` and neither drift check could see
+> them.** They described a ledger of `81` rows while it held `167`, and the cross-tab's
+> `by an outside reader` column read `0, 2, 1, 4, 0, 0` against a live `3, 11, 14, 10, 0, 0`. Both
+> sit **inside code fences**, and `detectors/prose_numbers.py` skips fences — the same blind spot
+> this document measures four sections below at **`1949` of `5191` numbers, `37.5%`**. It was
+> measured, written down, and then went on quietly accumulating a `2x` error in the most-quoted
+> table in the repository. **A documented blind spot is not a closed one**, and the only reason this
+> surfaced is that a reviewer misread the *file* as the ledger and I went to check whether it was.
+>
+> **The reviewer's own version of this is OVERTURNED.** `D167`'s third item says
+> `DEFECT_LEDGER.md` *"contains no `D150` or `D157` row"* — correct, and by design: this document's
+> second paragraph says *"Not a table in a README: a hand-written ledger is a self-report."* The rows
+> live in `defects.json`. **It read the filename as the container, and four lines from the thing it
+> reported there was a real defect twice the size.**
 
 **The two *small* bins carry the signal** — `INTERVENTION` at `4` and `UNCLASSIFIED` at `4` — not
 the large one the threshold watches. The right question was never *does a bin dominate* but *is the

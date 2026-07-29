@@ -103,3 +103,84 @@ model family as me, so this measures whether a *different context* changes what 
 whether a different mind would. A human reviewer is not tested here and nothing below generalises to
 one. Matching is judged by me, which is the same person whose calibration is under test — the
 matches are published finding-by-finding so that judgement is checkable.
+
+---
+
+# Amendment 1 — the registered control FAILED, and the score is reported as a post-hoc reading
+
+Appended 2026-07-29. **No threshold above was changed.**
+
+## The forbidden-file control fired, and the attacker fired it on itself
+
+The registered rule: *"a run that opened a forbidden file is reported as `VOID`, not scored."* The
+attacker's own scope statement:
+
+> *"a `grep -n "3.8417\|convention" README.md` returned four match lines from inside the forbidden
+> region (617, 643, 646, 647). I read the grep output before I could suppress it… Overlap with the
+> `D159`–`D167` block is possible throughout and **I cannot bound it**."*
+
+**Registered verdict: `VOID`.** It did not open the file, but it saw four lines of it, and the rule
+does not have a partial branch — **because I did not write one, which is the defect.** A control with
+two states cannot describe a three-state world, and this is the fourth registered control in three
+rounds that could not express what actually happened.
+
+**Everything below is therefore a post-hoc reading and is labelled as one.** The breach direction is
+knowable and it is unfavourable: seeing the first review's findings can only **raise** overlap, so
+the number below is an **upper bound** on the true overlap and the verdict it implies is the one the
+breach favours.
+
+## The briefer's control passed cleanly
+
+Its `FILES READ` line lists `38` paths, none forbidden, and it **never opened `README.md` at all**.
+So the brief itself — published verbatim at [`SECOND_REVIEW_BRIEF.md`](SECOND_REVIEW_BRIEF.md) — is
+uncontaminated. That is the half of the experiment that survives.
+
+## The score, finding by finding, so the matching is checkable
+
+| # | the attacker's finding | matches | |
+|---|---|---|---|
+| 1 | `analyze.py` drops the failed control out of its own gate; the registered verdict is `UNVERIFIED` | — | **NEW** |
+| 2 | `MIXED` survives `2` of `24` population × denominator cells; the signed denominator makes ATT the top class outright | `D165` | match |
+| 3 | under the repository's **own** floor convention `131 of 168` heads are below floor, not `64` | — | **NEW** |
+| 4 | `EMB` is blind to **misclassification**; only deletion is caught | `D159` | match |
+| 5 | control 3 runs against `direct_renorm` while `OWN` **is** `direct_linear` (`+0.9999`) | `D159` | match |
+| 6 | the *"difference is the comparator convention"* explanation is **OVERTURNED** — both rounds use the same comparator | — | **NEW**, and it corrects `D163`'s framing |
+| 7 | `R21` dropped **six** refusal gates, not three, including one it had the data to run free | — | **NEW** |
+| 8 | cancellation conflates two axes; the null is `1/sqrt(n)`, not the brief's formula | `D161` | match |
+| 9 | `att == att_late` is a theorem; two controls test `0.0 < 1e-6` | `D159` | match |
+| 10 | membership counts include components that cannot move | `D162` | match |
+| 11 | the motivating premise is a number from a run whose own verdict is `UNVERIFIED` | `D163` | match |
+| 12 | the P7 plant's planted arm has **no checked-in artifact**, and the script's default `--out` is the published artifact's path | — | **NEW** |
+| 13 | the `44`-head repair explains `23%` of the variance it is offered to explain | `D160` | match |
+| 14 | sweep: the unregistered `1e-4`, the README's ordering, plus a `240`-candidate cap and an `n<30` gate | `D167` | match |
+
+```
+attacker CONFIRMED findings          13
+matching a D159-D167 row              9
+overlap  9 of 13             >= 0.50     -> SURFACE-DRIVEN, as a post-hoc reading
+novel (neither ledger nor my eight predictions)   5
+```
+
+## What this says, at the size it supports
+
+**`SURFACE-DRIVEN`, upper-bounded.** Nine of thirteen findings survived a change of briefer, and the
+briefer never saw the first review. So the defects are substantially **in the artifact**, and
+*"an independent reviewer confirmed it"* is not merely a claim about who wrote the prompt.
+
+**And the number that matters more is `novel = 5`.** A second pass over an already-reviewed round
+found five things the first missed — including that **`analyze.py` dropped the failed control out of
+its own gate**, which makes the registered verdict `UNVERIFIED` rather than `MIXED`, and which two
+reviews and an author had all walked past. **One review is a floor, not a census.** Every reviewed
+round in this repository should read *"at least this many"*.
+
+**The one thing the second review could not have inherited from mine, it found first**: the brief was
+written by an agent that had read the code and nothing else, and its rank-1 surface — *the verdict is
+a choice of denominator* — is the one that flips the headline. **A reader who has only the artifact
+outranks a reader who has my questions.**
+
+## Boundary
+
+`n = 1` briefer, `n = 1` attacker, one round. Both are the same model family as me, so this measures
+whether a *different context* changes what is found, not whether a different mind would. Matching was
+judged by me and is published row by row above so the judgement is checkable. The overlap is an upper
+bound for the disclosed breach, and the `VOID` verdict stands as the registered outcome.

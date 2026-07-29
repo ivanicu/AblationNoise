@@ -1512,6 +1512,69 @@
    "defect": "three smaller defects at the object: an unregistered gate constant, a retraction presented below what it retracts, and ledger rows that exist only in JSON",
    "operation": "analyze.py gates control 1a on a hard-coded 1e-4 that appears nowhere in the pre-registration, which registers only the 0.05 x band sd limit. README.md still leads R21's three-control block with the tautological identity 1.7878479721677998e-07 formatted as evidence, with the D157 retraction 20 lines below it -- self-caught, but the presentation order was never changed. And DEFECT_LEDGER.md contains no D150 or D157 row (grep 'D15[0-9]' returns nothing); both exist only in README prose and defects.json, so a reader of the ledger document cannot find them.",
    "found_by": "outside_reader"
+  },
+  {
+   "id": "D168",
+   "round": "REPO",
+   "bin": "PROVENANCE",
+   "commit": "b319368",
+   "defect": "the two bin tables in DEFECT_LEDGER.md were stale by a factor of 2 -- they described a ledger of 81 rows while it held 167 -- and neither drift check could see them because both sit inside code fences",
+   "operation": "The bin table read PROVENANCE 22 / SCOPE 20 / CONTROL 18 / STATISTIC 15 / UNCLASSIFIED 4 / INTERVENTION 2, summing to 81 against a live 167 (STATISTIC 44, PROVENANCE 39, SCOPE 39, CONTROL 37, UNCLASSIFIED 4, INTERVENTION 4). The cross-tab's 'by an outside reader' column read 0, 2, 1, 4, 0, 0 against a live 3, 11, 14, 10, 0, 0. detectors/prose_numbers.py skips everything between code fences -- a blind spot THIS SAME DOCUMENT measures four sections below at 1949 of 5191 numbers, 37.5% -- so both tables accumulated the error silently while every unfenced number beside them was drift-checked every commit. A DOCUMENTED BLIND SPOT IS NOT A CLOSED ONE. Found only because an outside reviewer filed D167's third item -- 'DEFECT_LEDGER.md contains no D150 or D157 row' -- which is OVERTURNED: this document's own second paragraph says 'Not a table in a README: a hand-written ledger is a self-report', the rows live in defects.json by design, and validate_defects.py reads them. The reviewer read the filename as the container. Four lines from what it reported there was a real defect twice the size, and its wrong finding is what sent me to look.",
+   "found_by": "author_reading_the_object"
+  },
+  {
+   "id": "D169",
+   "round": "R21",
+   "bin": "CONTROL",
+   "commit": "b319368",
+   "defect": "R21's analyze.py drops its own FAILED registered control out of the gate, so a run whose registered verdict is UNVERIFIED prints MIXED",
+   "operation": "PREREGISTRATION.md registers 'UNVERIFIED | either identity control below fails'. Control 1 failed: identity_vs_r10_max = 1.971574097241418 against identity_limit = 0.012175927323649789, a 162x overshoot, recorded in the published analysis JSON. analyze.py computes ok_id and then gates on (ok_id_stable and ok_last and ok_own) -- ok_id is ABSENT from the gate, surviving only as a printed warning that falls through to the verdict. ok_id_stable names a post-hoc subgroup that appears nowhere in the pre-registration. Git ordering: run.py, analyze.py, the results and Amendment 1 all landed in commit 3ccbba0, with analyze.py's mtime 21 minutes after the data that made the registered gate fail. Disclosure in an amendment does not restore the verdict. THE PUBLISHED VERDICT MIXED SHOULD READ UNVERIFIED. Found by a second reviewer, briefed by an agent rather than by me; neither the first review nor I raised it.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D170",
+   "round": "R21",
+   "bin": "SCOPE",
+   "commit": "b319368",
+   "defect": "under the repository's OWN floor convention 131 of 168 band heads are below their layer's floor, not the 64 the brief computed, and R10's per-head measurement error cannot be computed for the model R21 uses",
+   "operation": "R10_exhaustive/run.py records 'floor': sd/abs(bm), a FRACTION of base margin, while total_r10 is an absolute margin drop. The repository's operative test is R7_norm_matched/run.py's pc_clears_own_floor = abs(pcv) > sd -- compared against sd, not sd/|bm|. Under that convention 131 of 168 (78%) sit below floor, not 64 (38%). ATT share below 0.4643 / above 0.7263. And R10 now records a genuine per-head measurement error (per_head_sem) which the checked-in 1.5b artifact DOES NOT CONTAIN while the 3b artifact does -- the 1.5b file was frozen at 4a41dd8 before R10/run.py changed at 69d3c47 -- so R21's total_r10 comes from an artifact the current R10 code would not reproduce field-for-field, and the correct per-head noise floor cannot be computed for the model R21 uses at all.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D171",
+   "round": "R21",
+   "bin": "STATISTIC",
+   "commit": "b319368",
+   "defect": "the 'difference is the comparator convention' explanation for R21's 3.8417x is OVERTURNED -- both rounds use the identical fixed clean comparator",
+   "operation": "R20/run.py: comp = max(others, key=...) on the CLEAN readout, held fixed. R21/run.py: the same, computed once in the clean pass and reused. There is no comparator difference between R20 and R21; the comparator confound is R21/R20 versus R10. The gap decomposes into renorm-vs-linear on the direct term plus R20's order-statistic bug: median |total_r10| 0.065383 identical for both rounds, R20's published numerator 0.066291 being the 85th order statistic on an even n; median |OWN| 0.017019 gives 3.8417, median |direct_renorm| 0.019826 gives 3.2978 (== R20's own ratio_true_median), median |direct_linear| 0.016644 gives 3.9284. On the 44 comparator-stable heads the ratio is 7.7622x -- it moves AWAY from 3.3251, more than doubling. The convention explanation fails on its own test population. This corrects D163's framing, which accepted the convention story.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D172",
+   "round": "R21",
+   "bin": "CONTROL",
+   "commit": "b319368",
+   "defect": "R21 dropped SIX refusal gates that R20 carries, including one it had the data to run for free",
+   "operation": "grep refuse( : R20 has NO-TOTALS, SHAPE-MISMATCH, COLLIDING-READOUT, NO-QUERY-NAMES, UNTIED-EMBEDDINGS, NO-O-PROJ, NONUNIFORM-STACK, READOUT-MISMATCH, TOO-FEW-ITEMS (9). R21 has UNTIED-EMBEDDINGS, NONUNIFORM-STACK, TOO-FEW-ITEMS (3). REFUSED-READOUT-MISMATCH is the expensive one: R20 refuses if the closed-form readout differs from the model's own logits by more than 1e-2, and R21 HAS THE LOGITS IN HAND -- it computes them for the correctness filter and then picks the comparator from an unvalidated closed-form projection. The check was one line and free. base_margin 4.476819460066393 vs r10_base_margin 4.476821851730347 agree to 2.39e-06 but that is PRINTED and nothing branches on it, and R20/analyze.py records an items_same control that R21 has none of -- while R21's own analyze.py docstring names 'the two runs are not measuring the same items' as one of the two possible causes of the 1.97 failure. That cause was never tested; 100% of the failure was attributed to the comparator on a Spearman of +0.4831, rho^2 = 0.2334.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D173",
+   "round": "R21",
+   "bin": "PROVENANCE",
+   "commit": "b319368",
+   "defect": "R21's P7 attack has no checked-in artifact for its planted arm, and the attack script's default output path is the PUBLISHED artifact's path",
+   "operation": "Three of the seven self-exempted numbers reproduce from the honest JSON (1.089027e-07, 8.447447e-08, -0.119006) and all three are the honest arm -- which was machine-checkable and was exempted anyway. The four planted-arm values have no artifact anywhere: find -name '*plant*' returns only the script. attacks/plant_missing_component.py defaults --out to results/r21_indirect with --tag defaulting to qwen2.5-1.5b, so run with no arguments it OVERWRITES results/r21_indirect_qwen2.5-1.5b.json, the published artifact, and its checkpoint. Its _PRODUCER is hard-coded to scratchpad/r21_planted.py, a path that does not exist, so every artifact it writes is stamped with a nonexistent producer and defeats validate_provenance.py. UNVERIFIED sub-claim, recorded not scored: the honest band-wide max|emb| = 2.398516e-07 and the claimed planted 2.398e-02 share four significant digits and are exactly five orders apart, while the planted run covered L14 only where the honest max|emb| is 8.447e-08 -- consistent with a decimal shift and consistent with coincidence, and with no artifact checked in there is no instrument that can separate them.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D174",
+   "round": "R21",
+   "bin": "CONTROL",
+   "commit": "b319368",
+   "defect": "the second review's own forbidden-file control had two states and the world had three, so a disclosed partial breach forced a VOID on a run that was mostly clean",
+   "operation": "SECOND_REVIEW_PREREGISTRATION.md registered 'a run that opened a forbidden file is reported as VOID, not scored'. The attacker did not open README.md's forbidden block but a grep surfaced four lines of it (617, 643, 646, 647), which it disclosed unprompted and said it could not bound. The registered rule has no partial branch BECAUSE I DID NOT WRITE ONE. Fourth registered control in three rounds that could not express what actually happened. The breach direction is knowable and unfavourable: seeing the first review can only RAISE overlap, so the observed 9/13 = 0.6923 is an UPPER BOUND and SURFACE-DRIVEN is the verdict the breach favours. The briefer's control passed cleanly -- 38 paths, none forbidden, README.md never opened -- so the brief is uncontaminated and is published verbatim. Reported as a post-hoc reading with VOID standing as the registered outcome.",
+   "found_by": "author_reading_the_object"
   }
  ]
 }
