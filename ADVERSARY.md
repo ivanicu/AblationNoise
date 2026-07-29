@@ -407,3 +407,50 @@ failed, on its first contact with something that was not me. Three separate esti
 conclusion: **my forecasts about my own work — including my forecasts about which parts are safe —
 carry close to no information.** That is not a reason to stop writing them; `A3` reshaped the front
 page. It is a reason to never again treat one as evidence.
+
+---
+
+## Predictions for the R19 confirmatory read, written before the second adversary wave
+
+The first wave ran when this repository had no confirmatory result. Everything since — R19's four
+verdicts, the split-half reliabilities, the disattenuation, the margin-normalisation section, the
+checkpoint lock — **is entirely self-reviewed**, which §5 calls void rather than weak. Two reviewers
+are being dispatched at it. These are written first so their findings score me.
+
+### A17 · The cluster bootstrap CIs are too narrow, because the bases are not exchangeable — `LANDS, and I rank it first`
+
+`A14` predicted it and the split-half control **confirmed the mechanism**: `query = elig[b % 8]` and
+`want = rooms[b % 4]` are deterministic cycles, so the `64` bases are `8` groups of `8` with
+`(query, answer-room)` aliased. Resampling bases as if they were exchangeable ignores the group
+structure, so every CI in R19's table — `[0.6117, 0.7014]` and the rest — **is narrower than an
+honest interval**, in the direction that makes each verdict look sharper. **I have not corrected it
+and the page does not say so.**
+
+### A18 · Twelve verdicts, no multiplicity correction — `LANDS`
+
+`A15` registered this before the data and nothing was done. Four hypotheses × three metrics is
+**twelve** verdicts, plus the `L17H0` bet, the OV prediction and the `r_yy` prediction. *"Three
+metrics reported separately"* prevents merging; it does **not** control a family.
+
+### A19 · Disattenuating a SPEARMAN with PEARSON reliabilities — `LANDS, and this is the one I did not think of until writing this row`
+
+`spearman_final_vs_all` is rank-based. The split-half reliabilities feeding
+`disattenuated_final_vs_all` are **Pearson correlations of base-half means**. The classical
+correction assumes both are the same kind of coefficient. **Mixing them is a mismatch I introduced
+one step ago and did not notice**, and it is exactly the class this repository files against others —
+a claim whose test is not its own statement. The direction of the bias is unknown to me, which is
+worse than knowing it.
+
+### A20 · The `0.9` threshold on `H-support` was chosen, never justified — `PARTLY LANDS`
+
+It is genuinely pre-registered and that is the part that matters. But nothing anywhere says **why**
+`0.9` rather than `0.8`, and at `0.8` the raw `0.6778` still fails while `room_set_kl`'s `0.5314`
+fails by less. **A pre-registered threshold with no rationale is protected against tuning and not
+against being wrong.**
+
+### A21 · I predict they will NOT find a fabricated number in the new material — `stated so it can fail, as the last one did`
+
+The previous *"will NOT find"* list failed on first contact (`D123`). Every number added since is
+emitted by `headline.py` or exempted with a written reason, and `make verify` was run as its own
+command before each commit. **If a reviewer finds an unbacked or wrong number in the R19 material,
+that is a worse result than any row above**, for the same reason it was last time.
