@@ -474,6 +474,59 @@ distribution — `8` under the repository's own preferred uncorrected method, `0
 where `0` is an artifact of `n`. **This does not touch the transport result above**, which compares
 counts under a *fixed* rule across configurations and never claims per-head significance.
 
+### The repository's own family of decision rules — and a correction would make its headline *stronger*
+
+`ADVERSARY.md`'s `A18` was confirmed by two reviewers and left standing: `31` registered decision
+rules, `alpha = 0.05` throughout, no correction anywhere. `D145` made it `33`. **The obvious repair
+is the one that must not be applied blind**, and this is the reason:
+
+> A correction lowers `alpha`. That makes a **presence** rule (`fires when p <= alpha`) harder — and
+> an **absence** rule **easier**. `R19`'s `H-position` is registered literally as `p_pos >= ALPHA`:
+> **failing to reject is a PASS condition.** So does *"the eight are not enriched"*, at `p = 0.8069`.
+> **A blanket Bonferroni across these rules would strengthen this repository's central claims
+> without a single new observation.**
+
+So the family is split by direction before it is corrected (`detectors/multiplicity.py`, registered
+in [`MULTIPLICITY_PREREGISTRATION.md`](MULTIPLICITY_PREREGISTRATION.md)). The inventory is derived by
+walking the emitter, not hand-listed; `48` p-values, `14` presence, `21` absence, `10` resolution
+statements, `3` controls, `0` unclassified.
+
+The statistic is family-size-free, because the family size is bookkeeping — `12`? `31`? `33`? —
+
+```
+m_break = floor(alpha / p)     the largest family in which Bonferroni still rejects
+ceiling = alpha * (N + 1)      what m_break CANNOT exceed for a null of N draws, whatever the effect
+```
+
+```
+presence rule                                  p        m_break   ceiling   at its null's floor?
+condition_shape_rank  p_lambda1 (x2)  0.0000499975         1000      1000    yes
+ov_permutation_null   6 model x category    0.0005          100       100    yes
+selection_overlap     mean-of-ratios     0.0097998            5      2500    no
+selection_overlap     L22H7 one head     0.0118343            4      2500    no
+selection_overlap     sum-ratio          0.0149797            3      2500    no
+set_enrichment        L17H0 one head     0.0295858            1      2500    no
+mechanism             alignment partial  0.0454977            1         -    no
+selection_overlap     median-of-ratios   0.2768545            0      2500    no   (does not fire)
+```
+
+> ### **`MULTIPLICITY-BITES`, and the shape of it is worse than the count.**
+>
+> **`5` of the `13` firing presence verdicts die below a family of `6`.** And of the `8` that
+> survive a family of `14`, **`8` are pinned at their own null's resolution floor** — their `p` is
+> the smallest the instrument can return, so `m_break` measures **how many draws were bought**, not
+> how large the effect is. **Not one presence verdict with a graded `p` survives.**
+>
+> **The absence family is untouched, and that is the finding I was most afraid of and did not get.**
+> Every absence `p` is `>= 0.0704`, so **no correction at any family size can create or destroy
+> one** — the requested repair could not have manufactured a claim. The repository's *headline*,
+> which is a set of nulls, is multiplicity-immune; its *positive side-claims* are not.
+>
+> **What this does not license:** deleting the five. `m_break` is Bonferroni, the most conservative
+> of the corrections, so it is a **lower** bound on robustness; Holm and BH are kinder. And the
+> selection-overlap trio survives its **own** family of three. The honest statement is a scope, not
+> a retraction: *these hold if the tests you count are the ones in their own round.*
+
 ### Three instruments, three edges, **none positive** — and one of `R16`'s two numbers was a layer artifact
 
 The repository had measured **one** of the three pairwise relationships between its instrument
@@ -681,7 +734,7 @@ because the query that killed the `OV` claim was not aimed at transport. **Aimed
 > cited here or trivially findable.
 >
 > **What it still is:** a worked audit of one prior experiment, carried out in public, with an
-> unusually complete error record — `145` rows, each naming what was wrong and what the operation on
+> unusually complete error record — `147` rows, each naming what was wrong and what the operation on
 > it was.
 >
 > > **⚠ `D123` — this said `120` for two rows, and BOTH of this repository's checkers are blind to
@@ -797,6 +850,12 @@ independently established prior claim shows the strongest selection inflation.
 > **The threshold was not pre-registered and the reading is post hoc.** Identifying `L22H7` needs no
 > peeking — *"the head with a prior claim"* is specified by role, not by the table — but this is a
 > descriptive result, not a confirmatory one.
+>
+> > **⚠ `D146` — every one of these four `p` values dies in a family of six.**
+> > `detectors/multiplicity.py` reports the largest family in which Bonferroni still rejects:
+> > `mean-of-ratios` `5`, `L22H7` `4`, `sum-ratio` `3`. Inside its **own** family of three
+> > aggregations the pair survives; inside this repository's `14` firing presence rules it does not.
+> > **The claim is not withdrawn — it is scoped: it holds if these are the only tests you count.**
 
 ### The right test, run last: **the eight are not enriched, and they sit below the median**
 

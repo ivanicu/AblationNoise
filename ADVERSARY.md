@@ -1,3 +1,4 @@
+<!-- unbacked-ok: 5.14e-07 7.41e-06 -->
 <!-- unbacked-ok: 0.669 0.094 0.62 5.35 12 83.8 31 -- measurements an INDEPENDENT REVIEWER computed from R19's raw result file during its audit, quoted here as its findings. No generator in this repository emits them because this repository did not compute them; reproducing them would mean re-running the reviewer's analysis, which is D138's open work rather than a number to back. 37.5 17.2 24.3 41 500 700 35 -- the detector's own false-pass rate, which cannot
  enter the reference set without infinite recursion (measuring it requires building the set).
  17.2% was measured 2026-07-28 at ~500 reference values, 24.3% the same day at >700. The LIVE

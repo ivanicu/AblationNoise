@@ -1,3 +1,7 @@
+<!-- unbacked-ok: 36.76 27.39 27.41 -- the detector's own false-pass rates, before and after the
+ D147 fix. A detector cannot emit the statistics of its own reference set into that set without
+ circularity; same exemption and same reasoning as detectors/POWER_BREACH.md. Reproduced by
+ `python3 detectors/prose_numbers.py --power`. -->
 # Pre-registration — `A18` says there is no multiplicity correction. Correcting it would make this repository's headline STRONGER, and that is the problem.
 
 Written 2026-07-29, **before the statistic was computed**, committed alone so git ordering rather
@@ -142,3 +146,113 @@ them, and one that dies under Bonferroni may still survive them — `m_break` is
 **lower** bound on robustness, deliberately. The walk finds `p`-shaped keys in one emitter's output;
 a registered rule whose `p` never reaches `--json` is invisible to it, and that miss is the
 population limit of the whole exercise.
+
+---
+
+# Amendment 1 — the outcome, and the survivors survive on `N`
+
+Appended 2026-07-29 after `detectors/multiplicity.py`. **No threshold above was changed.**
+
+## Positive controls
+
+| control | registered expectation | returned |
+|---|---|---|
+| `m_break(1e-9)` | `50000000` | asserted in `selftest()`, passes |
+| `m_break(0.049)` | `1` | passes |
+| `m_break(0.06)` | `0` — the instrument must have a failing branch | passes |
+| the walk finds `mechanism.alignment.p` | present, else `REFUSED_WALK_MISSED_ANCHOR` | found, `0.045497725113744315` |
+| `UNCLASSIFIED` printed even when zero | printed | `0` |
+
+## The inventory, derived
+
+```
+p-values found by the walk   48
+  PRESENCE   14      ABSENCE   21      RESOLUTION   10      CONTROL   3      UNCLASSIFIED   0
+```
+
+`RESOLUTION` was assigned **after** the first run, which put those ten in `UNCLASSIFIED` — recorded
+as post hoc. It cannot move the verdict, which reads only the `PRESENCE` family, and
+`resolution_limit()` already reports `0` BH discoveries for the rows concerned, so they were never
+claims.
+
+## Registered verdict: `MULTIPLICITY-BITES`
+
+```
+presence rule                              p        m_break   ceiling   at its null's floor?
+condition_shape_rank p_lambda1 (x2)   0.0000499975      1000      1000    yes
+ov_permutation_null  6 cells                0.0005       100       100    yes
+selection_overlap    mean-of-ratios      0.0097998         5      2500    no
+selection_overlap    L22H7 one head      0.0118343         4      2500    no
+selection_overlap    sum-ratio           0.0149797         3      2500    no
+set_enrichment       L17H0 one head      0.0295858         1      2500    no
+mechanism            alignment partial   0.0454977         1         -    no
+selection_overlap    median-of-ratios    0.2768545         0      2500    no  (does not fire)
+```
+
+`5` of the `13` firing presence verdicts have `m_break < M_presence = 14`, so the rule fires. The
+same `5` also die below a family of `6`, which is smaller than the number of metrics this repository
+reports per round.
+
+## The part the registered rule did not ask for, and it is the finding
+
+**All `8` surviving presence verdicts are pinned at their own null's resolution floor.
+`n_surviving_with_graded_p = 0`.**
+
+Their `p` is the smallest their instrument can return, so `m_break` measures **how many draws were
+bought**, not how large the effect is: `20000` draws buy `m_break = 1000`, `2000` buy `100`, and two
+results at the floor of the same null are indistinguishable however different their effects.
+
+> **Not one presence verdict in this repository with a graded `p` survives its own family.** The
+> ones that survive do so on `N`.
+
+The confound registered before the run is exactly what produced this, and the control — printing
+`alpha*(N+1)` beside every `m_break` — is what made it visible rather than flattering.
+
+## The finding I was most afraid of, and did not get
+
+```
+absence verdicts a correction would MANUFACTURE   0
+smallest absence p                                0.07035859282814344
+```
+
+Every absence `p` already exceeds `alpha` by a margin, so **no correction at any family size can
+create or destroy one**. The repair `A18` asks for could not have fabricated a claim here. **The
+repository's headline — a set of nulls — is multiplicity-immune. Its positive side-claims are not.**
+
+## What this does not license
+
+Deleting the five. `m_break` uses **Bonferroni**, the most conservative correction, so it is a
+**lower** bound on robustness; Holm and BH are kinder and were not computed. And the
+`selection_overlap` trio is a family of three by itself, inside which `mean-of-ratios` (`5`) and
+`sum-ratio` (`3`) both survive. The honest statement is a scope, not a retraction:
+
+> **these hold if the tests you count are the ones in their own round.**
+
+## And the exercise broke the detector that checks it — `D147`
+
+Quoting `0.0000499975` on the front page returned `unbacked` against a generator that emits exactly
+that value. `detectors/prose_numbers.py`'s tokenizer could not read **scientific notation**, and
+`json.dump` writes small floats that way. Measured on the live reference set:
+
+```
+distinct emitted values invisible to the detector          21
+mantissa/exponent fragments injected into the BACKING set  26   ('05', '06', '09', ...)
+```
+
+**Both directions of the proxy ledger were broken by one missing alternation** — true numbers read
+as unbacked, and a prose number could be backed by a bare exponent. `backs()` had the same bug a
+second time: it computed precision as *digits after the dot*, which is `2` for `1.93e-08`, so it
+rounded the generated value to two decimals — `0.0` — and rejected a correct quotation.
+
+Fixed, selftest re-run, power re-measured (`36.76%`, unchanged on the `x.xx` row; `27.39` → `27.41`
+on `xx.x`). **The tightened detector immediately flagged `13` prose numbers across three files that
+had never been checked in the repository's life.** Four remain exempted with a written reason —
+`hook_identity` loads a model, and the reference set is deliberately dependency-free.
+
+## Boundary
+
+About this repository's decision rules, not about any model. `alpha = 0.05` because that is what was
+registered. `m_break` is Bonferroni-specific and is a lower bound on robustness. The walk sees only
+`headline.py --json`; a registered rule whose `p` never reaches that output is invisible to it, and
+that is the population limit of the whole exercise. Direction assignment is a hand-written table —
+the one hand-written thing here — and a misassignment would move a rule between families silently.

@@ -1,3 +1,9 @@
+<!-- unbacked-ok: 5.1e-07 3.9e-06 -- hook_identity's residuals. That detector loads a MODEL, so it
+ cannot join the reference set without making `make verify` require a scientific stack and a
+ GPU; detectors/prose_numbers.py:generator_numbers() states that constraint as the reason the
+ set is limited to headline.py and validate_defects.py. These two were invisible to the
+ detector until D147 taught it scientific notation, and are exempted with a reason rather than
+ quietly re-hidden. -->
 # Methods — the rounds, the instrument, and how to run one
 
 > Split out of `README.md` on 2026-07-28 without rewriting.

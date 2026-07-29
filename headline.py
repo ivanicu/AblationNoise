@@ -3159,6 +3159,14 @@ def margin_normalisation():
             'n_cells_kept': md['n_cells_kept'], 'n_cells': md['n_cells'],
             'position_composition_kept': md['position_composition_kept'],
             'numerator_verdict': md['numerator_verdict'],
+            # THE CONTROLS' OWN NUMBERS ARE CLAIMS TOO. The pre-registration quotes the failed
+            # exactness control's magnitude and the reconstruction control's residual; both were
+            # invisible to the prose detector until D147 taught it scientific notation, and then
+            # correctly read as unbacked because nothing emitted them.
+            'frozen_minus_rerun_margin_all': (m19 - md['margin_all_items']),
+            'frozen_minus_rerun_relative': abs(m19 - md['margin_all_items']) / m19,
+            'reconstruction_max_abs_err_final': md['scopes']['final']['reconstruction_max_abs_err'],
+            'reconstruction_max_abs_err_all': md['scopes']['all']['reconstruction_max_abs_err'],
             'same_direction_denominator_matched': md['same_direction_denominator_matched'],
             'same_direction_fully_matched': md['same_direction_fully_matched']}
         for scope in ('final', 'all'):
@@ -3172,6 +3180,52 @@ def margin_normalisation():
                 'residual_denominator_matched': rr['denominator_matched'],
                 'residual_fully_matched': rr['fully_matched']}
     return out
+
+
+def multiplicity():
+    """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
+
+    A correction lowers alpha, which makes a PRESENCE rule (fires when p <= alpha) harder and an
+    ABSENCE rule (fires when p >= alpha) EASIER. R19's H-position is registered literally as
+    `p_pos >= ALPHA`, so failing to reject is a PASS. A blanket Bonferroni across these rules would
+    STRENGTHEN this repository's central claims with no new observation, which is why the halves are
+    never mixed. Registered in MULTIPLICITY_PREREGISTRATION.md before detectors/multiplicity.py
+    existed.
+
+    ONLY SUMMARY SCALARS ARE EMITTED, AND DELIBERATELY NOT THE PER-RULE ROWS. detectors/
+    multiplicity.py builds its inventory by walking THIS function's own output for p-shaped keys;
+    re-emitting the rows would feed the walk its own previous answer and the inventory would grow by
+    one generation on every run. A generator that consumes its own output is not a measurement.
+    """
+    f = HERE / 'results_multiplicity.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    firing = [r for r in d['rows'] if r['direction'] == 'PRESENCE' and r['fires_uncorrected']]
+    absn = [r for r in d['rows'] if r['direction'] == 'ABSENCE']
+    return {
+        'alpha': d['alpha'], 'n_p_values_found': d['n_p_values_found'],
+        'n_presence': d['n_presence'], 'n_absence': d['n_absence'],
+        'n_resolution': d['n_resolution'], 'n_control': d['n_control'],
+        'n_unclassified': d['n_unclassified'],
+        'M_presence': d['M_presence'],
+        'n_presence_firing': len(firing),
+        'n_dying_at_M_presence': len(d['presence_dying_at_M_presence']),
+        'n_dying_below_6': len(d['presence_dying_below_6']),
+        'n_surviving': d['n_surviving_presence'],
+        'n_surviving_at_instrument_floor': d['n_surviving_presence_at_instrument_floor'],
+        'n_surviving_with_graded_p': (d['n_surviving_presence']
+                                      - d['n_surviving_presence_at_instrument_floor']),
+        'n_absence_would_be_manufactured':
+            len(d['absence_currently_failing_would_be_manufactured']),
+        # the smallest ABSENCE p is what decides whether any correction could ever touch that half
+        'smallest_absence_pvalue': min((r['p'] for r in absn), default=float('nan')),
+        'm_break_by_rule': {r['path'].lstrip('.'): r['m_break'] for r in d['rows']
+                            if r['direction'] == 'PRESENCE'},
+        'ceiling_by_rule': {r['path'].lstrip('.'): r['ceiling'] for r in d['rows']
+                            if r['direction'] == 'PRESENCE' and r['ceiling']},
+        'families': {k: v['m'] for k, v in d['candidate_families'].items()},
+        'verdict': d['verdict']}
 
 
 def r19():
@@ -4603,6 +4657,7 @@ def main() -> int:
     # had they shared one, the wrong number would have printed silently.
     R19C = r19()
     MNORM = margin_normalisation()
+    MULT = multiplicity()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -4648,7 +4703,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -5966,7 +6021,7 @@ def main() -> int:
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
             # 39.810 at 121 rows; filing D122 moved it. The taxonomy statistic is a function of the
             # ledger, so every row changes it -- that is the design, not drift.
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 51.84137931034483, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 52.714285714285715, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -6050,9 +6105,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 145, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 147, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 38, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 15.172413793103448, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 15.646258503401361, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
@@ -6060,7 +6115,7 @@ def main() -> int:
             # has found. The claim the detector suite was built from is now FALSE, and the check
             # written to notice that is what noticed. Expected count updated, not the check.
             ('LDG instrument-found CONTROL defects',
-             DL['cross_tab']['CONTROL']['instrument'] if DL else -1, 2, 0),
+             DL['cross_tab']['CONTROL']['instrument'] if DL else -1, 3, 0),
             # -> 3 with D84: R15's own pre-registered third reading found that the floor is a
             # function of the task's headroom. The instrument found the scope of its own number.
             ('LDG instrument-found SCOPE defects',

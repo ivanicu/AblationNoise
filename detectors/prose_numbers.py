@@ -54,7 +54,14 @@ ROOT = HERE.parent
 # passed on the half of the sentence that happens to be followed by a hyphen and silently skipped
 # the other half. A pattern that cannot see the notation the subject is written in is not a weak
 # detector; it is a detector of something else.
-NUM = re.compile(r'(?<![\w.])(\d+(?:\.\d+)?)(?=[x%×]?(?![\w]))')
+NUM = re.compile(r'(?<![\w.])(\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)(?=[x%×]?(?![\w]))')
+# ...AND A THIRD TIME, D147, FOUND BY A TRUE NUMBER READING AS UNBACKED. The pattern above could
+# not see SCIENTIFIC NOTATION, and json.dump writes small floats that way. Measured on the live
+# reference set: 21 distinct emitted values were invisible, so prose quoting any of them raised a
+# FALSE ALARM -- and worse in the other direction, the old pattern shredded each of them into
+# fragments, putting 26 mantissas and bare exponents ('05', '06', '09') into the BACKING set as if
+# they had been emitted. A prose number could be backed by an exponent. Both directions of the
+# proxy ledger were broken by one missing alternation.
 # ...AND THE SAME BUG CLASS BIT A SECOND TIME IN THE SAME HOUR. The first fix guarded with
 # `(?![\w.])`, which still rejected "5.2x." -- 'x' is consumed by the optional suffix and the
 # SENTENCE-ENDING PERIOD then fails the guard. Two selftest cases went quietly BACKED on files whose
@@ -150,7 +157,15 @@ def backs(prose_token: str, gen: set) -> bool:
     detector cannot see a SIGN error in prose; that is recorded as a second blind spot beside the
     integer one, not papered over.
     """
-    dec = len(prose_token.split('.')[1]) if '.' in prose_token else 0
+    # D147, second half. `len(after the dot)` is the prose's precision ONLY in fixed notation.
+    # For "1.93e-08" it returns 2, so the comparison rounds the generated value to 2 DECIMALS --
+    # which is 0.0 for anything that small -- and a correctly-quoted value reads as unbacked. The
+    # precision of a scientific-notation token is (mantissa decimals - exponent).
+    mant, _, expo = prose_token.partition('e') if 'e' in prose_token else \
+        prose_token.partition('E')
+    dec = len(mant.split('.')[1]) if '.' in mant else 0
+    if expo:
+        dec -= int(expo)
     p = float(prose_token)
     return any(round(abs(v), dec) == p for v in gen)
 
