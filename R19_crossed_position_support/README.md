@@ -1,4 +1,4 @@
-<!-- unbacked-ok: 0.669 0.094 0.62 5.35 -- an independent reviewer's own measurements of the design effect, computed during its audit from the raw result file. No generator here emits them because this repository did not compute them; what it DID compute is the group-clustered interval beside them, which is emitted by tools/clustered_ci.py. 0.0066 -- the WRONG hand-subtracted value, quoted verbatim inside its own correction so the error can be read against the emitted 0.0065. No generator emits it, which is the point. 23.6 -- the result file's size in megabytes, a measurement of a file rather
+<!-- unbacked-ok: 0.4906 0.5871 -- the WRONG-SCOPE values, quoted verbatim inside their own correction so the error can be read against the right ones; no generator emits them, which is the point. 0.5616 -- the reviewer's independently computed ICC(3,1), their number not mine, same class as the other reviewer-computed figures exempted here. 0.669 0.094 0.62 5.35 -- an independent reviewer's own measurements of the design effect, computed during its audit from the raw result file. No generator here emits them because this repository did not compute them; what it DID compute is the group-clustered interval beside them, which is emitted by tools/clustered_ci.py. 0.0066 -- the WRONG hand-subtracted value, quoted verbatim inside its own correction so the error can be read against the emitted 0.0065. No generator emits it, which is the point. 23.6 -- the result file's size in megabytes, a measurement of a file rather
  than a generated value; same class as the runtime figures exempted at the top of README.md. -->
 # R19 — the crossed *position × intervention-support* scan
 
@@ -102,6 +102,33 @@ behavioural_flip     ceiling   0.9849  ->  disattenuated   0.5068
 > chasing it.** The correct reliabilities are frozen in
 > `results/r19_reliability_of_magnitude.json` and `r19()` reads them.
 
+> **⚠ `D140` — the registered ICC is the WRONG MODEL for this design, and the right
+> one crosses the threshold.** `icc1()` is `ICC(1,1)`, the one-way model, valid when each
+> subject is rated by a *different* randomly drawn set of raters. Every base here is measured
+> at the **same** `8` positions — fully crossed, where `ICC(3,1)` is appropriate.
+> `ICC(1,1)` charges the position **main effect** to error, and `baseline_margin_by_pos`
+> spans `4.02` to `0.51`.
+>
+> ```
+> metric                ICC(1,1)   ICC(3,1)     delta   crosses 0.50 under 3,1
+> signed_margin_drop     0.4734     0.5599   +0.0866   True
+> room_set_kl            0.2907     0.3656   +0.0748   False
+> behavioural_flip       0.0282     0.0335   +0.0054   False
+> ```
+>
+> **The pre-registration named `ICC(1,1)` explicitly, so the registered verdict STANDS and
+> is not switched here.** This is different from a wrong number: **the pre-registration
+> registered the wrong MODEL for its own design**, and a threshold cannot protect against
+> that. `H-position` stays `FALSE` regardless — it fails decisively on the third
+> component below.
+>
+> **`D142` — three computations now agree, and the first version of my tool did not.**
+> It read the `.final` scope while `analyze.py:215` uses `.all`, returning `0.4906`/`0.5871`
+> against the analysis's `0.4737`. That looked like implementations disagreeing and was
+> **me comparing unlike with unlike** — the same defect a reviewer had caught in
+> `margin_normalisation()` an hour earlier. Corrected: `ICC(1,1)` `0.4734` against the
+> analysis's `0.4737`, `ICC(3,1)` `0.5599` against the reviewer's independent `0.5616`.
+>
 > **⚠ `D136` — the component that actually decides `H-position` was never on this page, and the box
 > explaining `H-position` was deleted by one of my own slice edits without my noticing.**
 > `H-position` has three registered components. The third —

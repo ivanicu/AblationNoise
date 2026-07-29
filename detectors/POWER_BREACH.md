@@ -1,4 +1,4 @@
-<!-- unbacked-ok: 36.11 36.23 36.12 36.08 36.07 36.10 35.99 35.99 36.07 36.06 36.07 35.86 35.69 35.71 35.53 34.59 34.16 34.72 35.02 35.38 36.74 2006 1719 1713 1671 1669 1683
+<!-- unbacked-ok: 36.11 36.11 36.23 36.12 36.08 36.07 36.10 35.99 35.99 36.07 36.06 36.07 35.86 35.69 35.71 35.53 34.59 34.16 34.72 35.02 35.38 36.74 2006 1719 1713 1671 1669 1683
  1596 1434 467 33 2909 2507 86 2 14 35.0 6 1.03 0.41 64 100 365 3 15
  -- MEASUREMENTS OF THE DETECTOR'S OWN POWER, and of the remedies tried against it. A detector
  cannot emit the statistics of its own false-pass rate into the reference set that rate is computed

@@ -1278,6 +1278,15 @@
    "defect": "two guards in analyze.py convert a missing dependency into a PASS",
    "operation": "`agree == 8 or not eight` and `p_pos != p_pos` mean that if importing headline fails, H-support silently loses its published-agreement component and H-position loses its permutation test, both in the pass direction. Neither fired this run because `eight` loaded, which is exactly why it is a latent defect rather than an observed one -- this repository's own 'checks fail toward PASS' class, twice, in the confirmatory round.",
    "found_by": "outside_reader"
+  },
+  {
+   "id": "D142",
+   "round": "R19",
+   "bin": "STATISTIC",
+   "commit": "aa367f8",
+   "defect": "the first icc_models.py read the .final scope while the analysis uses .all, giving a 0.017 discrepancy that looked like two implementations of one statistic disagreeing",
+   "operation": "It was not a disagreement; it was comparing unlike with unlike, ONE HOUR after a reviewer caught exactly that in margin_normalisation(). analyze.py:215 names the scope in plain sight. Corrected: ICC(1,1) 0.4734 vs the analysis's 0.4737, ICC(3,1) 0.5599 vs the reviewer's independent 0.5616 -- three computations agreeing to ~0.002 once the scope matches. Caught before publication ONLY because the numbers failed to line up; had they happened to agree it would have shipped.",
+   "found_by": "author_reading_the_object"
   }
  ]
 }

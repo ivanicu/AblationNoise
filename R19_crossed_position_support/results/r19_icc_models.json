@@ -1,0 +1,33 @@
+{
+ "threshold": 0.5,
+ "n_band": 168,
+ "per_metric": {
+  "signed_margin_drop": {
+   "icc_1_1_median": 0.47337142899962154,
+   "icc_3_1_median": 0.5599354589486014,
+   "delta": 0.08656402994897988,
+   "registered_estimator": "ICC(1,1)",
+   "crosses_threshold_under_3_1": true,
+   "crosses_threshold_under_1_1": false,
+   "verdict_would_change": true
+  },
+  "room_set_kl": {
+   "icc_1_1_median": 0.2907287134204149,
+   "icc_3_1_median": 0.36555475241189817,
+   "delta": 0.07482603899148327,
+   "registered_estimator": "ICC(1,1)",
+   "crosses_threshold_under_3_1": false,
+   "crosses_threshold_under_1_1": false,
+   "verdict_would_change": false
+  },
+  "behavioural_flip": {
+   "icc_1_1_median": 0.02819181678656711,
+   "icc_3_1_median": 0.0335428318021027,
+   "delta": 0.005351015015535587,
+   "registered_estimator": "ICC(1,1)",
+   "crosses_threshold_under_3_1": false,
+   "crosses_threshold_under_1_1": false,
+   "verdict_would_change": false
+  }
+ }
+}
