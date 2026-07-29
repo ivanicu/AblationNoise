@@ -42,6 +42,7 @@
   }
  },
  "worlds_are_separable": false,
+ "inferential": false,
  "profiles": {
   "qwen2.5-1.5b|I_final": [
    {
@@ -1212,11 +1213,26 @@
   "top2_share": "GRADIENT"
  },
  "per_statistic_holds_in_every_stratum": {
-  "pr": false,
-  "pr_normalised": false,
-  "gini": false,
-  "top1_share": false,
-  "top2_share": false
+  "pr": {
+   "monotone_everywhere": false,
+   "step_everywhere": false
+  },
+  "pr_normalised": {
+   "monotone_everywhere": false,
+   "step_everywhere": false
+  },
+  "gini": {
+   "monotone_everywhere": false,
+   "step_everywhere": false
+  },
+  "top1_share": {
+   "monotone_everywhere": false,
+   "step_everywhere": false
+  },
+  "top2_share": {
+   "monotone_everywhere": false,
+   "step_everywhere": false
+  }
  },
  "n_strata_rejecting": {
   "pr": {
@@ -1240,6 +1256,7 @@
    "step": 2
   }
  },
+ "data_description_not_a_verdict": "NO_STATISTIC_REJECTS_IN_EVERY_STRATUM",
  "tests": {
   "pr": {
    "qwen2.5-1.5b|I_all": {
@@ -1452,5 +1469,5 @@
    }
   }
  },
- "verdict": "MIXED_FAILS_TO_REPLICATE"
+ "verdict": "UNVERIFIED_CONTROL_FAILED"
 }

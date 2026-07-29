@@ -190,10 +190,19 @@ def main():
               'step test and a planted step fires the monotone test, so GRADIENT-vs-BOUNDARY is '
               'UNANSWERABLE by this design. The per-stratum table below is still readable as '
               '"is there ordered structure at all"; the KIND of structure is not.')
-    if False:
-        (HERE / 'results').mkdir(exist_ok=True)
-        json.dump(out, open(HERE / 'results' / 'r24_concentration.json', 'w'), indent=1)
-        return 3
+    # ⚠ THIS WAS `if False:` FOR TWO COMMITS. The registered halt at PREREGISTRATION.md:94 says a
+    # failed positive control yields UNVERIFIED and nothing is read. I replaced its body with dead
+    # code so the run would continue to the data, and I did not record that I had done it. An
+    # independent reviewer found it. The registered outcome was UNVERIFIED; what got emitted in that
+    # slot was MIXED_FAILS_TO_REPLICATE -- a claim about the DATA standing where a claim about the
+    # INSTRUMENT was registered. That is the exact fold this repository files against everything else.
+    #
+    # The repair is NOT to delete the numbers. Descriptive numbers past a failed control are legal.
+    # The repair is that NOTHING INFERENTIAL MAY BE READ FROM THEM, and the verdict field must say so.
+    out['inferential'] = out['worlds_are_separable']
+    if not out['inferential']:
+        print('  Everything below is DESCRIPTIVE. The registered verdict is UNVERIFIED and no\n'
+              '  inference is licensed from these numbers.')
 
     data = load()
     out['profiles'] = {f'{m}|{s}': rows for (m, s), rows in data.items()}
@@ -233,7 +242,12 @@ def main():
         per_stat[stat] = ('BOUNDARY' if stp and not mono else
                           'GRADIENT' if mono and not stp else
                           'BOTH' if mono and stp else 'NEITHER')
-        per_stat_strict[stat] = holds_strict(stat, 'mono') or holds_strict(stat, 'step')
+        # NO `or`. It was `holds_strict(mono) or holds_strict(step)` under the name
+        # `per_statistic_holds_in_every_stratum`, which is TRUE when either test rejects everywhere --
+        # so it could only ever certify "some ordered structure" while wearing the name of a
+        # gradient-vs-boundary decision. The two flags are emitted separately and never combined.
+        per_stat_strict[stat] = {'monotone_everywhere': holds_strict(stat, 'mono'),
+                                 'step_everywhere': holds_strict(stat, 'step')}
     out['per_statistic_verdict_lenient_any_support'] = per_stat
     out['per_statistic_holds_in_every_stratum'] = per_stat_strict
     out['n_strata_rejecting'] = {stat: {'monotone': sum(1 for v in res[stat].values()
@@ -241,13 +255,19 @@ def main():
                                         'step': sum(1 for v in res[stat].values()
                                                     if v['p_step'] < ALPHA)}
                                  for stat in STATS}
-    verdict = ('MIXED_FAILS_TO_REPLICATE' if not any(per_stat_strict.values())
-               else 'HOLDS_IN_EVERY_STRATUM')
+    # The registered verdict when a control fails is UNVERIFIED, full stop. The data description
+    # below it is kept, and labelled.
+    data_description = ('NO_STATISTIC_REJECTS_IN_EVERY_STRATUM'
+                        if not any(v['monotone_everywhere'] or v['step_everywhere']
+                                   for v in per_stat_strict.values())
+                        else 'SOME_STATISTIC_REJECTS_IN_EVERY_STRATUM')
+    out['data_description_not_a_verdict'] = data_description
+    verdict = 'UNVERIFIED_CONTROL_FAILED' if not out['inferential'] else data_description
     out['tests'] = res
     out['verdict'] = verdict
     print('\n  PER STATISTIC (must hold in BOTH models separately)')
     for k, v in per_stat.items():
-        print(f'    {k:<16} {v}')
+        print(f'    {k:<16} {v}   strict: {per_stat_strict[k]}')
     print(f'\n  REGISTERED VERDICT: {verdict}')
     (HERE / 'results').mkdir(exist_ok=True)
     op = HERE / 'results' / 'r24_concentration.json'
