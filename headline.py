@@ -227,6 +227,32 @@ def centred_null():
     A head that does nothing therefore sits 0.0479 AWAY from the null's centre, and the question
     "is this head unusual among random heads" is `|drop - mean| > 2*sd`, not `|drop| > 2*sd`.
 
+    ### ^ THAT SENTENCE IS BACKWARDS, corrected 2026-07-28 by reading the runner instead of the
+    page. `R10_exhaustive/run.py:281` is `drops[name].append(bm - margin(enc, cor))`, so **a
+    POSITIVE drop means the ablated margin is LOWER -- the ablation HURT.** The band mean is
+    `+0.0479` and `100 of 168` band heads are positive, so `100 of 168` heads HURT and the mean
+    direction is HURT. Every number in the paragraph is right and the word "IMPROVES" inverts all of
+    them. The kept sentence is the object; this is the correction.
+
+    THE STATISTICS ARE UNAFFECTED, and that is why the error survived. The centring argument --
+    judge `|drop - mean|`, not `|drop|` -- is SIGN-INDEPENDENT, so every downstream count, including
+    `L16H3` going 0.96x -> 1.06x, is unchanged. An interpretive clause and the statistic it
+    introduces failed independently, which is why proofreading the numbers could never have caught
+    it.
+
+    WHAT THE CORRECTED SIGN ACTUALLY SAYS, and it is more interesting than the inverted version:
+    the mean is unremarkable -- removing a late-layer head usually hurts, as it should. But
+    **`L16H3`, the largest published single-head effect, has drop `-0.4668`: ablating it IMPROVES
+    the correct answer by 0.47.** So does the externally-established copy head `L22H7`, at
+    `-0.1317`. **The two most load-bearing heads in this audit are heads the model does BETTER
+    without**, on this task, and the inverted prose had been reading both as damage.
+
+    AND THE AUDIT REPRODUCES ITS SOURCE, which had never been checked or claimed. R10's exhaustive
+    scan recomputes all eight of E132b's published effects independently; agreement is 8 of 8 in
+    sign and within 1.0001 in ratio. That is a cross-experiment positive control for the whole
+    apparatus -- and it also kills the worry that drove this check, that the eight and the floor
+    might carry OPPOSITE sign conventions and the centring had been applied the wrong way.
+
     IT CHANGES THE HEADLINE COUNT. L16H3 goes from 0.96x (inside) to 1.06x (CLEARS), so the correct
     figure is 1 of 8, not 0 of 8. The proven copy head moves the other way, 0.27x -> 0.37x, and
     stays far inside. Seven of eight are unaffected in substance.
@@ -262,7 +288,23 @@ def centred_null():
              'x_centred': abs(e['drop'] - mu) / two_sd}
             for h, e in sorted(pe['effects'].items(), key=lambda kv: -kv[1]['abs'])]
     allb = [x for k in range(14, 28) for x in L[k]['per_head'].values()]
+    # CROSS-EXPERIMENT POSITIVE CONTROL, run because a sign check needed it and kept because the
+    # audit had never verified that it reproduces the experiment it audits. Same head, same
+    # vocabulary, same first-120 item filter: E132b's published drop against R10's exhaustive
+    # recomputation. A ratio near +1 means one convention and one measurement; a ratio near -1
+    # would mean the eight and the floor had OPPOSITE sign conventions and every centred verdict
+    # about them was computed the wrong way round.
+    agree = []
+    for hn, e in pe['effects'].items():
+        lay, hd = int(hn[1:hn.index('H')]), int(hn[hn.index('H') + 1:])
+        r10 = L[lay]['per_head'][str(hd)]
+        agree.append(r10 / e['drop'] if e['drop'] else float('nan'))
+    src = {'n_compared': len(agree), 'n_same_sign': sum(1 for r in agree if r > 0),
+           'max_abs_deviation_from_1': max(abs(r - 1) for r in agree)}
     return {'bands': bands, 'null_mean': mu, 'two_sd': two_sd, 'effects': rows,
+            'source_agreement': src,
+            # read from R10_exhaustive/run.py:281 -- drop = bm - margin(ablated), so positive HURT
+            'positive_drop_means': 'ablation HURT the correct-answer margin',
             'n_clear_uncentred': sum(r['x_uncentred'] > 1 for r in rows),
             'n_clear_centred': sum(r['x_centred'] > 1 for r in rows),
             'band_heads_clear_uncentred': sum(1 for v in allb if abs(v) > two_sd),

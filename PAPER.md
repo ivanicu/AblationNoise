@@ -925,6 +925,32 @@ RESOLVABLE at 2σ      8 of 8            DISTINGUISHABLE from a random head     
 > that does nothing therefore sits `0.0479` away from the null's centre, and the question *"is this
 > head unusual among random heads"* is `|drop − mean| > 2·sd`.
 >
+> > **⚠ `D122` — "improves" is BACKWARDS, and a correction had already been appended to this very
+> > paragraph without noticing.** `R10_exhaustive/run.py:281` is
+> > `drops[name].append(bm - margin(enc, cor))`, so a **positive** drop means the ablated margin is
+> > **lower** — the ablation **hurt**. `100` of `168` positive therefore means `100` heads **hurt**,
+> > and the mean direction is **hurt**, which is unremarkable rather than striking. Every number
+> > above is correct; one word inverts all of them. **The `D90` note in this same block re-derived
+> > the split and left the direction word standing** — a correction that walked past the defect it
+> > was standing on.
+> >
+> > **The statistics do not move.** The centring argument is sign-independent, so `L16H3` at
+> > `0.96×` → `1.06×` and the `9` → `10` count are unchanged. An interpretive clause and its
+> > statistic failed independently, which is why checking the numbers could never have caught it.
+> >
+> > **What the corrected sign says is sharper than the inverted version.** `L16H3`, the largest
+> > published single-head effect, has drop `-0.4668`: **ablating it improves the correct answer.**
+> > So does `L22H7`, the externally-established copy head, at `-0.1317`. **The two most
+> > load-bearing heads in this audit are heads the model does better without on this task** — and
+> > the inverted prose had been reading both as damage.
+> >
+> > **And the audit reproduces its source, which had never been claimed.** R10's exhaustive scan
+> > independently recomputes all eight of E132b's published effects: `8` of `8` agree in sign, with
+> > a maximum ratio deviation of `0.0001`. That is a cross-experiment positive control for the
+> > whole apparatus, and it kills the worry that prompted the check — that the eight and the floor
+> > might carry **opposite** sign conventions, which would have made every centred verdict about
+> > them wrong.
+>
 > **It changes the count.** `L16H3` goes `0.96×` → **`1.06×`, clearing**, so the correct figure is
 > **`1` of `8`**, not `0`. The proven copy head moves the other way, `0.27×` → `0.37×`, and stays
 > far inside. Across all `168` band heads the clearing count goes `9` → `10`.
