@@ -3431,6 +3431,40 @@ def r24_width():
     return {k: v for k, v in d.items() if k != 'per_cell'}
 
 
+def r25_kv_group():
+    """R25 -- Q2. Every round in this repository treated a layer's heads as one exchangeable
+    population. THE WEIGHTS SAY THEY ARE NOT.
+
+    Qwen2.5 is grouped-query: 12 query heads over 2 KV heads in 1.5b, 16 over 2 in 3b, both read from
+    each checkpoint's own config.json. `repeat_kv` uses repeat_interleave semantics, so query head h
+    reads KV head h // n_rep -- heads 0..5 of every 1.5b layer share one key/value stream and heads
+    6..11 share another. A hard architectural partition of every layer, free, no GPU, no new forward
+    pass, sitting in a config file through twenty-four rounds.
+
+    The null permutes head labels WITHIN a layer, so the layer's own distribution is held exactly
+    fixed and only the partition is randomised -- nothing is pooled, so this cannot hit the mixture
+    trap that killed three of R23's nulls.
+
+    eta squared is POSITIVELY BIASED at these n: its null expectation is (k-1)/(n-1), which is
+    0.0909 for 12 heads and 0.0667 for 16. The permutation null carries that bias so the p-value is
+    valid, but the raw value must never be quoted as "13% of variance explained". The excess over the
+    null expectation is the reportable effect size.
+
+    The negative control is CALIBRATED over 200 draws rather than run once, because a single-draw
+    control is a coin flip -- an error made twice in R24.
+
+    NO VERDICT IS EMITTED by the runner. The decision threshold was not the author's to choose.
+    """
+    f = HERE / 'R25_kv_group' / 'results' / 'r25_kv_group.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    out = {k: v for k, v in d.items() if k != 'observed'}
+    out['observed'] = {k: {kk: vv for kk, vv in v.items() if kk != 'per_layer'}
+                       for k, v in d.get('observed', {}).items()}
+    return out
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -4922,6 +4956,7 @@ def main() -> int:
     R24B = r24_boundary()
     R24P = r24_power()
     R24W = r24_width()
+    R25 = r25_kv_group()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -4967,7 +5002,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
