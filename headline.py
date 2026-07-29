@@ -695,11 +695,53 @@ def adversary_scoring():
     ids = [r['id'] for r in after]
     miss = [i for i in ids if i not in HIT and i not in CLASS and i not in PARTIAL]
     n = len(after)
+    # ---- WINDOW 2. A9-A13 were appended at D84 and face a DIFFERENT set of rows, so they get
+    # their own frozen window and their own denominator. Scoring them against window 1 would credit
+    # or blame predictions that did not exist when those defects were found.
+    W2 = [f'D{i}' for i in range(85, 123)]
+    after2 = [r['id'] for r in rows if r['id'] in W2]
+    # THE ASSIGNMENT IS HAND-MADE AND THAT IS THE WEAKNESS OF THIS INSTRUMENT. A hand-written
+    # population turns an objective count into self-report, so both bounds are emitted and the
+    # STRICT one is the number to quote.
+    HIT2 = {'D87': 'A13'}          # A13: an unenumerated recurrence of the null-at-zero defect.
+    #                                D87 is exactly that -- R11's rank check ranked by -abs(drop).
+    CLASS2 = {'D90': 'A13',        # the 100/68 split, same centring object
+              'D96': 'A9',         # four separate floors -- the unit is configuration-dependent
+              'D116': 'A9'}        # every number conditioned on band L14-27 / sham L0-7
+    PARTIAL2 = {'D98': 'A9'}       # transport table omitted an axis; another configuration factor
+    miss2 = [i for i in after2 if i not in HIT2 and i not in CLASS2 and i not in PARTIAL2]
+    n2 = len(after2)
+    # A12 IS THE ONLY NUMERIC FORECAST IN THE FILE and it is scored against the emitter, not recalled.
+    r18r = r18()
+    a12 = None
+    if r18r and 'spearman' in r18r:
+        a12 = {'predicted_transfer_at_least': 0.7, 'kill_threshold': 0.3,
+               'observed_spearman': r18r['spearman'],
+               'kill_fired': r18r['spearman'] <= 0.3,
+               'point_prediction_correct': r18r['spearman'] >= 0.7}
     return {'baseline_rows': BASELINE, 'current_rows': len(rows), 'n_after': n,
             'n_clean_hit': len(HIT), 'n_class': len(CLASS), 'n_partial': len(PARTIAL),
             'n_miss': len(miss), 'miss_ids': miss,
             'pct_clean': 100 * len(HIT) / n if n else float('nan'),
             'pct_generous': 100 * (len(HIT) + len(CLASS) + len(PARTIAL)) / n if n else float('nan'),
+            'window2': {'range': [W2[0], W2[-1]], 'n': n2,
+                        'n_clean': len(HIT2), 'n_generous': len(HIT2) + len(CLASS2) + len(PARTIAL2),
+                        'pct_clean': 100 * len(HIT2) / n2 if n2 else float('nan'),
+                        'pct_generous': (100 * (len(HIT2) + len(CLASS2) + len(PARTIAL2)) / n2
+                                         if n2 else float('nan')),
+                        'miss_ids': miss2, 'a12_numeric_forecast': a12,
+                        # A10 predicted the whole pipeline's run-to-run variance is unmeasured. No
+                        # row in window 2 measures it, and three more analyses were built on the
+                        # same frozen files during the window -- so it is not a miss, it is an OPEN
+                        # prediction that got worse.
+                        'a10_status': 'OPEN and worsened -- no row addresses pipeline re-run '
+                                      'variance, and three further analyses were built on the same '
+                                      'frozen result files inside the window',
+                        # A1, A3 and now A9 were ACTED ON before they could be scored. That is a
+                        # systematic bias in this instrument, not an accident: the predictions that
+                        # were most useful are exactly the ones removed from the denominator, so
+                        # BOTH windows' hit rates are biased DOWN by the file's own success.
+                        'acted_on_hence_unscoreable': ['A1', 'A3', 'A9']},
             'window': [WINDOW[0], WINDOW[-1]],
             'rounds_covered': ['R1', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9', 'R10'],
             'rounds_uncovered_before_this_step': ['R11', 'R12', 'R13', 'R14', 'R15', 'R16', 'R17',
@@ -5220,7 +5262,9 @@ def main() -> int:
             ('TAX reachable verdicts', len(TP['reachable_verdicts']) if TP else -1, 1, 0),
             ('TAX verdict fires under random labels',
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 39.810, 0.001),
+            # 39.810 at 121 rows; filing D122 moved it. The taxonomy statistic is a function of the
+            # ledger, so every row changes it -- that is the design, not drift.
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 40.295, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -5304,9 +5348,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 121, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 122, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 31, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 7.438, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 7.377, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

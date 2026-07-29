@@ -1,3 +1,8 @@
+<!-- unbacked-ok: 37.5 -- the fraction of this repository's numbers that live inside code fences
+ and are therefore never drift-checked. Self-referential in the same way as the detector-power
+ figures exempted in detectors/POWER_BREACH.md: it is measured over the markdown files, so writing
+ it into a markdown file changes it. Reproduced by scanning **/*.md with prose_numbers.NUM and the
+ same fence toggle the detector uses. -->
 # The defect ledger
 
 > Split out of `README.md` on 2026-07-28 without rewriting.
@@ -117,15 +122,26 @@ unreachable at n=`22`.** `THIRTEEN-ONE-OFFS` needs `≥5`, and even then the `�
 first and masks it. **One reachable outcome is not a test**, and `validate_defects.py` now prints
 the reachable set on every run so the collapse is stated rather than discovered.
 
-**What replaces it is the distribution, and that *is* informative.** Chi-square `39.810` against a
-uniform null gives a permutation `p` of `0.0002` — `4` of `20000`.
+**What replaces it is the distribution, and that *is* informative.** Chi-square `40.295` against a
+uniform null is reached by `0` of `20000` draws, so the permutation `p` is below this test's own
+resolution floor rather than equal to any number.
 
 ```
-PROVENANCE 22   SCOPE 20   CONTROL 18   STATISTIC 14   UNCLASSIFIED 4   INTERVENTION 2
-                                                        expected 13.5 each
+PROVENANCE 31   SCOPE 29   STATISTIC 29   CONTROL 25   UNCLASSIFIED 4   INTERVENTION 4
+                                                     expected 20.3333 each
 ```
 
-**The two *small* bins carry the signal** — `INTERVENTION` at `2` and `UNCLASSIFIED` at `4` — not
+> **WARNING: that table was stale by up to `15` counts per bin, and the drift check could not see it.**
+> `detectors/prose_numbers.py` skips everything between code fences, on the rationale that a fence
+> holds quoted generator output. **Quoted output goes stale exactly like prose does** — this block
+> is the proof, and the chi-square one line *above* the fence was caught by the same run that
+> missed the six numbers inside it. Measured across the repository: **`1949` of `5191` numbers —
+> `37.5%` — sit inside fences and are never drift-checked.** That is the population scope of every
+> *"0 unbacked"* report here, and it was never stated. The rule is not changed inside this step,
+> for the same reason the power breach was acknowledged rather than patched: a detector rewritten
+> in passing is a detector nobody measured.
+
+**The two *small* bins carry the signal** — `INTERVENTION` at `4` and `UNCLASSIFIED` at `4` — not
 the large one the threshold watches. The right question was never *does a bin dominate* but *is the
 partition uneven*, and the answer sits at the opposite end of the distribution from where the
 threshold was pointed.
