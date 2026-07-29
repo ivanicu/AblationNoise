@@ -267,3 +267,229 @@ control plus a large margin, and it is reported as the former.**
 **unused**. Cell-level permutation preserves cell structure but not the correlation between adjacent
 layers, so the effective number of independent cells is smaller than the count and every `p` here is
 optimistic by an unmeasured amount.
+
+---
+
+# Amendment 3 — I attacked it and most of it does not survive. The corrected claim is much smaller.
+
+Appended 2026-07-29, on Ivan's instruction to attack the measurement itself: *does it measure
+anything real, or is it an artifact of how it was computed?* Five attacks, run at the object.
+
+## ① The descriptors are TOP-ORDER STATISTICS, and the words did not say so
+
+`run.py`'s `q(a, 0.99)` on `12` values interpolates to index `11.89` of `0..11`. **At `n = 12`,
+`q99_abs_z` is the MAXIMUM divided by the MAD**, not a `99`th percentile. `q90_abs_z` lands at index
+`10.9` — the second largest. At `n = 16` it is index `15.85` of `15`, still the max.
+
+**So three of the four rejecting descriptors measure "how big is the largest one or two effects
+relative to a typical one".** That is a legitimate tail quantity. **It is not what the word
+"percentile" tells a reader**, and the round's prose used the word.
+
+## ② Delete the top two heads per cell and the entire effect disappears
+
+```
+                     q90       q99      kurt   sd/MAD   bowley
+drop top 0      0.0053    0.0013    0.0053    0.0053    0.3105
+drop top 1      0.3511    0.0053    0.0020    0.0120    0.5956
+drop top 2      0.1885    0.4863    0.3031    0.5490    0.7275
+drop top 3      0.2771    0.1292    0.5583    0.4490    0.7175
+```
+
+**Every descriptor loses significance once the two largest heads are removed from each layer.**
+
+> **This is not a statement about the SHAPE of a distribution. It is a statement about TWO HEADS out
+> of twelve.** *"Deeper layers have heavier-tailed distributions"* implies a property of the whole
+> population; what is actually true is that **in deep layers the one or two largest head effects are
+> larger relative to the rest of their own layer.** Remove them and shallow and deep are
+> indistinguishable on every measure tried.
+
+## ③ Under an adjacency-preserving null the margin nearly vanishes
+
+Cells from adjacent layers are correlated, so the free-cell permutation treats `128` cells as `128`
+independent units when they are not. Permuting **contiguous blocks** instead:
+
+```
+                  free cell   block 4   block 9
+q99_abs_z           0.0013    0.0033    0.0341
+kurt_z              0.0060    0.0153    0.0608
+sd_over_mad_z       0.0033    0.0127    0.0449
+q90_abs_z           0.0113    0.0380    0.0361
+```
+
+**`m_break` on the strongest descriptor falls from `40.01` to about `1.05`.** The boundary paragraph
+said the effective number of independent cells is smaller than the count and that every `p` was
+optimistic "by an unmeasured amount". **It is now measured, and it is most of the margin.**
+
+## ④ No single stratum carries it
+
+```
+                          q99            kurt          sd/MAD
+qwen2.5-1.5b|I_all     p 0.0700       p 0.2232       p 0.0600
+qwen2.5-1.5b|I_final   p 0.0320       p 0.0326       p 0.1406
+qwen2.5-3b|I_all       p 0.0640       p 0.0326       p 0.1379
+qwen2.5-3b|I_final     p 0.3078       p 0.9227       p 0.2272
+```
+
+**Not one stratum rejects on more than a single descriptor.** The pooled result is four weak
+same-direction signals added together — **and the two "models" are Qwen2.5 at two sizes, one
+architecture family, so the effective replication is closer to `1` than to `2`.**
+
+## ⑤ What survived the attack
+
+- **The direction is consistent**: every delta is positive in all four strata and on every descriptor.
+- **Split-point sweep is stable**: `q99` `p` = `0.0013`, `0.0013`, `0.0033`, `0.0020` at the four split points `0.25/0.75`, `1/3-2/3`, `0.40/0.60`, `0.50/0.50`. Not a boundary artefact.
+- **Not `n`-dependence**: on pure noise the `q99` bias between `n = 12` and `n = 16` is `+0.0760`,
+  and the two groups are near-identically composed (`18`/`24` shallow, `20`/`24` deep). Too small
+  and too balanced to matter.
+- **Not scale**: the scale-gradient control was silent at `p = 0.6596` and that stands.
+
+## The claim, restated at the size the evidence supports
+
+> **In deep layers, the largest one or two head effects are larger relative to the rest of their own
+> layer than in shallow layers. The direction is consistent across four strata and four split points
+> and is not a scale or sample-size artefact. At an adjacency-preserving null it sits at
+> `p ~ 0.03`–`0.05`, no single stratum reaches significance on more than one descriptor, the two
+> models are one architecture family, and removing those top two heads removes the effect entirely.**
+
+**RETRACTED from the previous amendment:** *"Deeper layers have heavier-tailed ablation-effect
+distributions"* — the population statement. *"Shape is an observable and it carries depth."* —
+`m_break 40.01` as the margin. *"Only the tail moves"* stated as a distributional fact.
+
+**`DEPTH-READS-SHAPE` is withdrawn as a verdict word.** What is left is a directionally consistent,
+marginally significant, two-head phenomenon, and calling it a shape channel was `eta` too large.
+
+## And it points somewhere better
+
+If the effect lives in the top one or two heads, then **the well-posed object is not the shape of the
+distribution — it is the CONCENTRATION of the effect**: how much of a layer's total ablation effect
+sits in its largest few heads. That is a single interpretable number per layer (a participation ratio
+or a Gini), it does not depend on a percentile that is secretly a maximum, and *"deep layers
+concentrate their effect into fewer heads"* is a claim that can be stated, measured and falsified
+without the word "shape" doing any work.
+
+**That is the next step, and this attack is what produced it.**
+
+---
+
+# Amendment 4 — an independent reviewer found five things I did not, and `DEPTH-READS-SHAPE` is WITHDRAWN
+
+Appended 2026-07-29. Every number below re-derived by me from the frozen data before publication;
+where the reviewer and I disagree, mine is published and the disagreement stated.
+
+## ① The trend is NOT monotone. The middle third is BELOW the shallow third.
+
+The round compared **two endpoints** and deleted the middle third by design, so it was structurally
+incapable of finding this.
+
+```
+                shallow    MIDDLE     deep      shallow-vs-middle
+q99_abs_z       +4.7989   +3.5305   +7.6995   delta  -1.2684  p 0.0107
+q90_abs_z       +3.0461   +2.6330   +4.2225   delta  -0.4131  p 0.3714
+sd_over_mad_z   +2.0714   +1.7205   +2.8706   delta  -0.3509  p 0.0590
+kurt_z          -0.4142   -0.3215   +1.1299   delta  +0.0927  p 0.7218
+by quarter, q99_abs_z:   4.506  4.224  4.501  8.328
+by quarter, kurt_z   :   -0.336  -0.509  -0.112  1.695
+```
+
+**`World D` was registered as *"tail weight rises MONOTONICALLY with depth"*. It does not.** The first
+three quarters are flat — `4.506`, `4.224`, `4.501` — and the fourth steps to `8.328`. On `q99` the middle
+third is **significantly BELOW** the shallow third.
+
+> **So the object is a STEP AT THE TOP OF THE STACK, not a coordinate along it.** A readout that says
+> "deeper" would call a mid-stack layer *shallower than a shallow one*.
+
+## ② Drop the last few layers and it collapses
+
+```
+drop last 0   q99_ab p=0.0047  kurt_z p=0.0027  sd_ove p=0.0067  q90_ab p=0.0060
+drop last 1   q99_ab p=0.0013  kurt_z p=0.0060  sd_ove p=0.0047  q90_ab p=0.0040
+drop last 2   q99_ab p=0.0007  kurt_z p=0.0087  sd_ove p=0.0127  q90_ab p=0.0053
+drop last 3   q99_ab p=0.0167  kurt_z p=0.0207  sd_ove p=0.0180  q90_ab p=0.0073
+drop last 4   q99_ab p=0.0786  kurt_z p=0.0626  sd_ove p=0.0173  q90_ab p=0.0060
+```
+
+## ③ The "four independent descriptors" are one statistic counted four times
+
+Spearman against `max|z|` over the `128` cells:
+
+```
+q99_abs_z        +0.9989
+sd_over_mad_z    +0.9653
+kurt_z           +0.8483
+q90_abs_z        +0.6698
+bowley_z         +0.0600
+```
+
+**`q99_abs_z` IS `max|z|`** (`0.9989`). Only `bowley_z` is independent — and it is the one that does not
+reject **and** the one that was never positive-controlled. **So the registered `m_break >= 5`
+five-test family rule is void: the effective family is `1`, not `5`, and "four of five reject" is one
+result restated four times.**
+
+## ④ The larger model does not replicate
+
+```
+qwen2.5-1.5b   q99_ab p=0.0100 m_break=5.00  kurt_z p=0.0067 m_break=7.50  sd_ove p=0.0127 m_break=3.95  q90_ab p=0.2418 m_break=0.21
+qwen2.5-3b     q99_ab p=0.0766 m_break=0.65  kurt_z p=0.0839 m_break=0.60  sd_ove p=0.0833 m_break=0.60  q90_ab p=0.0426 m_break=1.17
+```
+
+**`qwen2.5-1.5b` alone carries the verdict; `qwen2.5-3b` alone has nothing surviving the family.**
+Two models of one architecture family, and the bigger one says no.
+
+## ⑤ `MAD` was the scale estimator that maximised the effect
+
+Standardising by `sd` instead:
+
+```
+q90_abs_z      shallow +1.4903  deep +1.4820  delta -0.0083  p 0.9467
+q99_abs_z      shallow +2.2962  deep +2.5927  delta +0.2966  p 0.0386
+```
+
+`q90` **dies and flips sign**. The headline *"a `1.6044x` change in a quantity from which scale has
+already been removed"* was a statement about a choice of estimator, and the round chose the one under
+which the effect is largest.
+
+## ⑥ And the provenance claim is FALSE for exactly the amendments that chose the winning statistic
+
+Both files open with *"committed alone so git ordering rather than my word establishes that the
+thresholds preceded the numbers."* Checked:
+
+```
+bd14c5d 09:31  PREREGISTRATION.md alone                                    TRUE
+c717761 10:12  PREREGISTRATION.md + run.py + results                       Amendments 1-2 shipped WITH the result
+f343099 10:17  DEPTH_PREREGISTRATION.md alone                              TRUE
+a425384 11:05  DEPTH_PREREGISTRATION.md + depth.py + results               Amendments 1-2 shipped WITH the result
+
+git show f343099:R23_shape/DEPTH_PREREGISTRATION.md | grep -c "1/3|2/3|two-group|median per-cell"  ->  0
+```
+
+**The only independently-timestamped depth registration specifies a DIFFERENT statistic** — a
+stratified Spearman — and contains no mention of the two-group median test, the `1/3`–`2/3` split, or
+pooling across strata. **The statistic that produced the verdict has no independent timestamp.**
+
+**Aggravating:** the discarded pre-run design was stratified *precisely to prevent a model difference
+impersonating a depth trend* — and the stratified analysis is exactly what §④ shows fails.
+
+## What is withdrawn
+
+**`DEPTH-READS-SHAPE` is withdrawn as a verdict.** With it: *"deeper layers have heavier-tailed
+ablation-effect distributions"*, *"shape is an observable and it carries depth"*, *"only the tail
+moves"* (`bowley_z` is blind — never positive-controlled, and a planted asymmetry gradient does not
+move it), and `m_break 40.01` as a margin.
+
+## What survives, and it is one sentence
+
+> **In these two Qwen2.5 checkpoints on this synthetic binding task, the final quarter of layers
+> contains one or two heads whose ablation effect is far larger relative to their own layer's typical
+> head. The first three quarters do not order among themselves.**
+
+Direction consistent across strata and split points; not scale (the scale-gradient control was clean
+at `p 0.6596`); not `n`-dependence (groups balanced). **Everything else was `eta` too large.**
+
+## The object this points to, and it is better posed
+
+The right name is **CONCENTRATION**, not shape: how much of a layer's total ablation effect sits in
+its largest few heads — a participation ratio or a Gini. One interpretable number per layer, no
+percentile that is secretly a maximum, no scale-estimator choice, and *"the last quarter concentrates
+its effect into fewer heads"* is a claim that can be stated and falsified without the word "shape"
+doing any work. **And it must be tested with THREE-LEVEL ordering, because the two-endpoint design is
+what hid the non-monotonicity.**
