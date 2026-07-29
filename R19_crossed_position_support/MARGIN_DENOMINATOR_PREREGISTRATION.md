@@ -17,7 +17,7 @@ Confirmed at the object, not from the description:
 | | file:line | what it does |
 |---|---|---|
 | task A denominator | `R10_exhaustive/run.py:273-276` | `if argmax(rooms) != cor: continue` — **the item is dropped**, so `base_margin` is a mean over baseline-CORRECT items only |
-| task B denominator | `R19_crossed_position_support/run.py:352` | `# NO CORRECTNESS FILTER, per R15's finding that filtering selects on position` — `baseline_margin_mean` is a mean over **all `1024`**, including the `25.88%` whose margin is **negative by construction** |
+| task B denominator | `R19_crossed_position_support/run.py:352` | `# NO CORRECTNESS FILTER, per R15's finding that filtering selects on position` — `baseline_margin_mean` is a mean over **all `1024`**, including the `265` whose margin is **negative by construction** |
 
 **R19's design choice is correct and it stays.** Filtering on baseline correctness selects on
 position, and position is the factor this round crosses. What is wrong is using that number as a
@@ -55,7 +55,7 @@ The claim is *"dividing by the task's margin does not normalise the floor away"*
 | **all** | `m_corr >= 2.649455` | `m_wrong <= -1.267904` |
 
 Both are entirely reachable magnitudes on a readout whose correct-item margin is already known to
-exceed `2.21`. **This is not a formality — the whole claim sits inside a window `0.44` wide in
+exceed the bound `2.206774`. **This is not a formality — the whole claim sits inside a window `0.44` wide in
 `m_corr`, and the measurement decides which side of it the truth is on.**
 
 | verdict | rule |
@@ -177,3 +177,113 @@ neither a numerator definition nor a denominator definition.
 that is the resolution the frozen result stores — the `129` half-correct cells are dropped rather
 than partially credited, which is a coarser filter than R10's per-item one and is not equivalent
 to it.
+
+---
+
+# Amendment 2 — both outcomes, and the half-fix was worse than the original error
+
+Appended 2026-07-28 after `pueue 318`/`319`/`320` and `tools/matched_denominator.py`. **No threshold
+above was changed.**
+
+## Positive controls
+
+| control | registered expectation | returned | |
+|---|---|---|---|
+| `margin_all_items` reproduces the frozen `1.6356853898614645` **exactly** | exact | `1.6356851365417242`, off by `-2.5e-07` | **FAILS AS WRITTEN** |
+| `baseline_accuracy` reproduces `0.7412109375` | exact | exact | pass |
+| `max_margin_wrong < 0` | `< 0` | `-0.00582122802734375` | pass |
+| reconstructing the per-head mean from the `(base, pos)` grid matches the published `base` array | `< 1e-6` | `1.93e-08` (final), `1.58e-08` (all) | pass |
+| observed floor vs matched-count random drop | registered as the verdict rule | percentile `1.0000` both scopes | fires |
+
+**The exactness control fails and is reported as failed.** Two identical reruns (`318`, `319`)
+agree with each other **bit for bit** on every emitted value, and both miss the frozen figure by the
+same `-2.5e-07`. So it is *not* run-to-run non-determinism now; something differed between the
+frozen scan and this box today, and **what** is `UNVERIFIED` — I did not establish it, and a
+plausible story about cuBLAS kernel selection is not a measurement. The magnitude is `1.5e-07`
+relative, six orders below the floor it feeds, so it cannot move a residual quoted to four decimals.
+**It is recorded rather than rounded away because "the frozen number is not bit-reproducible by its
+own command on its own box" is exactly the kind of fact this repository exists to report.**
+
+**And the reconstruction control caught its own harness first.** Its first run rejected a grid that is in
+fact consistent to `1.93e-08`; the cause was in the check, which averaged the whole `(64, 3)` metric
+array instead of column `0`. A control that had been written to pass
+would have said nothing; this one failed loudly against correct data, which is the only reason its
+later `1.93e-08` is worth anything.
+
+## Part 1 — the denominator
+
+```
+margin over all 1024 items          +1.6356851        (n = 1024)
+margin over baseline-correct only   +2.7219879        (n =  759)
+margin over baseline-wrong only     -1.4756500        (n =  265)
+```
+
+`m_corr = 2.721988` sits **between** the two registered kill thresholds — above `2.649455`, below
+`2.848836`. The registered rule therefore returns **`PARTIAL`**:
+
+```
+                          final     all
+published               1.7417    1.6198
+denominator-matched     1.0466    0.9734     <- `all` is below 1
+```
+
+and with it, *"it misses in the same direction in both scopes"* — the only internal replication
+`n = 2` can offer — **is dead under this repair.**
+
+## Part 2 — the numerator, registered in Amendment 1
+
+Restricting to the `315` of `512` cells whose both replicates are baseline-correct:
+
+```
+                       floor_final          floor_all
+full grid                0.309927            0.577951
+random drop of 315       0.311024            0.578332     [0.298520,0.323968]  [0.553164,0.604515]
+correctness-restricted   0.417063            0.806338     percentile 1.0000 in both scopes
+```
+
+Registered verdict: **`NUMERATOR-MATTERS`**. Dropping cells at random costs essentially nothing
+(`0.309927` -> `0.311024`); dropping them *by baseline correctness* widens the reference
+distribution by `35%` (final) and `40%` (all). **The width of the floor depends on which items you
+condition on, inside one task, one model and one metric.**
+
+**Post hoc, unregistered, and it weakens the above:** the kept cells are position-skewed
+(`[64, 61, 42, 28, 23, 24, 29, 44]` of `64`) — R15's finding restated. A null holding those
+per-position counts fixed reaches `0.340379 [0.328496, 0.352252]` and
+`0.655241 [0.634458, 0.675443]`, still far below the observed. So position composition accounts for
+part of the rise and not most of it. This control was added after seeing the result and can only
+subtract from the claim, which is the only direction an unregistered control may move it.
+
+## The three residuals, and the sentence they force
+
+```
+                                 residual final    residual all    same direction
+published    (neither matched)       1.7417           1.6198            yes
+denominator only                     1.0466           0.9734            NO
+BOTH terms matched                   1.4084           1.3580            yes
+```
+
+> **The half-fix is farther from the truth than the original error.** Matching only the
+> denominator — the repair the reviewer's finding literally asks for, and the one I set out to make
+> — puts the `all` scope at `0.9734` and would have retracted a claim the matched comparison
+> supports at `1.3580`. **A two-term mismatch corrected in one term is not a partial improvement.**
+
+That is a new entry for this repository's overshoot list, and it is not one of the eleven already
+on it: *a correction applied to one of two coupled definitions can overshoot the truth in a
+direction the original error did not.*
+
+## What survives, at its correct size
+
+The claim *"a floor cannot be made portable by dividing by the task's margin"* **survives**, at
+`1.36`–`1.41×` rather than `1.62`–`1.74×`. About `20%` of the published excess was an artefact of my
+own definitional mismatch. The registered forward prediction on a third task is unchanged in
+direction and its target moves: on a task harder than R19's, `floor / margin` in the `final` scope
+should exceed R19's **matched** value, not its published one.
+
+## Boundary
+
+`n = 2` tasks, one model, one metric, `2 sd` floors over `L14`–`L27`. The restriction is at
+`(base, pos)` granularity, so the `129` half-correct cells are dropped rather than partially
+credited — a coarser filter than R10's per-item one, and not equivalent to it. The correctness
+selection is confounded with position composition by construction, quantified above and not removed.
+Nothing here revises any R19 verdict: the round's four hypotheses stand on the unfiltered numbers,
+which remain the right ones for the question that round asks.

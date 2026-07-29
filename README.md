@@ -184,10 +184,50 @@ margin shrinks to  0.3654x        floor shrinks only to  0.6364x (final)  0.5918
 normalisation residual                   1.7417 (final)          1.6198 (all)
 ```
 
-> **The floor is roughly `1.6`–`1.7×` WIDER relative to the dynamic range on the harder task**, and it
-> misses in the **same direction in both scopes** — the only internal replication `n = 2` can offer.
-> A floor cannot be made portable by expressing it as a fraction of the margin: **as the task gets
-> harder the reference distribution shrinks more slowly than the signal does.**
+**⚠ THOSE TWO RESIDUALS ARE WRONG AND ARE KEPT ONLY BECAUSE THEY WERE PUBLISHED.** An adversarial
+reviewer found that the two ratios do not share a denominator definition, and checking it at the
+object found they do not share a **numerator** definition either. `R10_exhaustive/run.py:273` drops
+any item whose unablated argmax over the four rooms is wrong, so **both** of task A's terms are
+baseline-correct-only. `R19_crossed_position_support/run.py:356` deliberately does **not** filter —
+citing R15's finding that filtering selects on position — so **both** of task B's terms cover all
+`1024` items, including the `265` whose margin is negative by construction.
+
+Recomputed under R10's rule by `R19_crossed_position_support/tools/matched_denominator.py`, on the
+frozen scan plus one re-run of the baseline pass:
+
+```
+                                     margin_B   floor_final_B  floor_all_B   residual final   all
+published    (neither term matched)    1.6357       0.3099        0.5780         1.7417     1.6198
+denominator only                       2.7220       0.3099        0.5780         1.0466     0.9734
+BOTH terms matched                     2.7220       0.4171        0.8063         1.4084     1.3580
+```
+
+> **The half-fix is farther from the truth than the original error.** Matching only the denominator
+> — the repair the reviewer's finding literally asks for — puts the `all` scope at `0.9734`, below
+> `1`, which would have retracted a claim the fully-matched number supports at `1.3580`. **A
+> two-term mismatch corrected in one term is not a partial improvement; in one scope it moved the
+> answer past the truth and out the other side.**
+
+> **The claim survives at a smaller size.** The floor is `1.36`–`1.41×` wider relative to the
+> dynamic range on the harder task, not `1.62`–`1.74×`; about `20%` of the published excess was an
+> artefact of my own definitional mismatch. It still misses in the **same direction in both scopes**
+> — and that internal replication is *false* under the half-fix, so it is a property of the matched
+> comparison, not of the original one.
+>
+> **The restriction is not a sampling artefact, and this was registered before it was run.** Keeping
+> only the `315` of `512` cells whose both replicates are baseline-correct makes every per-head mean
+> noisier, and `2 sd` across heads of a noisier quantity is wider by default. Against a
+> matched-count random drop (`2000` draws) the observed floor sits at percentile `1.0000` in both
+> scopes: `0.4171` against `0.3110 [0.2985, 0.3240]`, and `0.8063` against `0.5783 [0.5532,
+> 0.6045]`. **Conditioning on baseline correctness widens the reference distribution by about a
+> third, within one task, one model and one metric.**
+>
+> **Position composition explains part of it and not most of it (post hoc, unregistered).** The kept
+> cells are position-skewed — `[64, 61, 42, 28, 23, 24, 29, 44]` of `64` — which is R15's finding
+> restated. A null holding those per-position counts fixed and drawing at random within each
+> position reaches `0.3404 [0.3285, 0.3523]` (final) and `0.6552 [0.6345, 0.6754]` (all), still far
+> below the observed `0.4171` / `0.8063`. So of the rise: cell count is negligible, position
+> composition is a part, and the remainder is the correctness selection itself.
 >
 > **⚠ Two boundaries, and they are large. (1) POST HOC** — the numbers were seen before the question
 > was asked, so this carries no verdict word and no threshold. **(2) A BUNDLE change, not a transport
@@ -641,7 +681,7 @@ because the query that killed the `OV` claim was not aimed at transport. **Aimed
 > cited here or trivially findable.
 >
 > **What it still is:** a worked audit of one prior experiment, carried out in public, with an
-> unusually complete error record — `144` rows, each naming what was wrong and what the operation on
+> unusually complete error record — `145` rows, each naming what was wrong and what the operation on
 > it was.
 >
 > > **⚠ `D123` — this said `120` for two rows, and BOTH of this repository's checkers are blind to

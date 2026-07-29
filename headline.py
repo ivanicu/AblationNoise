@@ -3111,6 +3111,66 @@ def margin_normalisation():
     out['same_direction_both_scopes'] = ((out['normalisation_residual_final'] - 1)
                                          * (out['normalisation_residual_all'] - 1) > 0)
     out['n_tasks'] = 2
+
+    # ---- D145. EVERY VALUE ABOVE COMPARES TWO RATIOS THAT SHARE NEITHER A NUMERATOR DEFINITION
+    # NOR A DENOMINATOR DEFINITION, and they are kept because they are what was published. R10
+    # drops an item whose unablated argmax is wrong (R10_exhaustive/run.py:273), so both its terms
+    # are baseline-correct-only; R19 deliberately does not filter (run.py:356, citing R15), so both
+    # of its terms are over all 1024. tools/matched_denominator.py recomputes task B under R10's
+    # rule and emits all three versions.
+    #
+    # THE HALF-FIX IS FARTHER FROM THE TRUTH THAN THE ORIGINAL ERROR IN ONE SCOPE. Matching only
+    # the denominator -- which is the repair the reviewer's finding literally asks for -- gives
+    # 0.9734 in the `all` scope and would have retracted a claim that the fully-matched number
+    # supports at 1.3580. A two-term mismatch corrected in one term is not a partial improvement.
+    # THE REGISTERED BOUND AND KILL THRESHOLDS, EMITTED RATHER THAN HAND-COMPUTED. Every value here
+    # is a function of numbers that were already published before the repair -- m_all, the baseline
+    # accuracy, and the two published residuals -- so the registration in
+    # R19_crossed_position_support/MARGIN_DENOMINATOR_PREREGISTRATION.md is reproducible rather
+    # than merely asserted. A hand-typed threshold in a pre-registration is a threshold nobody can
+    # re-derive, and this repository has already been caught seven times rounding by hand.
+    acc = r['design'].get('baseline_accuracy')
+    if acc:
+        # m_wrong < 0 strictly (an item is "wrong" exactly when its margin is negative), so
+        # m_corr = (m_all - (1-acc)*m_wrong)/acc > m_all/acc, and only the denominator moves.
+        out['registered_bound'] = {
+            'm_corr_lower_bound': m19 / acc,
+            'residual_final_upper_bound': out['normalisation_residual_final'] * acc,
+            'residual_all_upper_bound': out['normalisation_residual_all'] * acc,
+            'margin_ratio_lower_bound': out['margin_ratio_B_over_A'] / acc}
+        for scope in ('final', 'all'):
+            rres = out[f'normalisation_residual_{scope}']
+            mc_kill = rres * m19                       # residual == 1 exactly at this m_corr
+            out['registered_bound'][f'kill_{scope}_m_corr'] = mc_kill
+            out['registered_bound'][f'kill_{scope}_m_wrong'] = (m19 - acc * mc_kill) / (1 - acc)
+
+    fm = HERE / 'R19_crossed_position_support' / 'results' / 'r19_matched_denominator.json'
+    if fm.exists():
+        md = json.load(open(fm))
+        out['matched'] = {
+            # margin_all_items comes from the RERUN, not from the frozen result, and the two differ
+            # in the 7th decimal. Both are emitted so the pre-registration's failed exactness
+            # control quotes each side from a generator rather than from my reading of a log.
+            'margin_B_all_items_rerun': md['margin_all_items'],
+            'margin_B_correct_only': md['margin_correct_only'],
+            'margin_B_wrong_only': md['margin_wrong_only'],
+            'max_margin_wrong': md['max_margin_wrong'],
+            'margin_ratio_matched': md['margin_ratio_matched'],
+            'n_cells_kept': md['n_cells_kept'], 'n_cells': md['n_cells'],
+            'position_composition_kept': md['position_composition_kept'],
+            'numerator_verdict': md['numerator_verdict'],
+            'same_direction_denominator_matched': md['same_direction_denominator_matched'],
+            'same_direction_fully_matched': md['same_direction_fully_matched']}
+        for scope in ('final', 'all'):
+            s, rr = md['scopes'][scope], md['residuals'][scope]
+            out['matched'][scope] = {
+                'floor_B_restricted': s['floor_restricted'],
+                'random_drop_mean': s['random_drop_mean'],
+                'random_drop_ci95': s['random_drop_ci95'],
+                'posmatched_drop_mean': s['posmatched_drop_mean'],
+                'posmatched_drop_ci95': s['posmatched_drop_ci95'],
+                'residual_denominator_matched': rr['denominator_matched'],
+                'residual_fully_matched': rr['fully_matched']}
     return out
 
 
@@ -5906,7 +5966,7 @@ def main() -> int:
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
             # 39.810 at 121 rows; filing D122 moved it. The taxonomy statistic is a function of the
             # ledger, so every row changes it -- that is the design, not drift.
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 51.583, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 51.84137931034483, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -5990,9 +6050,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 144, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 145, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 38, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 14.583, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 15.172413793103448, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

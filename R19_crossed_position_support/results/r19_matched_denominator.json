@@ -1,0 +1,103 @@
+{
+ "n_cells": 512,
+ "n_cells_kept": 315,
+ "cells_by_n_correct": {
+  "0": 68,
+  "1": 129,
+  "2": 315
+ },
+ "position_composition_kept": [
+  64,
+  61,
+  42,
+  28,
+  23,
+  24,
+  29,
+  44
+ ],
+ "position_composition_all": [
+  64,
+  64,
+  64,
+  64,
+  64,
+  64,
+  64,
+  64
+ ],
+ "margin_all_items": 1.6356851365417242,
+ "margin_correct_only": 2.7219879190598237,
+ "margin_wrong_only": -1.4756500028214365,
+ "max_margin_wrong": -0.00582122802734375,
+ "n_perm_random_drop": 2000,
+ "seed": 20260728,
+ "scopes": {
+  "final": {
+   "floor_full": 0.30992723792688137,
+   "floor_restricted": 0.4170631172199472,
+   "reconstruction_max_abs_err": 1.9335937628817135e-08,
+   "reconstruction_ok": true,
+   "random_drop_mean": 0.31102385393431403,
+   "random_drop_ci95": [
+    0.29851974455460095,
+    0.3239675509287065
+   ],
+   "restricted_percentile_of_random": 1.0,
+   "outside_central_95": true,
+   "posmatched_drop_mean": 0.3403791250156306,
+   "posmatched_drop_ci95": [
+    0.3284963188623233,
+    0.3522522763316547
+   ],
+   "restricted_percentile_of_posmatched": 1.0,
+   "outside_central_95_posmatched": true,
+   "posmatched_is_post_hoc": true
+  },
+  "all": {
+   "floor_full": 0.5779508764316941,
+   "floor_restricted": 0.8063381558490372,
+   "reconstruction_max_abs_err": 1.5820312615488774e-08,
+   "reconstruction_ok": true,
+   "random_drop_mean": 0.5783318367462172,
+   "random_drop_ci95": [
+    0.5531639691741568,
+    0.6045150722604754
+   ],
+   "restricted_percentile_of_random": 1.0,
+   "outside_central_95": true,
+   "posmatched_drop_mean": 0.6552414381968202,
+   "posmatched_drop_ci95": [
+    0.6344576111537092,
+    0.6754425348094865
+   ],
+   "restricted_percentile_of_posmatched": 1.0,
+   "outside_central_95_posmatched": true,
+   "posmatched_is_post_hoc": true
+  }
+ },
+ "task_A": {
+  "floor_final": 0.48703709294599146,
+  "floor_all": 0.9765718076381311,
+  "margin": 4.476821851730347,
+  "margin_definition": "baseline-correct-only (R10 run.py:273)"
+ },
+ "residuals": {
+  "final": {
+   "published": 1.7416777859138801,
+   "denominator_matched": 1.0466014368088097,
+   "fully_matched": 1.4083914038731162
+  },
+  "all": {
+   "published": 1.6197830476914898,
+   "denominator_matched": 0.9733529810985893,
+   "fully_matched": 1.3579902371892296
+  }
+ },
+ "margin_ratio_published": 0.36536748405780584,
+ "margin_ratio_matched": 0.6080179219121131,
+ "same_direction_published": true,
+ "same_direction_denominator_matched": false,
+ "same_direction_fully_matched": true,
+ "numerator_verdict": "NUMERATOR-MATTERS"
+}

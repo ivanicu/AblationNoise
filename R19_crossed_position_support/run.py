@@ -209,6 +209,10 @@ def main():
     # D129: with another session preempting the GPU every 5-20 minutes, a run that must
     # finish 28 layers in one sitting never finishes. --layers lets each attempt commit
     # one layer inside the window; the checkpoint makes the attempts additive.
+    ap.add_argument('--baseline-only', action='store_true',
+                    help='run ONLY the baseline pass and emit the margin under both the '
+                         'all-items and baseline-correct-only definitions (D145). Writes to a '
+                         'separate file; never touches --out.')
     ap.add_argument('--layers', default=None,
                     help='LO:HI half-open layer range, e.g. 26:28 -- each attempt '
                          'commits what it finishes')
@@ -350,6 +354,62 @@ def main():
     print(f'  baseline accuracy {acc:.4f}   mean margin '
           f'{sum(base_margin) / len(base_margin):+.4f}')
     # NO CORRECTNESS FILTER, per R15's finding that filtering selects on position.
+
+    # ---- D145: THE SAME DESIGN CHOICE THAT IS RIGHT FOR THE EFFECT IS WRONG FOR THE DENOMINATOR.
+    # The line above is a deliberate, defended choice and it stays: filtering on baseline
+    # correctness selects on position, which is the one factor this round crosses. But
+    # `baseline_margin_mean` is then a mean over ALL 1024 items including the 25.9% whose margin is
+    # NEGATIVE BY CONSTRUCTION -- and headline.margin_normalisation() divides R19's floor by it and
+    # compares the result to R10's floor divided by R10's margin, which IS baseline-correct-only
+    # (R10_exhaustive/run.py:273 `continue`s on a wrong baseline). Two different estimands, one
+    # ratio. This flag re-runs ONLY the baseline pass -- same seed, same dataset, same encoder --
+    # and emits the margin under BOTH definitions so the cross-task comparison can be made on
+    # like-for-like. It changes no effect, no floor, and no verdict in this round.
+    if args.baseline_only:
+        ok = [i for i in range(len(base_margin)) if base_ok[i]]
+        bad = [i for i in range(len(base_margin)) if not base_ok[i]]
+        mean = lambda v: (sum(v) / len(v)) if v else float('nan')
+        # base_margin/base_pos/base_ok are in BATCH order, not item order -- the batcher groups by
+        # token length. base_of recovers which base instance each row belongs to, in that same
+        # order, so the (base, pos) counts below index the frozen result's `base_pos` grid.
+        base_of = [items[i]['base'] for b in prep for i in b['idx']]
+        nc = [[0] * N_POS for _ in range(N_BASE)]
+        for i in range(len(base_ok)):
+            if base_ok[i]:
+                nc[base_of[i]][base_pos[i]] += 1
+        # NOT `Path('results')` -- that is CWD-relative and silently creates a phantom directory
+        # next to wherever the job happened to be launched. Derived from --out, so it always lands
+        # beside the result file whose denominator it is repairing.
+        bo = Path(args.out).parent / f'r19_baseline_margin_{args.tag}.json'
+        json.dump({'code_version': _CODE_VERSION, 'producer': _PRODUCER, 'model': args.tag,
+                   'n_prompts': len(items), 'n_base': N_BASE, 'build_seed': BUILD_SEED,
+                   'baseline_accuracy': acc,
+                   'n_correct': len(ok), 'n_wrong': len(bad),
+                   'margin_all_items': mean(base_margin),
+                   'margin_baseline_correct_only': mean([base_margin[i] for i in ok]),
+                   'margin_baseline_wrong_only': mean([base_margin[i] for i in bad]),
+                   'max_margin_wrong': max((base_margin[i] for i in bad), default=float('nan')),
+                   'margin_correct_by_pos': [
+                       mean([base_margin[i] for i in ok if base_pos[i] == p])
+                       for p in range(N_POS)],
+                   # MATCHING THE DENOMINATOR IS ONLY HALF THE REPAIR. R10's per-head DROP is also
+                   # a mean over baseline-correct items only; R19's is over all 1024. The frozen
+                   # 23 MB result stores per-head means at (base, pos) granularity -- each the
+                   # average of the N_NUISANCE replicates -- so emitting how many of each cell's
+                   # replicates were baseline-correct is exactly what a numerator-matched floor
+                   # needs, and it costs one more pass over a list already in memory.
+                   'n_correct_by_base_pos': nc,
+                   'n_nuisance': N_NUISANCE,
+                   'definition': {
+                       'all_items': 'mean over every prompt, R19 run.py default',
+                       'baseline_correct_only': 'mean over prompts whose unablated argmax over the '
+                                                'four rooms is the correct room -- the estimand '
+                                                'R10_exhaustive/run.py:273-276 computes'}},
+                  open(bo, 'w'), indent=1)
+        print(f'  baseline-only: all {mean(base_margin):+.4f}  '
+              f'correct-only {mean([base_margin[i] for i in ok]):+.4f}  '
+              f'wrong-only {mean([base_margin[i] for i in bad]):+.4f}  -> {bo}')
+        return
 
     # ---- the scan
     # PER-LAYER CHECKPOINTING. This box has SIGKILLed 2 of 3 long GPU jobs -- 232 at 22m47s and

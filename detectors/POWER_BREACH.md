@@ -1,4 +1,4 @@
-<!-- unbacked-ok: 36.11 36.11 36.11 36.11 36.23 36.12 36.08 36.07 36.10 35.99 35.99 36.07 36.06 36.07 35.86 35.69 35.71 35.53 34.59 34.16 34.72 35.02 35.38 36.74 2006 1719 1713 1671 1669 1683
+<!-- unbacked-ok: 36.76 36.28 36.11 36.11 36.11 36.11 36.23 36.12 36.08 36.07 36.10 35.99 35.99 36.07 36.06 36.07 35.86 35.69 35.71 35.53 34.59 34.16 34.72 35.02 35.38 36.74 2006 1719 1713 1671 1669 1683
  1596 1434 467 33 2909 2507 86 2 14 35.0 6 1.03 0.41 64 100 365 3 15
  -- MEASUREMENTS OF THE DETECTOR'S OWN POWER, and of the remedies tried against it. A detector
  cannot emit the statistics of its own false-pass rate into the reference set that rate is computed
@@ -7,7 +7,7 @@
  `python3 detectors/prose_numbers.py --power` and by the measurement script quoted in each section. -->
 # Detector 6 power breach — acknowledged, with the remedies measured and rejected
 
-`measured_false_pass_rate = 36.11`
+`measured_false_pass_rate = 36.76`
 
 The line above is machine-read by `detectors/prose_numbers.py`. **The gate fails unless it matches
 the current rate to two decimals**, so this file cannot be written in advance and goes stale the
@@ -101,3 +101,19 @@ A reference set of **claimed** values rather than **computed** ones — the dist
 exposed. `--json` emits everything every generator computes, and every intermediate in it is a bin a
 random prose number can land in. Making each generator declare which of its outputs are claims is the
 real repair. It is about fifty emitters of work and it is not being done inside a research step.
+
+## The ratchet has now fired three times in one session, and that is the finding
+
+`36.11` -> `36.28` -> `36.76` on 2026-07-28. The first step was `margin_normalisation()` gaining
+`D145`'s matched-denominator block; the second was moving that repair's registered bound and kill
+thresholds out of pre-registration prose and **into the emitter**, so a reader can re-derive them.
+
+**Every one of those values is quoted on a page. This is the disciplined case, not the
+`additivity()` case, and the rate still rose both times.** Writing a threshold down where it can be
+checked costs detector power -- which is the section above's `six values` point, restated by two
+independent instances. The reference set only ever grows, so *any* addition moves the rate. The
+breach is structural and no amount of care by the author avoids it.
+
+What the ratchet bought: the gate refused the new page twice until this line was re-measured, so a
+stale rate could not certify a set that no longer had it. **A number that must be re-derived to
+keep passing is the only kind that stays true.**
