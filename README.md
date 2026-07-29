@@ -51,6 +51,38 @@ the measurement at its own author's prior work.**
 > contribution"* — it is *"this activation pattern being absent entirely."* **An intervention into a
 > state the model never occupies does not establish counterfactual dependence on the state it does.**
 >
+> > **⚠ `D125` — that sentence quotes the WRONG STATISTIC, its median cell is sign-inverted, and an
+> > independent adversarial reviewer found all of it.** Three separate breaks, each verified against
+> > `R6_intervention/results/r6_intervention_*.json`:
+> >
+> > **① `rr` is not effect recovery.** `rr = (|pc| / band_sd)_arm ÷ (|pc| / band_sd)_zero` — a ratio
+> > of *signal-to-noise ratios*, carrying the factor `band_sd_zero / band_sd_arm`. The prose says
+> > *"recovers X% of what zeroing does"*, which is `|pc_arm| / |pc_zero|`. Both are emitted now:
+> >
+> > ```
+> > model            rr_mean   recovery_mean   sign_ok  informative  round_valid
+> > internlm2-1.8b    0.4400        0.0562        yes        no          yes
+> > phi-3.5-mini      0.2319        0.1199        yes       yes           no
+> > qwen2.5-1.5b      0.4398        0.1519        yes       yes           no
+> > qwen2.5-3b        0.2368        0.0190         NO       yes          yes
+> > ```
+> >
+> > **② The median cell is sign-inverted.** `qwen2.5-3b`'s zero-arm control is `+1.60537` while its
+> > mean and resample arms are **negative**. `R8` defines admissibility as *"arms whose positive
+> > control agrees in sign with zero"* and `R7` applies it; **`R6` never did**, and
+> > `pc_clears_own_floor` is `|PC| > sd`, magnitude only, so an inverted control passes it. That cell
+> > sets the published median at `0.2368` → *"0.24"*.
+> >
+> > **③ The intersection is empty.** `informative ∧ round_valid ∧ sign_consistent` = **`0` of `4`
+> > cells**. The page disclosed *"3 informative cells, 2 of 4 rounds fully valid"* and never that no
+> > cell satisfies all three.
+> >
+> > **The corrected reading, and it makes the limitation WORSE, not better.** On the two cells that
+> > are both informative and sign-consistent, median effect recovery is `0.1359` (mean arm) and
+> > `0.1516` (resample). **So roughly `85%` of the zeroing effect is not the head's contribution, not
+> > `76%`** — the off-manifold problem was *understated* by the number that was published to state
+> > it. `n = 2`, and under the strict three-way rule `n = 0`.
+>
 > **And on the other side, `D100`:** every role claim in this project — including `L22H7`'s — was
 > established by **attention**. There is no third instrument.
 >
@@ -564,7 +596,7 @@ because the query that killed the `OV` claim was not aimed at transport. **Aimed
 > cited here or trivially findable.
 >
 > **What it still is:** a worked audit of one prior experiment, carried out in public, with an
-> unusually complete error record — `122` rows, each naming what was wrong and what the operation on
+> unusually complete error record — `125` rows, each naming what was wrong and what the operation on
 > it was.
 >
 > > **⚠ `D123` — this said `120` for two rows, and BOTH of this repository's checkers are blind to

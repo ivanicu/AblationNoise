@@ -3976,6 +3976,23 @@ def r6():
                 a[iv]['sham_sd'] < 0.05 * a['zero']['sham_sd'])
         for iv in ('mean', 'resample'):
             r[f'rr_{iv}'] = r[f'read_{iv}'] / r['read_zero']
+            # EFFECT RECOVERY, WHICH IS WHAT THE FRONT PAGE'S SENTENCE ACTUALLY DESCRIBES.
+            # An independent adversarial reviewer returned, CONFIRMED, that `rr` is a ratio of
+            # SIGNAL-TO-NOISE RATIOS -- it carries the factor band_sd_zero/band_sd_iv -- while the
+            # prose says "recovers X% of what zeroing does", which is |pc_iv| / |pc_zero|. The two
+            # differ by 1.6x-12x per cell. Both are emitted now so the sentence can name which one
+            # it means.
+            r[f'recovery_{iv}'] = (abs(a[iv]['positive_control'])
+                                   / abs(a['zero']['positive_control'])
+                                   if a['zero']['positive_control'] else float('nan'))
+        # SIGN CONSISTENCY, THE RULE R7 AND R8 APPLY AND R6 NEVER DID. headline.py's R8 block
+        # defines admissibility as "arms whose positive control agrees in sign with zero", and
+        # pc_clears_own_floor is |PC| > sd -- magnitude only -- so an INVERTED control passes it.
+        # qwen2.5-3b's zero arm is +1.60537 while its mean and resample arms are NEGATIVE, and that
+        # cell is the one that sets the published median.
+        z = a['zero']['positive_control']
+        r['sign_consistent'] = all((a[iv]['positive_control'] > 0) == (z > 0)
+                                   for iv in ('mean', 'resample'))
         rows.append(r)
     if not rows:
         return None
@@ -3994,6 +4011,22 @@ def r6():
             'sham_collapse_max': max(r['shamsd_zero'] / r['shamsd_mean'] for r in rows),
             'median_rr_mean': med([r['rr_mean'] for r in inf]),
             'median_rr_resample': med([r['rr_resample'] for r in inf]),
+            # THE THREE POPULATIONS, REPORTED SEPARATELY, because the README quoted a median over
+            # "informative" cells while never stating that the intersection of informative,
+            # round_valid and sign_consistent is EMPTY.
+            'median_recovery_mean': med([r['recovery_mean'] for r in inf]),
+            'median_recovery_resample': med([r['recovery_resample'] for r in inf]),
+            'n_sign_consistent': sum(1 for r in rows if r['sign_consistent']),
+            'n_informative_and_sign_consistent':
+                sum(1 for r in inf if r['sign_consistent']),
+            'n_informative_valid_and_sign_consistent':
+                sum(1 for r in inf if r['sign_consistent'] and r.get('round_valid')),
+            'median_rr_mean_sign_consistent':
+                med([r['rr_mean'] for r in inf if r['sign_consistent']]),
+            'median_recovery_mean_sign_consistent':
+                med([r['recovery_mean'] for r in inf if r['sign_consistent']]),
+            'median_recovery_resample_sign_consistent':
+                med([r['recovery_resample'] for r in inf if r['sign_consistent']]),
             'n_valid_rounds': sum(r['round_valid'] for r in rows),
             'all_check1_pass': all(r['check1'] for r in rows if r['check1'] is not None)}
 
@@ -5563,7 +5596,7 @@ def main() -> int:
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
             # 39.810 at 121 rows; filing D122 moved it. The taxonomy statistic is a function of the
             # ledger, so every row changes it -- that is the design, not drift.
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 41.049, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 41.704, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -5647,9 +5680,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 123, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 125, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 32, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 8.130, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.600, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

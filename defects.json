@@ -1116,6 +1116,24 @@
    "defect": "README.md stated the defect ledger held 120 rows while it held 122, and the sentence carrying the error is the one advertising the completeness of the error record",
    "operation": "Found by an INDEPENDENT ADVERSARIAL READER, not by any instrument here -- the first defect in this repository located by something other than its author or his own detectors. Both checkers are structurally blind to it: headline.py --check compares the EMITTER against a hardcoded constant and never reads this sentence, while detectors/prose_numbers.py compares PROSE against the emitter but cannot see bare integers -- a blind spot it declares and asserts in its own selftest case 7. A prose integer is checked by NEITHER. 120 additionally collides with the n=120 item count used throughout. ADVERSARY.md's 'what I predict the adversary will NOT find' list opens with 'a fabricated or unreproducible number' and says a hit there is 'worse than any row above'. It was hit.",
    "found_by": "outside_reader"
+  },
+  {
+   "id": "D124",
+   "round": "repo",
+   "bin": "CONTROL",
+   "commit": "ff8d96a",
+   "defect": "set_enrichment()'s positive control is an arithmetic identity, so the repository's central null had no valid positive control",
+   "operation": "An independent adversarial reviewer found it. top8 is by construction the argmax of the test statistic over all 8-head subsets of the band, and every null draw is an 8-head subset of the same band, so T(null) <= T(top8) with probability 1. It measures nothing about power. Replaced with a planted-enrichment power curve: calibration at delta=0 fires at 0.0433 against a nominal 0.05, MDE80 = 0.9136 sd = 0.2225 margin units, observed enrichment of the eight -0.1226 sd. The claim moves from UNVERIFIED to a BOUNDED ABSENCE. The pre-registered decision rule was itself defective -- 'observed >= MDE80 -> informative' can never return informative for a true null, a check that could only fail, written inside a pre-registration.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D125",
+   "round": "R6",
+   "bin": "STATISTIC",
+   "commit": "ff8d96a",
+   "defect": "the front page's '22-24% recovery' quotes a ratio of signal-to-noise ratios, not effect recovery; its median cell is sign-inverted; and the intersection of informative, valid and sign-consistent cells is empty",
+   "operation": "Found by an independent adversarial reviewer, all three verified against R6's own JSONs. (1) rr = (|pc|/band_sd)_arm / (|pc|/band_sd)_zero carries the factor band_sd_zero/band_sd_arm; the prose describes |pc_arm|/|pc_zero|. Median over informative cells: rr 0.2368 vs recovery 0.1199. (2) qwen2.5-3b's zero control is +1.60537 while mean and resample are NEGATIVE; R7 and R8 exclude sign-inverted arms and R6 never did, because pc_clears_own_floor tests magnitude only. That cell sets the published median. (3) informative AND round_valid AND sign_consistent = 0 of 4 cells; the page disclosed the first two counts and never the empty intersection. Corrected reading makes the off-manifold limitation WORSE: median recovery over informative and sign-consistent cells is 0.1359, so ~85% of the zeroing effect is not the head's contribution, not 76%.",
+   "found_by": "outside_reader"
   }
  ]
 }
