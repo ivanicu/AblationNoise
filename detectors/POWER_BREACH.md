@@ -1,4 +1,4 @@
-<!-- unbacked-ok: 38.03 37.86 37.56 37.17 36.85 36.76 36.28 36.11 36.11 36.11 36.11 36.23 36.12 36.08 36.07 36.10 35.99 35.99 36.07 36.06 36.07 35.86 35.69 35.71 35.53 34.59 34.16 34.72 35.02 35.38 36.74 2006 1719 1713 1671 1669 1683
+<!-- unbacked-ok: 40.30 38.03 37.86 37.56 37.17 36.85 36.76 36.28 36.11 36.11 36.11 36.11 36.23 36.12 36.08 36.07 36.10 35.99 35.99 36.07 36.06 36.07 35.86 35.69 35.71 35.53 34.59 34.16 34.72 35.02 35.38 36.74 2006 1719 1713 1671 1669 1683
  1596 1434 467 33 2909 2507 86 2 14 35.0 6 1.03 0.41 64 100 365 3 15
  -- MEASUREMENTS OF THE DETECTOR'S OWN POWER, and of the remedies tried against it. A detector
  cannot emit the statistics of its own false-pass rate into the reference set that rate is computed
@@ -7,7 +7,7 @@
  `python3 detectors/prose_numbers.py --power` and by the measurement script quoted in each section. -->
 # Detector 6 power breach — acknowledged, with the remedies measured and rejected
 
-`measured_false_pass_rate = 38.03`
+`measured_false_pass_rate = 40.30`
 
 The line above is machine-read by `detectors/prose_numbers.py`. **The gate fails unless it matches
 the current rate to two decimals**, so this file cannot be written in advance and goes stale the
@@ -104,7 +104,7 @@ real repair. It is about fifty emitters of work and it is not being done inside 
 
 ## The ratchet has now fired three times in one session, and that is the finding
 
-`36.11` -> `36.28` -> `36.76` -> `36.85` -> `37.17` -> `37.56` -> `37.86` -> `38.03`, 2026-07-28 into 2026-07-29. The first step was `margin_normalisation()` gaining
+`36.11` -> `36.28` -> `36.76` -> `36.85` -> `37.17` -> `37.56` -> `37.86` -> `38.03` -> `40.30`, 2026-07-28 into 2026-07-29. The first step was `margin_normalisation()` gaining
 `D145`'s matched-denominator block; the second was moving that repair's registered bound and kill
 thresholds out of pre-registration prose and **into the emitter**, so a reader can re-derive them.
 
@@ -114,6 +114,13 @@ checked costs detector power -- which is the section above's `six values` point,
 independent instances. The reference set only ever grows, so *any* addition moves the rate. The
 breach is structural and no amount of care by the author avoids it.
 
-What the ratchet bought: the gate refused the new page seven times until this line was re-measured, so a
+**The eighth step is the largest single jump yet, `38.03` -> `40.30`, and it came from R23** — a
+round that emits a shape vector per cell instead of one number per cell. That is the cost of changing
+the object from a WIDTH to a SHAPE: a shape needs many numbers, every one of them is quotable, and
+pruning them would make true claims unbackable. **The instrument gets weaker precisely when the
+science gets richer, and the remedy named at the top of this file — a set of CLAIMED rather than
+COMPUTED values — is now the only one left.**
+
+What the ratchet bought: the gate refused the new page eight times until this line was re-measured, so a
 stale rate could not certify a set that no longer had it. **A number that must be re-derived to
 keep passing is the only kind that stays true.**
