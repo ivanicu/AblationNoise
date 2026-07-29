@@ -1,3 +1,10 @@
+<!-- unbacked-ok: 7.62 1.4826 1.349 1.96 13.1 2.3
+ -- textbook constants and a design specification, not measurements. 1.4826 and 1.349 are the
+ normal-consistency factors for MAD and IQR; 1.96 is the normal 97.5th quantile; sqrt(2(n-1))
+ at n=30 is 7.62 and the 13.1% and 2.3x that follow are arithmetic on it and on the published
+ 0.4417733517951077 and 5.667495896844854, both of which ARE backed. No generator emits a
+ constant that was chosen rather than measured, and inventing one to satisfy the checker would
+ be the fabrication this file exists to guard against. -->
 # Pre-registration — is this repository's CENTRAL number identified, or is it one cell of a surface nobody computed?
 
 Written 2026-07-29, **before the grid was computed**, committed alone so git ordering rather than my
