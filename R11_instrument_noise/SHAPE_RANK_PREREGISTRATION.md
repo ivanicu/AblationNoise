@@ -1,3 +1,5 @@
+<!-- unbacked-ok: 1.6357 -- R19's baseline mean margin, from its result file's
+ baseline_margin_mean; quoted only to state the task difference. -->
 # Pre-registration — is the reference distribution SCALAR-UP-TO-SCALE?
 
 Written 2026-07-28, **before the statistic was computed**. Committed alone, ahead of the code that
@@ -159,3 +161,64 @@ fact.
 One model (`qwen2.5-1.5b`), one synthetic task, one metric (`signed_margin_drop`), four conditions,
 `n = 168` band heads. The `shuffled` arm's reliability is also unmeasured, so its `0.8123` carries the
 same one-sided bound and is not used for any verdict.
+
+---
+
+# Amendment 2 — `r_yy` is measured, and the deflationary rival is DEAD
+
+Appended 2026-07-28, after R19 landed at the eleventh attempt. Amendment 1 registered this exact
+measurement and the prediction that goes with it.
+
+## The measurement
+
+Split-half over R19's `64` base instances, bases `0`–`31` against `32`–`63`, band `L14`–`L27`,
+`signed_margin_drop`, Spearman-Brown corrected to full length:
+
+```
+scope    half-split r    full-length r_yy     random-split median [5th, 95th]
+final       0.9837          0.9918              0.8971  [0.5458, 0.9826]
+all         0.9784          0.9891              0.9586  [0.8245, 0.9879]
+```
+
+## The rival required a window and missed it by a mile
+
+```
+World S needs r_yy(all) in [0.5986, 0.7390]   (pooled)          measured 0.9891   OUTSIDE
+World S needs r_yy(all) in [0.7067, 0.8725]   (within-layer)    measured 0.9891   OUTSIDE
+```
+
+**`SCALAR-UP-TO-SCALE` IS KILLED.** The all-position measurement is not *"dramatically noisier than
+the final-query one"* — it is essentially as reliable (`0.9891` against `0.9918`). The registered
+prediction, *"`r_yy(all) > 0.7390`, confidence `0.75`"*, is **correct**.
+
+Disattenuating with the measured `r_yy`:
+
+```
+pooled band         0.7715 / sqrt(0.9942 * 0.9891) = 0.7780      needs >= 0.90
+within-layer        0.8374 / sqrt(0.9922 * 0.9891) = 0.8453      needs >= 0.90
+```
+
+**Both below `0.90` under either correlation**, so the verdict moves from `UNVERIFIED` to
+**`REJECTED`**: the two intervention supports are not the same shape at different scales. They are
+different objects.
+
+## The positive control found something, which is why it was worth running
+
+Random half-splits give a **lower** median than the registered contiguous split (`0.8971` against
+`0.9837` on `final`, with a 5th percentile of `0.5458`). Bases are supposed to be exchangeable, so
+that ought not to happen.
+
+**It happens because of the aliasing this repository already found.** `query = elig[b % 8]` and
+`want = rooms[b % 4]` are deterministic cycles, so bases `0`–`31` and `32`–`63` **each contain every
+(query, answer-room) pair exactly four times** — the contiguous split is *balanced by construction*.
+A random split is not, so it carries between-group variance into both halves and depresses the
+correlation. **The registered split is the correct one, and the control confirms the aliasing rather
+than the reliability.**
+
+## Boundary, and it is not small
+
+`r_yy(all)` is measured on **R19's task**, not R10's: `8` lines, baseline margin `1.6357` against
+`4.4768`, and **no baseline-correct filter** where R10 has one. So this is not literally
+`r_yy` for the `I_all` numbers in `R18`. What it establishes is that **a comparable all-position
+measurement is highly reliable**, which is what the rival needed to be false — the rival's survival
+required the all-scope instrument to be *intrinsically* noisy, and it is not.

@@ -1,0 +1,38 @@
+{
+ "n_band": 168,
+ "n_base": 64,
+ "metric": "signed_margin_drop",
+ "splits": {
+  "final": {
+   "r_halfsplit": 0.9837062957525173,
+   "r_full_spearman_brown": 0.9917862315190659,
+   "random_split_median": 0.8971370075670673,
+   "random_split_lo": 0.5458029395103607,
+   "random_split_hi": 0.9825661469736419,
+   "n_random_splits": 200
+  },
+  "all": {
+   "r_halfsplit": 0.9784104976903538,
+   "r_full_spearman_brown": 0.9890874505898294,
+   "random_split_median": 0.958646821343634,
+   "random_split_lo": 0.824509000115084,
+   "random_split_hi": 0.9879314581323958,
+   "n_random_splits": 200
+  }
+ },
+ "registered_windows": {
+  "pooled_world_S_needs_r_yy_in": [
+   0.5986,
+   0.739
+  ],
+  "within_layer_world_S_needs_r_yy_in": [
+   0.7067,
+   0.8725
+  ],
+  "measured_r_yy_all": 0.9890874505898294,
+  "inside_pooled_window": false,
+  "inside_within_layer_window": false,
+  "registered_prediction": "r_yy(all) > 0.7390, confidence 0.75",
+  "prediction_correct": true
+ }
+}

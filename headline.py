@@ -3061,6 +3061,53 @@ def _partial(x, y, z):
     return (rxy - rxz * ryz) / den
 
 
+def split_half():
+    """R19's SPLIT-HALF RELIABILITY, and the death of the scalar-up-to-scale rival.
+
+    Registered in R11_instrument_noise/SHAPE_RANK_PREREGISTRATION.md Amendment 1, which fixed the
+    window World S needed BEFORE this could be measured: r_yy(all) had to land in [0.5986, 0.7390]
+    pooled, or [0.7067, 0.8725] after the adversary's within-layer correction. Frozen from R19 by
+    the split-half script; read here so every number in the write-up is emitted rather than carried
+    from a scratchpad, which is the defect this repository files against everyone else.
+    """
+    f = HERE / 'R19_crossed_position_support' / 'results' / 'r19_split_half_reliability.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    ryy = d['splits']['all']['r_full_spearman_brown']
+    rxx = d['splits']['final']['r_full_spearman_brown']
+    # DISATTENUATED WITH THE MEASURED r_yy, both correlations this repository has published for the
+    # decisive pair: the pooled one and the within-layer one an adversary showed was the right
+    # control. r_xx here is R11's final-scope reliability on R10's task, NOT R19's -- the two tasks
+    # differ and the boundary is stated in the amendment.
+    out = {'n_band': d['n_band'], 'n_base': d['n_base'], 'metric': d['metric'],
+           'r_yy_all': ryy, 'r_yy_final_same_task': rxx,
+           'half_split_all': d['splits']['all']['r_halfsplit'],
+           'half_split_final': d['splits']['final']['r_halfsplit'],
+           'random_split_median_all': d['splits']['all']['random_split_median'],
+           'random_split_median_final': d['splits']['final']['random_split_median'],
+           'random_split_lo_final': d['splits']['final']['random_split_lo'],
+           'random_split_hi_final': d['splits']['final']['random_split_hi'],
+           'random_split_lo_all': d['splits']['all']['random_split_lo'],
+           'random_split_hi_all': d['splits']['all']['random_split_hi'],
+           # the two published correlations the disattenuation consumes, emitted so the
+           # write-up quotes them from here rather than retyping them from another page
+           'r_xy_pooled_published': 0.7715, 'r_xy_within_layer_published': 0.8374,
+           'r_xx_pooled_published': 0.9942, 'r_xx_within_layer_published': 0.9922,
+           'window_pooled': d['registered_windows']['pooled_world_S_needs_r_yy_in'],
+           'window_within_layer': d['registered_windows']['within_layer_world_S_needs_r_yy_in'],
+           'inside_pooled_window': d['registered_windows']['inside_pooled_window'],
+           'inside_within_layer_window': d['registered_windows']['inside_within_layer_window'],
+           'prediction_correct': d['registered_windows']['prediction_correct']}
+    for tag, rxy, rxx_pub in (('pooled', 0.7715, 0.9942), ('within_layer', 0.8374, 0.9922)):
+        out['disattenuated_' + tag] = rxy / math.sqrt(rxx_pub * ryy)
+    out['verdict'] = ('REJECTED -- shape is not shared; the two intervention supports are different '
+                      'objects'
+                      if max(out['disattenuated_pooled'], out['disattenuated_within_layer']) < 0.90
+                      else 'CONFIRMED shape-sharing')
+    return out
+
+
 def residual_arm():
     """IS THE UNEXPLAINED 85% A FACT ABOUT THE MEASUREMENT OR ABOUT THE SYSTEM?
 
@@ -4285,6 +4332,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
     MECH = mechanism()
@@ -4329,7 +4377,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
