@@ -1350,6 +1350,69 @@
    "defect": "R20's registered verdict rule returned SELF-REPAIR-PRESENT on data showing the opposite, because the rule keyed on the median of a zero-crossing ratio and on a sign test whose direction it never read",
    "operation": "median(suppression) <= 0.80 was written expecting a ratio in [0,1]. suppression = total/direct_renorm is a ratio of two SIGNED quantities whose denominator crosses zero -- Cauchy-like, observed median -0.1417 with quartiles from -31.192590857095606 to +49.46868057891072. A large NEGATIVE ratio means the total has the OPPOSITE SIGN to the direct path, which is not suppression, and it satisfies <= 0.80 trivially. Second break: the sign test is two-sided and the rule read only its p-value. |total| < |direct| holds on 53 of 168, so the significant direction is |total| > |direct| at p = 1.953788031425443e-06 -- which the registration's OWN null reasoning says World N predicts. A claim whose test is not its own statement, committed inside a pre-registration, for the second time in this repository (R10's POWER_PREREGISTRATION has the first). Verdict recorded as UNVERIFIED_REGISTERED_STATISTIC_UNFIT rather than silently re-specified. On statistics with no zero-crossing denominator: self-repair is dead (|total| > |direct| at p 2e-06), systematic amplification is dead (sign agreement 79 of 168, p 0.4876), and what survives is an indirect term 3.3251x larger in magnitude than the head's own readout contribution and uncorrelated with it in sign (pooled Spearman +0.0166).",
    "found_by": "author_reading_the_object"
+  },
+  {
+   "id": "D150",
+   "round": "R21",
+   "bin": "CONTROL",
+   "commit": "e1d0c72",
+   "defect": "R21's pre-registration named a confound and then wrote a positive control that the confound must break, and the two sections sat four screens apart in one file",
+   "operation": "Its Third confound section says the clean comparator is HELD FIXED so the decomposition stays exactly additive; R10 RECOMPUTES max-over-other-rooms after every ablation. Its Positive controls section then requires this decomposition to equal R10's frozen total. Incompatible by construction: wherever the comparator moves the two are different margins. It failed at 1.971574097241418 against a limit of 0.012175927323649789. Diagnosed rather than asserted: Spearman(error, comparator_flip_rate) = +0.48312, worst head L26H07 at flip rate 0.6167, the band's highest; on the 44 heads whose comparator never moved the error is 0.0064725687330357, inside the limit. That subgroup is chosen on a covariate registered before the run, not on the size of the error, and it is still post hoc. What is NOT in doubt: the decomposition reproduces this round's own drop to 1.7878479721677998e-07, ATT is exactly 0 for last-layer heads with nothing from any later layer, and OWN reproduces R20's independent direct at Spearman +0.9068. Third registered control in two rounds built on a premise that does not hold.",
+   "found_by": "author_reading_the_object"
+  },
+  {
+   "id": "D151",
+   "round": "R20",
+   "bin": "SCOPE",
+   "commit": "e1d0c72",
+   "defect": "R20's headline sign test p = 1.95379e-06 was manufactured by the 46 heads its own pre-registration excludes as having direct ~ 0 BY CONSTRUCTION",
+   "operation": "SMALL_DIRECT = 0.01 drops 46 of 168 heads from the ratio and analyze.py:124 keeps them in the sign test. Split: ALL 168 -> 115/168 p 1.95379e-06; usable 122 -> 71/122 p 0.0849806, NOT significant; excluded 46 -> 44/46 p 3.07523e-11, the entire signal. A test of |total| > |direct| on heads whose |direct| is definitionally zero is a test that |total| > 0. 'World R is dead at p = 2e-06' is withdrawn; on the registered usable population the test says nothing. Found by an independent adversarial reviewer, reproduced here to the digit.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D152",
+   "round": "R20",
+   "bin": "STATISTIC",
+   "commit": "e1d0c72",
+   "defect": "the +0.2265 partial's permutation null destroys the identity total = direct + indirect, and against a null that preserves it the p is 0.2884",
+   "operation": "run.py sets indirect = total - direct by construction, so |direct| is a COMPONENT of |total|; the published null shuffles |centred total| within layer while holding |direct| fixed, which breaks the identity and puts the null mean at +0.0004. A null that permutes INDIRECT within layer and re-forms total = direct + indirect_perm, same seed and same 20000 draws, gives mean +0.18486972455031464, 97.5th 0.3329787016556673, p 0.2884 -- observed +0.2265 sits inside it. m_break falls from 6.37 to 0.17337031900138697. AND THE RANKING INVERTS: mean_norm and readout reach are not components of total so their nulls sit at zero, making direct's excess over its own null +0.042 against readout reach's +0.171 -- direct is the WEAKEST of the three predictors, not the second strongest. The pre-registration named this exact shared-term confound, refused it in the deflationary direction, and committed it in the inflating one.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D153",
+   "round": "R20",
+   "bin": "SCOPE",
+   "commit": "e1d0c72",
+   "defect": "R20's registered second separator -- suppression by depth -- was computed over all 28 layers instead of the registered band, and on its own population it points at the world R20 declared dead",
+   "operation": "The pre-registration calls it 'a second, independent separator inside the same run' that 'does not rely on the median clearing any threshold', with population the 168 band heads L14-L27. analyze.py iterated range(NL), folding in 14 out-of-band layers. Published Spearman(layer, median suppression) = -0.1314 over 28 layers; on the registered band it is +0.5297 over 14 layers. Under World R the ratio must depend on depth and under World N it must not, so the registered separator shows depth dependence -- and it never reached the README at all.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D154",
+   "round": "R20",
+   "bin": "CONTROL",
+   "commit": "e1d0c72",
+   "defect": "the positive control R20 reports as passing validates direct_plus_own_mlp_recomp, which appears in none of its claims, while direct_renorm -- the quantity every claim uses -- fails that same control by 18.4783x",
+   "operation": "direct_plus_own_mlp and direct_plus_own_mlp_recomp are None unless L == NL-1, so they exist for 12 of 336 cells; claims A-D all use direct_renorm. analyze.py's gate reads errs.get('direct_plus_own_mlp_recomp', ...). On the same 12 heads: direct_renorm max err 0.224991 against a 0.012176 limit, direct_plus_own_mlp 0.324917, direct_plus_own_mlp_recomp 0.0000041. What the control licenses: the W_O head-slice arithmetic, the closed-form readout, the RMSNorm basis, the item set. What it does not: that direct_renorm and total are commensurable -- it demonstrates the opposite.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D155",
+   "round": "R20",
+   "bin": "STATISTIC",
+   "commit": "e1d0c72",
+   "defect": "3.3251x is a ratio of order statistics not medians, and the honest per-head figure on the registered population is 1.8960x",
+   "operation": "analyze.py indexed at[len(at)//2] on an even n = 168, which is the 85th order statistic, in a file that defines a correct median() and uses it four lines away. True median ratio 3.2978. Separately, a ratio of medians over a population containing 46 near-zero denominators is not the per-head effect: the per-head median of |total|/|direct| on the 122 usable heads is 1.8960. The sign-agreement test also used p = 0.5, which is the independence null only if both marginals are 50/50; they are 0.5952380952380952 and 0.39880952380952384, and Fisher exact gives 0.8726328068571407 rather than the published 0.4876 -- that one strengthens its own conclusion.",
+   "found_by": "outside_reader"
+  },
+  {
+   "id": "D156",
+   "round": "R20",
+   "bin": "SCOPE",
+   "commit": "e1d0c72",
+   "defect": "the heading 'I_final is mostly not the head' confuses route with agent, and UNVERIFIED was spent as an acquittal",
+   "operation": "direct is the head's write reaching the readout WITHOUT being read by anything. A head whose output is read and amplified by a later component is fully causally responsible for that term; the total effect IS the head's causal effect by definition, and the decomposition splits it by ROUTE, not by AGENT. At layer 27 the indirect term is that same block's MLP reading that head's own write, which makes 'the rest of the network's response' a mis-description at the one layer where the answer is known. Licensed: 'the head's direct linear write to the final residual is a minority of the measured drop'. Not licensed: the heading. Separately, the verdict word was retracted to UNVERIFIED and two worlds were then declared dead from statistics chosen after seeing the data -- different post-hoc statistics were available and disagree (sign test on the registered usable set p 0.0849806; the registered depth separator on its own population +0.5297). Both worlds go back to live. Neither of R20's p-values was entered into the multiplicity family A18 opened one round earlier, and both sit at or below its kill line.",
+   "found_by": "outside_reader"
   }
  ]
 }

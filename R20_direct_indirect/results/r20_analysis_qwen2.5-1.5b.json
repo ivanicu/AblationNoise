@@ -1,4 +1,50 @@
 {
+ "adversary_retraction": {
+  "shared_term_null": {
+   "observed": 0.22650352124788845,
+   "null_mean": 0.18486972455031464,
+   "null_025": 0.035720502135619066,
+   "null_975": 0.3329787016556673,
+   "p": 0.2884,
+   "m_break": 0.17337031900138697,
+   "n_perm": 20000
+  },
+  "fisher_sign_independence": {
+   "table": [
+    39,
+    61,
+    28,
+    40
+   ],
+   "p_total_positive": 0.5952380952380952,
+   "p_direct_positive": 0.39880952380952384,
+   "expected_agreement": 0.48072562358276644,
+   "observed_agreement": 0.47023809523809523,
+   "fisher_two_sided_p": 0.8726328068571407
+  },
+  "control_failure_ratio_direct_renorm": 18.47834973289491,
+  "published_null_m_break": 6.369426751592358,
+  "sign_test_all_168": {
+   "bigger": 115,
+   "n": 168,
+   "p": 1.953788031425443e-06
+  },
+  "sign_test_usable_122": {
+   "bigger": 71,
+   "n": 122,
+   "p": 0.08498064582685332
+  },
+  "sign_test_excluded_46": {
+   "bigger": 44,
+   "n": 46,
+   "p": 3.0752289603697136e-11
+  },
+  "ratio_published_order_statistic": 3.3251384461817874,
+  "ratio_true_median": 3.2977864573938547,
+  "per_head_median_ratio_usable": 1.8960425147046678,
+  "spearman_layer_vs_suppression_registered_band": 0.5296703296703297,
+  "n_layers_in_band": 14
+ },
  "model": "qwen2.5-1.5b",
  "n_items": 120,
  "control_variants": {

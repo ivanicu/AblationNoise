@@ -504,28 +504,125 @@ pooled Spearman(|total|, |direct|)                        +0.0166
 within-layer partial(|centred total|, |direct| | mean_norm)   +0.2265   p 0.0078
 ```
 
-> ### **Self-repair is dead, systematic amplification is dead, and the first half of that sentence is stronger than it claimed.**
+> ### ⚠ **RETRACTED, `D151`–`D156`. An independent adversarial reviewer moved five of the six claims above down a bucket, and I reproduced every one of its recomputations to the digit.**
 >
-> **World R (self-repair)** requires `|total| < |direct|`. The opposite holds at `p = 2e-06`.
-> **World A (amplification)** requires the indirect term to push the *same way* as the direct one.
-> Sign agreement is `47%`, indistinguishable from chance.
+> **① The `p = 2e-06` was manufactured by the heads the pre-registration itself excludes.** `46` of
+> the `168` have `|direct| < 0.01` — *"`direct ~ 0` **by construction**"*, its own words — and they
+> were dropped from the ratio and **kept in the sign test**. Split it:
 >
-> **What survives is a term nobody had sized.** The rest of the network's response is `3.3x` larger
-> in magnitude than the head's own contribution to the readout, and **uncorrelated with it in sign**.
-> Pooled, `|total|` and `|direct|` are unrelated (`+0.0166`). So `I_final(L,h)` is **not** mostly a
-> measurement of what head `h` writes.
+> ```
+> ALL 168            |total| > |direct|  115/168   p 0.00000195378803142544   <- published
+> usable 122          71/122   p 0.0849806                                    <- not significant
+> excluded 46         44/ 46   p 0.0000000000307523                           <- the entire signal
+> ```
 >
-> **And `direct` is nonetheless the second-strongest predictor found.** Within layer, controlling
-> `mean_norm`, `+0.2265` at `p = 0.0078`, clearing its own depth-preserving null — behind magnitude
-> (`+0.3388`) and ahead of readout reach (`+0.1712`). Pooling destroys it completely (`-0.0000`),
-> which is the third predictor in a row whose pooling bias runs in its own direction.
+> A test of `|total| > |direct|` on heads whose `|direct|` is definitionally zero is a test that
+> `|total| > 0`. **`"World R is dead at p = 2e-06"` is withdrawn.** On the registered usable
+> population the sign test says nothing (`p = 0.085`).
 >
-> **⚠ The registered verdict word was `SELF-REPAIR-PRESENT` and it is wrong.** The rule keyed on the
-> median of `total/direct` — a ratio whose denominator crosses zero, observed median `-0.1417` with
-> quartiles from `-31.19` to `+49.47` — and on a two-sided sign test whose **direction it never
-> read**. A large *negative* ratio satisfies `<= 0.80` while meaning the opposite. **A claim whose
-> test is not its own statement, inside a pre-registration, for the second time here.** `D149`. The
-> verdict is `UNVERIFIED`: unfit, which is not an acquittal and specifically not evidence for repair.
+> **② The registered depth separator was computed on the wrong population and points the other
+> way.** The pre-registration calls it *"a second, independent separator … under World R the ratio
+> must depend on depth; under World N it must not"*. `analyze.py` iterated all `28` layers, folding
+> in `14` layers outside the registered band. On the band it is **`+0.5297` over `14` layers**, not
+> the published `-0.1314`. **The separator registered to discriminate R from N shows depth
+> dependence, and it never reached this page.**
+>
+> **③ The `+0.2265` partial is dead.** `indirect = total - direct` **by construction**, so `|direct|`
+> is a component of `|total|` and the null that shuffles `|centred total|` while holding `|direct|`
+> fixed destroys the identity. Against a null that preserves it — permute `indirect` within layer,
+> re-form `total = direct + indirect_perm`, same seed, same `20000` draws:
+>
+> ```
+> published null (shuffle Y)      mean +0.0004   97.5th 0.1655   p 0.0078   m_break 6.37
+> shared-term-preserving null     mean +0.1849   97.5th 0.3330   p 0.2884   m_break 0.17
+> ```
+>
+> **And the ranking inverts.** `mean_norm` and readout reach are not components of `total`, so their
+> nulls sit at zero; `direct`'s excess over its own null is `+0.042` against readout reach's
+> `+0.171`. **`direct` is the WEAKEST of the three predictors, not the second strongest.** The
+> pre-registration named this exact confound — *"`indirect = total - direct` shares a term with
+> `direct` … that statistic is therefore not used, and naming it here is the point"* — refused it in
+> the deflationary direction, and then committed it in the inflating one.
+>
+> **④ The positive control validates a quantity claims ①–③ never use.** The gate passes on
+> `direct_plus_own_mlp_recomp`, which exists for `12` of `336` cells. `direct_renorm` — the quantity
+> every claim uses — fails that same control by `18.4783x`. What the control does license: the `W_O`
+> slicing, the RMSNorm basis, the tied-embedding readout, the item set. What it does not: that
+> `direct_renorm` and `total` are commensurable. **It proves the opposite.**
+>
+> **⑤ `3.3251x` is wrong twice.** `at[len(at)//2]` on an even `n = 168` is the `85`th order
+> statistic, not a median, in a file that defines a correct `median()` and uses it four lines away.
+> True median ratio `3.2978`. And the honest per-head figure on the registered usable population is
+> **`1.8960x`**, not `3.3x`.
+>
+> **⑥ The sign-agreement test used the wrong null** — `p = 0.5` requires 50/50 marginals and they
+> are `0.595 / 0.399`. Fisher exact on independence gives `0.8726`, not `0.4876`. **The conclusion
+> survives and strengthens**; only the test was wrong.
+>
+> **⑦ The heading over-claimed and is corrected.** *"`I_final` is mostly not the head"* — the total
+> effect **is** the head's causal effect by definition. The decomposition splits it **by route, not
+> by agent**: a head whose write is read and amplified by a later component is fully responsible for
+> that term. What is licensed is the narrower body sentence: *the head's direct linear write to the
+> final residual is a minority of the measured drop.*
+>
+> **⑧ `UNVERIFIED` was spent as an acquittal.** The verdict word was retracted to `UNVERIFIED` and
+> then two worlds were declared dead from statistics chosen after seeing the data. Different
+> post-hoc statistics were available and they disagree: sign test on the registered usable set says
+> nothing (`p = 0.085`); the registered depth separator on its own population points at World R
+> (`+0.5297`). **Both worlds go back to live.**
+>
+> **⑨ Neither of `R20`'s p-values was entered into the multiplicity family** that `A18` opened one
+> round earlier, and both sit at or below its kill line: `m_break` `6.37` as published, `0.17`
+> under the correct null, `0.59` for the sign test on the registered population.
+>
+> **What survives the attack:** the direct-path arithmetic itself — the closed-form readout gate plus
+> the `4.069010416662966e-06` last-layer reproduction — which the reviewer states it could not break;
+> the capture-hook diagnosis; and the git ordering of the pre-registration. **The measurement is
+> sound. Almost everything I concluded from it was not.**
+
+### What the indirect term IS: half later attention, a quarter MLPs — and `85%` of the motion cancels
+
+`R20` left a term `3.3x` the head's own contribution with **no account of it**. The last time this
+repository had a gap that shape it named a mechanism (*"that is compensation"*) and spent a session
+pointing at the wrong experiment. [`R21`](R21_indirect_attribution/) **names none.** It attributes.
+
+The split is an **exact identity**, not an estimate: `rms(res)` is a scalar, so for a fixed
+comparator the margin is additive over component writes.
+
+```
+class   median share   median |sum|   per member   cancellation   members
+ATT         0.4845        0.055965     0.000167       0.1734        335
+MLP         0.2341        0.047556     0.001698       0.1392         28
+NORM        0.1706        0.030222     0.030222          -            1
+EMB         0.0000        0.000000     0.000000          -            1
+
+OWN+ATT+MLP+EMB+NORM reproduces this round's own measured drop to  1.7878479721677998e-07
+last-layer heads: ATT is exactly 0, and 0 from any later layer      structural control, exact
+OWN vs R20's independently measured `direct`:  Spearman +0.9068
+```
+
+> ### **`MIXED` — and the confound registered before the run decides how to read it.**
+>
+> No class reaches `0.50`. `ATT` is largest at `0.4845`, **but it wins the sum by membership**: its
+> `335` members contribute `0.000167` each while `MLP`'s `28` contribute `0.001698` each — **`10x`
+> more per member.** *"Attention dominates"* would be counting members, not effects.
+>
+> **`85%` of the motion cancels inside each class.** Cancellation factor — signed sum over sum of
+> absolute contributions — is `0.1734` for `ATT` and `0.1392` for `MLP`. **Removing one head at one
+> position moves a great deal downstream, and almost all of it cancels. The indirect term is a small
+> net residue of a large amount of motion.** That was a confound control, not the registered
+> statistic, and it is the most substantive thing in the round.
+>
+> **World NORM is dead, and it was the deflationary one.** The renormalisation gain carries `0.1706`,
+> not the majority — so `R20`'s `3.3x` is *not* mostly a gain change.
+>
+> **⚠ The registered cross-run control failed at `1.971574097241418` against a `0.012175927323649789`
+> limit, and this round's own pre-registration says why.** It holds the clean comparator fixed to keep
+> the split additive, while `R10` recomputes it after every ablation — **so the control and the
+> confound section contradict each other, and the control could not pass.** `D150`. Diagnosed:
+> `Spearman(error, comparator_flip_rate) = +0.4831`, worst head `L26H07` at flip rate `0.6167`; on the
+> `44` heads whose comparator **never** moved the error is `0.0064725687330357`, inside the limit.
+> That subgroup is selected on a covariate registered before the run, and it is **still post hoc**.
 
 ### The repository's own family of decision rules — and a correction would make its headline *stronger*
 
@@ -787,7 +884,7 @@ because the query that killed the `OV` claim was not aimed at transport. **Aimed
 > cited here or trivially findable.
 >
 > **What it still is:** a worked audit of one prior experiment, carried out in public, with an
-> unusually complete error record — `149` rows, each naming what was wrong and what the operation on
+> unusually complete error record — `156` rows, each naming what was wrong and what the operation on
 > it was.
 >
 > > **⚠ `D123` — this said `120` for two rows, and BOTH of this repository's checkers are blind to

@@ -203,7 +203,63 @@ def main():
               f"(three static predictors left 0.8484 unexplained)")
 
     print(f'\n  REGISTERED VERDICT: {verdict}')
-    out = {'model': d['model'], 'n_items': d['n_items'],
+    # ---- D151-D156: WHAT AN ADVERSARY RETURNED, RECOMPUTED HERE SO THE RETRACTION IS EMITTED
+    # RATHER THAN ASSERTED. Every number below reproduced to the digit on independent re-derivation.
+    usable_k = [k for k in band if abs(C[key(k)]['direct_renorm']) >= SMALL_DIRECT]
+    excl_k = [k for k in band if k not in usable_k]
+
+    def _bigger(pop):
+        b = sum(1 for k in pop if abs(C[key(k)]['total']) > abs(C[key(k)]['direct_renorm']))
+        return b, len(pop), binom_tail(max(b, len(pop) - b), len(pop))
+
+    b_all, n_all, p_all = _bigger(band)
+    b_use, n_use, p_use = _bigger(usable_k)
+    b_exc, n_exc, p_exc = _bigger(excl_k)
+    # the ratio: the published one indexed at[n//2] on an EVEN n, i.e. the 85th order statistic,
+    # while this file defines a correct median() four lines from where it was needed.
+    at_s = sorted(abs(C[key(k)]['total']) for k in band)
+    ad_s = sorted(abs(C[key(k)]['direct_renorm']) for k in band)
+    per_head_ratio_usable = median([abs(C[key(k)]['total']) / abs(C[key(k)]['direct_renorm'])
+                                    for k in usable_k])
+    # the registered depth separator, on its REGISTERED population instead of all 28 layers
+    bl = {}
+    for L in range(BAND_LO, min(BAND_HI, NL)):
+        ks = [(L, h) for h in range(NH) if abs(C[key((L, h))]['direct_renorm']) >= SMALL_DIRECT]
+        if ks:
+            bl[L] = median([C[key(k)]['total'] / C[key(k)]['direct_renorm'] for k in ks])
+    Ls = sorted(bl)
+    rho_depth_band = _spear([float(L) for L in Ls], [bl[L] for L in Ls])
+    # the null that PRESERVES total = direct + indirect, which the published one destroys
+    shared = _shared_term_null(C, band, key)
+    # Fisher exact on sign independence, because p=0.5 assumes 50/50 marginals and they are not
+    fis = _fisher_signs(C, band, key)
+    # how badly the quantity claims A-D actually use fails the control the page reports as passing
+    lastk = [(NL - 1, h) for h in range(NH)]
+    ctrl_ratio = (max(abs(C[key(k)]['direct_renorm'] - C[key(k)]['total']) for k in lastk)
+                  / lim)
+    retraction = {
+        'shared_term_null': shared, 'fisher_sign_independence': fis,
+        'control_failure_ratio_direct_renorm': ctrl_ratio,
+        'published_null_m_break': (0.05 / part['p']) if (part and part.get('p')) else None,
+        'sign_test_all_168': {'bigger': b_all, 'n': n_all, 'p': p_all},
+        'sign_test_usable_122': {'bigger': b_use, 'n': n_use, 'p': p_use},
+        'sign_test_excluded_46': {'bigger': b_exc, 'n': n_exc, 'p': p_exc},
+        'ratio_published_order_statistic': at_s[len(at_s) // 2] / ad_s[len(ad_s) // 2],
+        'ratio_true_median': median(at_s) / median(ad_s),
+        'per_head_median_ratio_usable': per_head_ratio_usable,
+        'spearman_layer_vs_suppression_registered_band': rho_depth_band,
+        'n_layers_in_band': len(Ls)}
+    print('\n  --- RETRACTION BLOCK (an adversary found these; recomputed here) ---')
+    print(f'  sign test  ALL 168 {b_all}/{n_all} p {p_all:.6g}   '
+          f'usable {b_use}/{n_use} p {p_use:.6g}   excluded {b_exc}/{n_exc} p {p_exc:.6g}')
+    print(f'  ratio  published(order stat) {retraction["ratio_published_order_statistic"]:.4f}   '
+          f'true median {retraction["ratio_true_median"]:.4f}   '
+          f'per-head median on usable {per_head_ratio_usable:.4f}')
+    print(f'  registered depth separator on the BAND: Spearman {rho_depth_band:+.4f} '
+          f'(published {rho_depth:+.4f} over all {NL} layers)')
+
+    out = {'adversary_retraction': retraction,
+           'model': d['model'], 'n_items': d['n_items'],
            'control_variants': {fld: max(e) for fld, e in errs.items()},
            'controls': {'items_same': ok_items, 'renorm_distinct': ok_two,
                         'last_layer_exact': ok_l27,
@@ -226,6 +282,71 @@ def main():
     json.dump(out, open(op, 'w'), indent=1)
     print(f'  wrote {op}')
     return 0
+
+
+def _shared_term_null(C, band, key):
+    """THE PUBLISHED NULL DESTROYED AN IDENTITY. `indirect = total - direct` by construction, so
+    |direct| is a COMPONENT of |total|; shuffling |centred total| while holding |direct| fixed breaks
+    `total = direct + indirect` and the resulting null sits at zero. This one permutes INDIRECT
+    within layer and re-forms `total = direct + indirect_perm`, so the identity survives and only the
+    head-level pairing is destroyed. Found by an independent adversarial reviewer; reproduced here."""
+    import headline as H
+    f6 = REPO / 'R6_intervention' / 'results' / 'r6_diag_item_variance_qwen2.5-1.5b.json'
+    if not f6.exists():
+        return None
+    per = {(r['layer'], r['head']): r for r in json.load(open(f6))['per_head']}
+    keys = [k for k in band if k in per]
+    DIR = {k: C[key(k)]['direct_renorm'] for k in keys}
+    IND = {k: C[key(k)]['total'] - C[key(k)]['direct_renorm'] for k in keys}
+    Z = [per[k]['mean_norm'] for k in keys]
+    bylayer = {}
+    for i, k in enumerate(keys):
+        bylayer.setdefault(k[0], []).append(i)
+
+    def stat(totals):
+        mu = sum(totals) / len(totals)
+        Y = [abs(t - mu) for t in totals]
+        X = [abs(DIR[k]) for k in keys]
+        vals = [H._partial([X[i] for i in idx], [Y[i] for i in idx], [Z[i] for i in idx])
+                for L, idx in bylayer.items() if len(idx) >= 4]
+        return sum(vals) / len(vals)
+
+    obs = stat([DIR[k] + IND[k] for k in keys])
+    rng = random.Random(SEED)
+    null = []
+    for _ in range(N_PERM):
+        ip = [IND[k] for k in keys]
+        for L, idx in bylayer.items():
+            v = [ip[i] for i in idx]
+            rng.shuffle(v)
+            for i, vv in zip(idx, v):
+                ip[i] = vv
+        null.append(stat([DIR[k] + ip[i] for i, k in enumerate(keys)]))
+    null.sort()
+    p = sum(1 for z in null if abs(z) >= abs(obs)) / len(null)
+    return {'observed': obs, 'null_mean': sum(null) / len(null),
+            'null_025': null[int(0.025 * len(null))], 'null_975': null[int(0.975 * len(null))],
+            'p': p, 'm_break': 0.05 / p if p > 0 else None, 'n_perm': N_PERM}
+
+
+def _fisher_signs(C, band, key):
+    """p = 0.5 is the independence null only if BOTH marginals are 50/50. They are not."""
+    a = sum(1 for k in band if C[key(k)]['total'] > 0 and C[key(k)]['direct_renorm'] > 0)
+    b = sum(1 for k in band if C[key(k)]['total'] > 0 and C[key(k)]['direct_renorm'] <= 0)
+    c = sum(1 for k in band if C[key(k)]['total'] <= 0 and C[key(k)]['direct_renorm'] > 0)
+    dd = sum(1 for k in band if C[key(k)]['total'] <= 0 and C[key(k)]['direct_renorm'] <= 0)
+    n = a + b + c + dd
+    r1, c1 = a + b, a + c
+
+    def hyp(x):
+        return (math.comb(r1, x) * math.comb(n - r1, c1 - x) / math.comb(n, c1)
+                if 0 <= x <= r1 and 0 <= c1 - x <= n - r1 else 0.0)
+
+    obs = hyp(a)
+    pv = sum(hyp(x) for x in range(0, min(r1, c1) + 1) if hyp(x) <= obs * (1 + 1e-9))
+    return {'table': [a, b, c, dd], 'p_total_positive': r1 / n, 'p_direct_positive': c1 / n,
+            'expected_agreement': (r1 * c1 + (n - r1) * (n - c1)) / n ** 2,
+            'observed_agreement': (a + dd) / n, 'fisher_two_sided_p': min(1.0, pv)}
 
 
 def _spear(a, b):

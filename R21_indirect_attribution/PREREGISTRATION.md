@@ -140,3 +140,95 @@ position only. The decomposition is exact **for a fixed comparator** and is not 
 any class: attributing a share of the margin change to the MLPs does not establish that the MLPs
 *caused* it, only that their writes account for it. Nothing here says which MLP or which head, and
 nothing here is about `I_all`.
+
+---
+
+# Amendment 1 — `MIXED`, and the pre-registration contradicted itself
+
+Appended 2026-07-29. **No threshold above was changed.**
+
+## The registered control could never have passed, and this same file says why
+
+> **Positive control 1:** *"`OWN + ATT + MLP + EMB + NORM` must equal `R10`'s frozen `total(h)`."*
+>
+> **Third confound:** *"the **clean comparator is held fixed** throughout so the decomposition stays
+> exactly additive"* — while `R10` **recomputes** `max over the other three rooms` after every
+> ablation.
+
+**Those two sections are incompatible by construction.** Wherever the comparator moves, the two are
+different margins, so the control had to fail. It did: `max |total_here - total_r10| = 1.9716`
+against a limit of `0.0122`. **A pre-registration that names a confound and then writes a control the
+confound must break is a pre-registration that argues with itself, and I did not notice until it
+fired.** That is the third registered control in two rounds built on a premise that does not hold.
+
+**The diagnosis is measured, not asserted:**
+
+```
+Spearman(|total_here - total_r10|, comparator_flip_rate)                    +0.4831
+worst head  L26H07   error 1.97157   flip rate 0.6167   (the band's highest)
+44 heads whose comparator NEVER moved:  max error 0.0064726  <= 0.0121759   PASS
+```
+
+The `44`-head subgroup is selected on a **covariate registered before the run** — *did the comparator
+move at all* — and not on the size of the error. **It is still post hoc, and it is labelled as such
+in the code and here.**
+
+What is *not* in doubt is the decomposition itself: `OWN+ATT+MLP+EMB+NORM` reproduces this round's
+own measured drop to **`1.7878479721677998e-07`**, and for last-layer heads `ATT` is **exactly `0`**
+with no contribution from any later layer — the two structural controls that make the split
+meaningful both pass exactly. `OWN` reproduces `R20`'s independent `direct` at Spearman `+0.9068`.
+
+## Registered verdict: `MIXED`
+
+```
+class   median share   median |sum|   per member   cancellation
+ATT         0.4845        0.055965     0.000167       0.1734       335 members
+MLP         0.2341        0.047556     0.001698       0.1392        28 members
+NORM        0.1706        0.030222     0.030222          -           1
+EMB         0.0000        0.000000     0.000000          -           1
+```
+
+No class reaches `0.50`. `ATT` is the largest at `0.4845`; on the `44` comparator-stable heads it
+reaches `0.5294`, which is `ATTENTION-DOMINATED` — reported, and **not** promoted to the verdict,
+because that population is not the registered one.
+
+## The confound registered before the run decides how this is read
+
+**`ATT` wins the sum by membership.** Its `335` members contribute `0.000167` each; `MLP`'s `28`
+contribute `0.001698` each — **`10x` more per member.** So *"attention dominates"* would be counting
+members, not effects. The margin sees the sum, and the sum is what the verdict uses; the per-member
+column is why the sum must not be read as *"later attention heads are doing the work"*.
+
+**And `83`–`86%` of each class's movement cancels inside the class.** The cancellation factor —
+signed sum over sum of absolute contributions — is `0.1734` for `ATT` and `0.1392` for `MLP`. This
+was computed as a registered confound control and is the most substantive thing in the round:
+
+> **Removing one head at one position moves a great deal downstream, and almost all of it cancels.
+> The indirect term is a small net residue of a large amount of motion.**
+
+## World NORM is dead, and it was the deflationary one
+
+`NORM` carries `0.1706` of the indirect term, not the majority. So `R20`'s `3.3x` is **not** mostly a
+gain change — the term survives as a real redistribution of component writes. This round's own
+`total/own` ratio is `3.8417x` under its fixed-comparator convention, against `R20`'s `3.3251x`;
+both are reported and the difference is the comparator convention, which is the confound above.
+
+`ATT` is entirely from layers **strictly after** the ablated one — `median |ATT from later layers|`
+equals `median |ATT|` to `3e-10` — which is what the architecture requires and is a further check
+that the indices mean what they say.
+
+## No mechanism is named
+
+This round was registered to attribute and stop. It attributes: roughly half the indirect term rides
+on later attention heads, a quarter on MLPs, a sixth on the normalisation gain, and the whole of it
+is what survives after `~85%` internal cancellation. **What causes the redistribution is not
+established here, and calling it routing, repair, or compensation would be attributing a mechanism to
+a datum that does not require it.**
+
+## Boundary
+
+One model, one metric, one task, `I_final`, `168` band heads, `n = 120` items, final position only,
+fixed clean comparator. The decomposition is exact for that comparator and is **not** causal:
+attributing a share to a class says its writes account for the change, not that the class caused it.
+The registered population is all `168` heads; the `44`-head subgroup is post hoc. `EMB` is a measured
+residue — `5.4e-08` — which also confirms `o_proj` carries no bias on this architecture.
