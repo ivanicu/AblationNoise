@@ -1,4 +1,4 @@
-<!-- unbacked-ok: 3.2 3.22 2.14 2.43 -- per-position baseline margins from the n_base=2 SMOKE
+<!-- unbacked-ok: 0.7412 0.2588 0.2587 0.2616 0.0028 -- these five read from the LIVE CHECKPOINT of a run that has not finished, so no generator can emit them yet: R19's result file does not exist. They are the runner's stdout (baseline accuracy) and the checkpoint's flips counter over done_layers x n_heads x n_prompts. REMOVE this exemption when the run lands, do not extend it. --><!-- unbacked-ok: 3.2 3.22 2.14 2.43 -- per-position baseline margins from the n_base=2 SMOKE
  run, quoted in the control below only to show that it CANNOT decide. They are deliberately NOT
  wired into the handle: emitting 4-items-per-cell numbers as generated values would make them
  look like results, which is exactly what that section says they are not. The full run's
