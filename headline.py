@@ -3061,6 +3061,51 @@ def _partial(x, y, z):
     return (rxy - rxz * ryz) / den
 
 
+def residual_arm():
+    """IS THE UNEXPLAINED 85% A FACT ABOUT THE MEASUREMENT OR ABOUT THE SYSTEM?
+
+    Registered in R6_intervention/RESIDUAL_ARM_PREREGISTRATION.md, committed before this code.
+
+    THE CONFOUND IS THAT TWO OF THE THREE PREDICTORS ARE POSITION-MATCHED TO I_final AND NOT TO
+    I_all -- R6's diagnostic read activations at the FINAL position. So a worse fit under I_all
+    could be pure measurement mismatch. `align` comes from weights only and is position-independent,
+    which is why the verdict rests on the alignment partial and the other two are reported with the
+    mismatch stated.
+    """
+    a, b = mechanism('I_final'), mechanism('I_all')
+    if not (a and b and a.get('alignment') and b.get('alignment')):
+        return None
+    ua = a['alignment']['three_predictor_unexplained']
+    ub = b['alignment']['three_predictor_unexplained']
+    # POSITIVE CONTROL 1 -- the arms must not be the same vector. R18 measured the raw transfer at
+    # +0.6230, so a value near 1 here would mean the arms were mis-loaded and the comparison is void.
+    f10 = json.load(open(HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'))
+    f18 = json.load(open(HERE / 'R18_all_positions' / 'results' / 'r18_allpos_qwen2.5-1.5b.json'))
+    LA = {int(k): v for k, v in f10['layers'].items()}
+    LB = {int(k): v for k, v in f18['layers'].items()}
+    NH = len(LA[14]['per_head'])
+    bandk = [(x, h) for x in range(14, 28) for h in range(NH)]
+    va = [LA[k[0]]['per_head'][str(k[1])] for k in bandk]
+    vb = [LB[k[0]]['per_head'][str(k[1])] for k in bandk]
+    ma, mb = sum(va) / len(va), sum(vb) / len(vb)
+    arms_corr = _spearman([abs(x - ma) for x in va], [abs(x - mb) for x in vb])
+    d = ub - ua
+    v = ('RESIDUAL IS SYSTEMIC' if abs(d) <= 0.10 else
+         'RESIDUAL IS PARTLY MEASUREMENT' if d < -0.10 else
+         'RESIDUAL IS WORSE UNDER I_all')
+    return {'unexplained_I_final': ua, 'unexplained_I_all': ub, 'difference': d,
+            'reproduces_published_0_8484': abs(ua - 0.8484) < 0.0005,
+            'arms_spearman_centred_magnitude': arms_corr,
+            'align_partial_I_final': a['alignment']['within_layer_partial_align_given_norm'],
+            'align_partial_I_all': b['alignment']['within_layer_partial_align_given_norm'],
+            'align_p_I_final': a['alignment']['p'], 'align_p_I_all': b['alignment']['p'],
+            'norm_partial_I_final': a['within_layer_partial_norm'],
+            'norm_partial_I_all': b['within_layer_partial_norm'],
+            'predictors_position_matched_to': 'I_final only -- R6 read activations at the final '
+                                              'position; align is weights-only and is matched',
+            'verdict': v}
+
+
 def enrichment_power():
     """WHAT ENRICHMENT COULD THE CENTRAL NULL ACTUALLY HAVE DETECTED? Registered in
     R10_exhaustive/POWER_PREREGISTRATION.md, committed before this code.
@@ -3157,7 +3202,7 @@ def enrichment_power():
             'verdict': verdict}
 
 
-def mechanism():
+def mechanism(arm='I_final'):
     """WHY IS THE REFERENCE DISTRIBUTION WIDE? Magnitude or informativeness, on frozen data.
 
     Registered in R6_intervention/MECHANISM_PREREGISTRATION.md, committed before this code.
@@ -3177,10 +3222,15 @@ def mechanism():
     """
     import random as _r
     f6 = HERE / 'R6_intervention' / 'results' / 'r6_diag_item_variance_qwen2.5-1.5b.json'
-    f10 = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
-    if not (f6.exists() and f10.exists()):
+    # ARM-GENERALISED, registered in R6_intervention/RESIDUAL_ARM_PREREGISTRATION.md. The default is
+    # I_final so the published 0.8484 is reproduced by the same call as before -- positive control 3
+    # is aimed at this refactor: if generalising the function moves an already-published number, the
+    # refactor is the finding.
+    src = {'I_final': HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json',
+           'I_all': HERE / 'R18_all_positions' / 'results' / 'r18_allpos_qwen2.5-1.5b.json'}[arm]
+    if not (f6.exists() and src.exists()):
         return None
-    d6, d10 = json.load(open(f6)), json.load(open(f10))
+    d6, d10 = json.load(open(f6)), json.load(open(src))
     L = {int(k): v for k, v in d10['layers'].items()}
     band = [(x, h) for x in range(14, 28) for h in range(len(L[14]['per_head']))]
     eff = {k: L[k[0]]['per_head'][str(k[1])] for k in band}
@@ -3309,7 +3359,7 @@ def mechanism():
          'this repository has not measured'
          if (abs(wl_norm) < 0.15 and abs(wl_disp) < 0.15) else
          'MIXED -- between the registered thresholds')
-    return {'n_heads': len(keys), 'n_band': len(band),
+    return {'arm': arm, 'n_heads': len(keys), 'n_band': len(band),
             'spread_norm': spread(NORM), 'spread_disp': spread(DISP), 'spread_effect': spread(Y),
             'pooled': pooled,
             'within_layer_partial_norm': wl_norm, 'within_layer_partial_disp': wl_disp,
@@ -4235,6 +4285,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    RARM = residual_arm()
     POW = enrichment_power()
     MECH = mechanism()
     ADD = additivity()
@@ -4278,7 +4329,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -5596,7 +5647,7 @@ def main() -> int:
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
             # 39.810 at 121 rows; filing D122 moved it. The taxonomy statistic is a function of the
             # ledger, so every row changes it -- that is the design, not drift.
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 43.315, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 44.219, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -5680,9 +5731,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 127, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 34, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.449, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 128, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 35, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.375, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

@@ -1,0 +1,15 @@
+{
+ "unexplained_I_final": 0.8483561375037126,
+ "unexplained_I_all": 0.8781995003098807,
+ "difference": 0.02984336280616806,
+ "reproduces_published_0_8484": true,
+ "arms_spearman_centred_magnitude": 0.6230455403647481,
+ "align_partial_I_final": 0.17116967737683544,
+ "align_partial_I_all": 0.07918374098139422,
+ "align_p_I_final": 0.045497725113744315,
+ "align_p_I_all": 0.35103244837758113,
+ "norm_partial_I_final": 0.3388141076614903,
+ "norm_partial_I_all": 0.2632834770290276,
+ "predictors_position_matched_to": "I_final only -- R6 read activations at the final position; align is weights-only and is matched",
+ "verdict": "RESIDUAL IS SYSTEMIC"
+}

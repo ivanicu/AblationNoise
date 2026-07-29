@@ -84,3 +84,58 @@ static property can ever explain. **That is the unwelcome branch and it is why t
 One model, one metric, one task, `168` band heads, `n = 12` per layer. `R18`'s `I_all` and `R10`'s
 `I_final` share an item set, so the two effect vectors are paired; the *predictors* are not
 position-matched to `I_all`, which is stated above and is the reason the verdict rests on alignment.
+
+---
+
+# Amendment 1 — the outcome
+
+Appended 2026-07-28 after running `residual_arm()`. Thresholds unchanged.
+
+## Positive controls
+
+| control | returned |
+|---|---|
+| the arms are not the same vector | `Spearman(|eff_final|, |eff_all|) = 0.6230` — **exactly `R18`'s independently published transfer figure**, reproduced here by a different code path |
+| predictors identical across arms | same `168` keys, asserted |
+| `I_final` reproduces the published `0.8484` through the refactored path | **`True`** — generalising the function over the arm moved no already-published number |
+
+## The result
+
+```
+unexplained rank variance     I_final  0.8484      I_all  0.8782      difference  +0.0298
+align partial (matched)       I_final +0.1712 (p 0.0455)   I_all +0.0792 (p 0.3510)
+norm partial (mismatched)     I_final +0.3388             I_all +0.2633
+```
+
+`|difference| = 0.0298 <= 0.10` → **`RESIDUAL IS SYSTEMIC`**.
+
+## What this kills and what it does not
+
+**Killed: World M.** A whole-sequence knockout is **not** more predictable from static properties
+than a single-position one — it is marginally **less** (`0.8782` against `0.8484`). So the residual is
+not an artefact of `I_final` removing a write at one token position, and the sentence *"what remains
+is a property of what the rest of the network does when the head is gone"* **survives its first real
+test.**
+
+**Not established: that the mechanism is compensation.** What is shown is that the residual does not
+depend on intervention support. Compensation remains an untested hypothesis, and calling this result
+evidence *for* it would be attributing a mechanism to a datum that did not require it — the fifth
+entry on this repository's own overshoot list.
+
+**And the one fairly-matched predictor gets weaker, not stronger.** `align` was already marginal under
+`I_final` (`+0.1712`, `p = 0.0455`, failing Bonferroni at three tests); under `I_all` it is `+0.0792`
+at `p = 0.3510` — **inside its own null.** The only weight-only signal that registered at all does not
+survive a change of intervention support.
+
+## The honest one-line summary
+
+> **Three static predictors explain about `15%` of the `I_final` ordering and about `12%` of the
+> `I_all` ordering. Neither is explainable from what a head is; both are dominated by what happens
+> when it is missing.**
+
+## Boundary
+
+One model, one metric, one task, `168` band heads, `n = 12` per layer. `mean_norm` and
+`displacement_ratio` remain position-matched to `I_final` only, which is why the *verdict* rests on
+the alignment partial and the difference-of-unexplained; the `norm` numbers across arms are reported,
+not interpreted.

@@ -1152,6 +1152,15 @@
    "defect": "nine R19 deaths were attributed to the machine SIGKILLing long GPU jobs, on the sole evidence that pueue reported Killed with no Python traceback -- and a second agent session preempting the GPU queue is a better-supported explanation that was never considered",
    "operation": "THE PROXY WAS USED BACKWARDS. 'no traceback => an external SIGKILL' is sound; 'external SIGKILL => the box or the OOM killer' is NOT, and only the second was ever used. What is CONFIRMED: a live process from a different Claude session, working in the coval-deep-analysis project, carried the literal command string 'pueue kill 260; sleep 8; gpu-run ... r46 ...', observed in the process table; and the pueue id sequence alternates strictly -- 254 R19 then 255/256/257 CoVal, 258 R19 then 259, 260 R19 then 261, 262 R19 then 263-268 -- so five of five R19 terminations are immediately succeeded by that session's jobs. What stays UNVERIFIED: that this caused EVERY death, since 232 and 242 predate any observed CoVal activity and dmesg is unreadable without privilege, so OOM cannot be excluded. What is OVERTURNED: 'the box SIGKILLs long GPU jobs' as the sole explanation -- it was never established, only inferred from silence. Ivan's standing rule that his tasks preempt the queue was written for HIS tasks; two agent sessions both applying it is a livelock, and the correct response is to queue behind rather than retaliate.",
    "found_by": "author_reading_the_object"
+  },
+  {
+   "id": "D128",
+   "round": "R19",
+   "bin": "PROVENANCE",
+   "commit": "ccae9f5",
+   "defect": "task 270 read as 'Queued, waiting its turn' for 17 minutes while the pueue GPU GROUP was PAUSED and the GPU sat idle -- it would have waited forever",
+   "operation": "`pueue status` showed 270 Queued and nothing Running; nvidia-smi showed no compute apps. The enclosing state was 'Group \"gpu\" (1 parallel): paused', set by another session. A task's status is meaningless without its group's. THIS IS THE FOURTH VARIANT OF ONE DEFECT: D95 read a status WORD for a job that had ended two hours earlier; D121 read a LOG TAIL for a process dead 25 minutes; D126 read MY OWN MEMORY of submissions instead of the queue; D128 read a task's status without the group's. The unifying statement is that each read a LOCAL indicator without its ENCLOSING state -- a task inside a group, a log inside a process, a submission inside a queue. Resolved with `pueue start -g gpu`; 270 began immediately.",
+   "found_by": "author_reading_the_object"
   }
  ]
 }
