@@ -11,7 +11,11 @@
  57.5 18.1 80.5 1.4 -- results QUOTED FROM 2606.05378 section 6, which this repository did not run.
  29.0 -- 9/31, arithmetic on two counts already shown in the same sentence.
  52.0 3.8 5.2 -- the RETRACTED held-out numbers, kept verbatim so the retraction below can be read
- against what it retracts. They are unbacked BECAUSE they are unreproducible; that is the finding. -->
+ against what it retracts. They are unbacked BECAUSE they are unreproducible; that is the finding.
+ 1.089e-07 1.275e-07 8.447e-08 2.398e-02 0.11901 0.11502 -- R21's P7 attack harness output.
+ attacks/plant_missing_component.py loads a MODEL, so it is outside the dependency-free
+ reference set by design; same exemption class as hook_identity. The script is checked in and
+ its command is in its docstring, so anyone with the weights can reproduce these. -->
 # AblationNoise
 
 **An ablation effect is reported as a number, and whether that number is large depends entirely on
@@ -616,6 +620,25 @@ OWN vs R20's independently measured `direct`:  Spearman +0.9068
 > **World NORM is dead, and it was the deflationary one.** The renormalisation gain carries `0.1706`,
 > not the majority — so `R20`'s `3.3x` is *not* mostly a gain change.
 >
+> **⚠ `D157` — the control this round called its strongest is a TAUTOLOGY, and I found it by
+> attacking it.** `components()` defines `emb = tot_v - att.sum() - mlp.sum()`, so `EMB` is a
+> **residue** and `OWN+ATT+MLP+EMB+NORM` telescopes to the measured drop **by construction**. The
+> pre-registration's *"a discrepancy is not noise, it is a missing component"* is false: a missing
+> component is absorbed into `EMB` and produces no discrepancy. Attacked rather than argued —
+> [`attacks/plant_missing_component.py`](R21_indirect_attribution/attacks/plant_missing_component.py)
+> deletes layer `20`'s MLP from the enumeration:
+>
+> ```
+> control as published    honest 1.089e-07     PLANTED 1.275e-07     <- STILL PASSES
+> the EMB residue         honest 8.447e-08     PLANTED 2.398e-02     <- caught, five orders
+> published class number  L14H00 mlp -0.11901 -> -0.11502            <- moved, unremarked
+> ```
+>
+> **The real control was on the page as the least interesting row.** `EMB` at
+> `5.4270862529885256e-08` is what actually establishes that every component whose write changes is
+> enumerated — so the shares stand, and what is retracted is the claim that the identity verified
+> them. **The control and the finding were in the same table and I labelled the wrong one.**
+
 > **⚠ The registered cross-run control failed at `1.971574097241418` against a `0.012175927323649789`
 > limit, and this round's own pre-registration says why.** It holds the clean comparator fixed to keep
 > the split additive, while `R10` recomputes it after every ablation — **so the control and the
@@ -884,7 +907,7 @@ because the query that killed the `OV` claim was not aimed at transport. **Aimed
 > cited here or trivially findable.
 >
 > **What it still is:** a worked audit of one prior experiment, carried out in public, with an
-> unusually complete error record — `156` rows, each naming what was wrong and what the operation on
+> unusually complete error record — `157` rows, each naming what was wrong and what the operation on
 > it was.
 >
 > > **⚠ `D123` — this said `120` for two rows, and BOTH of this repository's checkers are blind to

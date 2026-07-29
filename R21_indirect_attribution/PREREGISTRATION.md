@@ -1,3 +1,4 @@
+<!-- unbacked-ok: 1.089e-07 1.275e-07 8.447e-08 2.398e-02 0.11901 0.11502 2.4e-02 -- the P7 attack harness's own output. attacks/plant_missing_component.py loads a MODEL, so it cannot join the dependency-free reference set (detectors/prose_numbers.py:generator_numbers states that constraint); same exemption class as hook_identity's residuals in METHODS.md. The script is checked in and the exact command is in its docstring, so the numbers are reproducible by anyone with the weights -- they are unbacked because the checker is deliberately CPU-only, not because nothing produced them. -->
 # Pre-registration — what IS the indirect term? Attribute it to component classes, and refuse to name a mechanism for it
 
 Written 2026-07-29, **before the statistic was computed**, committed alone so git ordering rather
@@ -232,3 +233,68 @@ fixed clean comparator. The decomposition is exact for that comparator and is **
 attributing a share to a class says its writes account for the change, not that the class caused it.
 The registered population is all `168` heads; the `44`-head subgroup is post hoc. `EMB` is a measured
 residue — `5.4e-08` — which also confirms `o_proj` carries no bias on this architecture.
+
+---
+
+# Amendment 2 — the control I called this round's strongest is a tautology, and I attacked it to find out
+
+Appended 2026-07-29, one step after Amendment 1 was published. **Self-caught, by reading
+`components()` rather than by anyone reporting it.**
+
+## The claim
+
+> *"The positive control is that identity: `OWN+ATT+MLP+EMB+NORM` must reproduce `R10`'s frozen
+> total. **A discrepancy is not noise, it is a missing component.**"*
+
+## It cannot fail
+
+`run.py`'s `components()` defines
+
+```
+emb = tot_v - att.sum() - mlp.sum()
+```
+
+**`EMB` is a residue.** So `own + att + mlp + emb` telescopes to `tot_v` **by construction**, and
+adding the `NORM` term gives exactly `margin_clean - k' * tot_v'`, which is exactly how
+`total_measured_here` is accumulated. The identity is algebra, not evidence, and **the sentence
+above is false: a missing component produces no discrepancy at all — it is absorbed into `EMB`.**
+
+## Attacked, not reasoned about — `attacks/plant_missing_component.py`
+
+One line changed in a copy of `run.py`: layer `20`'s MLP deleted from the enumeration. Run on `L14`
+heads, `n = 120`, against the honest run on the same items. (The first attempt planted it and ran
+`L27`, where ablating a head cannot change layer `20`'s MLP — the plant was a no-op and proved
+nothing. **An attack that cannot reach the mechanism is not an attack.**)
+
+```
+control as published    honest 1.089e-07     PLANTED 1.275e-07     <- STILL PASSES
+the EMB residue         honest 8.447e-08     PLANTED 2.398e-02     <- caught, five orders
+published class number  L14H00 mlp -0.11901 -> -0.11502            <- moved, unremarked
+```
+
+**A whole MLP is gone from the decomposition, the class shares move, and the control this round
+called its strongest reports a `1.275e-07` pass.**
+
+## What the real control is, and it was on the page as a boring row
+
+**`EMB`.** The `0.0000` class share — reported as the least interesting line in the table — is the
+only quantity that establishes what the tautology claimed: that every component whose write changes
+under ablation is enumerated in `ATT` or `MLP`. Its honest value is `5.4270862529885256e-08`, and
+under a planted omission it is `2.4e-02`.
+
+> **The control and the finding were in the same table, and I labelled the wrong one.**
+
+## What changes and what does not
+
+**The class shares stand.** `EMB` at `5.4e-08` is a *passing* completeness control, so the
+enumeration was in fact complete and `ATT 0.4845 / MLP 0.2341 / NORM 0.1706` are unaffected. **What
+is retracted is the claim that they were verified by the identity**, and the pre-registration
+sentence *"a discrepancy is not noise, it is a missing component"*.
+
+**The other two controls were always the real ones and both are non-trivial:** last-layer `ATT`
+exactly `0` with nothing from any later layer (a structural fact the code could get wrong and did
+not), and `OWN` reproducing `R20`'s independently measured `direct` at Spearman `+0.9068`.
+
+This is the repository's own named class — **a check that cannot fail** — committed in a
+pre-registration, in a round whose Amendment 1 already recorded a control built on a false premise.
+**Two unfit controls in one round, and the second was found only because the first taught me to look.**

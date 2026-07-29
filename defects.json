@@ -1413,6 +1413,15 @@
    "defect": "the heading 'I_final is mostly not the head' confuses route with agent, and UNVERIFIED was spent as an acquittal",
    "operation": "direct is the head's write reaching the readout WITHOUT being read by anything. A head whose output is read and amplified by a later component is fully causally responsible for that term; the total effect IS the head's causal effect by definition, and the decomposition splits it by ROUTE, not by AGENT. At layer 27 the indirect term is that same block's MLP reading that head's own write, which makes 'the rest of the network's response' a mis-description at the one layer where the answer is known. Licensed: 'the head's direct linear write to the final residual is a minority of the measured drop'. Not licensed: the heading. Separately, the verdict word was retracted to UNVERIFIED and two worlds were then declared dead from statistics chosen after seeing the data -- different post-hoc statistics were available and disagree (sign test on the registered usable set p 0.0849806; the registered depth separator on its own population +0.5297). Both worlds go back to live. Neither of R20's p-values was entered into the multiplicity family A18 opened one round earlier, and both sit at or below its kill line.",
    "found_by": "outside_reader"
+  },
+  {
+   "id": "D157",
+   "round": "R21",
+   "bin": "CONTROL",
+   "commit": "3ccbba0",
+   "defect": "R21's headline positive control -- 'OWN+ATT+MLP+EMB+NORM must reproduce the measured total' -- is an algebraic tautology that cannot fail",
+   "operation": "components() defines emb = tot_v - att.sum() - mlp.sum(), so EMB is a RESIDUE and the five terms telescope to the measured drop by construction. The pre-registration's sentence 'a discrepancy is not noise, it is a missing component' is therefore false: a missing component is absorbed into EMB and produces no discrepancy whatsoever. Attacked rather than argued (attacks/plant_missing_component.py, one line changed): layer 20's MLP deleted from the enumeration. First attempt ran it on L27 heads, where ablating a head cannot change layer 20's MLP -- the plant was a no-op and proved nothing, so an attack that cannot reach the mechanism is not an attack. Rerun on L14 heads, n=120: control as published honest 1.089e-07 vs PLANTED 1.275e-07, STILL PASSING with a whole MLP gone; the EMB residue honest 8.447e-08 vs PLANTED 2.398e-02, caught by five orders of magnitude; and the published class number moved unremarked, L14H00 mlp -0.11901 -> -0.11502. THE REAL CONTROL WAS ON THE PAGE AS THE LEAST INTERESTING ROW: EMB's 5.4270862529885256e-08 class share is the only quantity establishing that every component whose write changes under ablation is enumerated. The shares stand because that control passes; what is retracted is the claim that the identity verified them. Repository's own named class -- a check that cannot fail -- committed in a pre-registration, in a round whose Amendment 1 already recorded a control built on a false premise. Two unfit controls in one round.",
+   "found_by": "author_reading_the_object"
   }
  ]
 }
