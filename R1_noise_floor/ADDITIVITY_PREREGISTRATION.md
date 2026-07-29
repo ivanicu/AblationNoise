@@ -1,3 +1,6 @@
+<!-- unbacked-ok: 4.209 -- the WRONG hand-computed constant, quoted verbatim inside its own
+ correction so the error can be read against the emitted 4.2101. No generator emits it, which is
+ exactly the point being made. -->
 # Pre-registration — does the single-head reference distribution predict the multi-head one?
 
 Written 2026-07-28, **before the statistic was computed**, committed alone so git ordering rather than
@@ -36,8 +39,14 @@ sd(k)    =  sd(1) * sqrt( k * (N - k) / (N - 1) )       finite-population correc
 
 `N = 168` for the band (`L14-27` x 12) and `N = 96` for the sham (`L0-7` x 12) — **read off each
 file's own `band` / `sham_band` fields, not assumed.** At `k = 20` the correction alone predicts
-`4.209` rather than `sqrt(20) = 4.472`, so ignoring it would manufacture `6%` of spurious
-compression. The statistic is therefore the **ratio of observed to this null**, never to `sqrt(k)`.
+`4.2101` rather than `sqrt(20) = 4.4721`, so ignoring it would manufacture spurious compression
+before any mechanism.
+
+> **⚠ Both constants were written here as `4.209` and `4.472` — my own arithmetic, in prose, three
+> paragraphs after this file says hand-computed numbers are the failure it exists to catch.** The
+> generator now emits them (`additivity()['hand_constants_checked']`) and the first is `4.2101`:
+> **wrong in the fourth significant digit.** Corrected above; recorded here rather than silently
+> fixed, because the interesting fact is not the digit but that I did it while writing the warning. The statistic is therefore the **ratio of observed to this null**, never to `sqrt(k)`.
 
 ## Statistics and registered thresholds
 
@@ -100,3 +109,87 @@ was chosen.
 
 Four model families, two arms, `k <= 20`, one task, one metric, `I_final` only, `30` draws per cell,
 random draws within a band — **not** the specific head sets anyone published.
+
+---
+
+# Amendment 1 — the outcome, including the parts that failed
+
+Appended 2026-07-28 after running `additivity()`. Thresholds above unchanged.
+
+## Exclusions, applied before any verdict
+
+| excluded | why |
+|---|---|
+| `llama-3.1-8b`, both arms | its ladder has **only `k=1`**, so `R_sd` is `1.000` **by construction**. Counting it would let a structural identity vote — a check that cannot fail, inside my own tally |
+| `qwen2.5-1.5b-bf16`, both arms | a **precision replicate** of `qwen2.5-1.5b`, not an independent family. Counting both would double one family's vote in a four-family test |
+
+Four families remain: `internlm2-1.8b`, `phi-3.5-mini`, `qwen2.5-1.5b`, `qwen2.5-3b`.
+
+## `R_sd(k=20)` = observed dispersion ÷ (additivity + finite-population sampling)
+
+```
+                 band     sham
+internlm2-1.8b   0.924    0.798
+phi-3.5-mini     1.050    2.020
+qwen2.5-1.5b     0.559    2.204
+qwen2.5-3b       1.931    2.997
+                 -----    -----
+mean             1.116    2.005
+```
+
+## Registered verdicts
+
+| hypothesis | rule | result |
+|---|---|---|
+| band **COMPRESSIVE** | `< 0.8` in ≥3 of 4 | **FAILS** — 1 of 4 |
+| band **ADDITIVE** | in `[0.8, 1.2]` in ≥3 of 4 | **FAILS** — 2 of 4 → **`MIXED`** |
+| sham **EXPLOSIVE** | `> 1.2` in ≥3 of 4 | **HOLDS** — 3 of 4 |
+| **the frame claim** | opposite sides of `1.0`, differing by `> 0.2` | **DOES NOT FIRE** — both means are above `1.0` |
+| sign test (primary) | 8 cells in their arm's predicted direction | **5 of 8, `p = 0.3633`. NOT SIGNIFICANT** |
+
+**The primary, distribution-free statement failed, and it failed because my band prediction was
+wrong.** I predicted compression and the band mean is `1.116`. The `p = 0.0039` written into the
+pre-registration was the probability of *all eight*; the tail for the count actually observed is
+`0.3633`. Both are printed by the handle, side by side, because reporting the first for this outcome
+is a p-value answering a question that was not asked — and that is exactly what the first version of
+this function did.
+
+## The one compressive cell is confounded, and the control says so
+
+`qwen2.5-1.5b` band is the only cell below `0.8` (`0.559`). Its `|mean(k=20)|` is **`36.6%` of the
+base margin** — a third of the way to the answer flipping. **A readout ceiling is therefore NOT
+excluded there**, which is the pre-registered saturation control firing against the single result
+that would have supported my prediction. `internlm2-1.8b` sham, also below `0.8`, sits at `12.5%`.
+
+## What survives
+
+**Means compose.** `mean(k)/k` is constant across the ladder within its own standard errors in
+`5 of 5` rungs for almost every cell — so the *centre* of the reference distribution extrapolates in
+`k` even where the *spread* does not. That is the same centre-versus-scale split this repository
+found across intervention supports, now on a different axis, and it was not predicted.
+
+**The sham arm expands.** `3 of 4` families exceed the additive prediction by more than `1.2×`, mean
+`2.005×`. Early-layer heads that individually do almost nothing produce, in groups, far more spread
+than the sum of their singleton effects allows.
+
+**The statistic's own stability, measured for free.** The precision replicate agrees to `0.010` on the
+band (`0.559` vs `0.569`) and to `0.255` on the sham (`2.204` vs `1.949`). At `n = 30` draws the sham
+estimate is roughly twenty-five times less stable than the band one, which is a reason to read the
+sham verdict as a direction and not as a magnitude.
+
+## The imported claim this corrects
+
+`R12_cross_model/README.md` states that *"single-component effects are known to be badly
+non-additive"*, by citation, in the **redundancy** sense — heads with near-zero singleton effect that
+matter only in company. **This repository's own ladder does not support that reading of its own
+data.** The means compose; the departure is in dispersion, and it runs **toward expansion**
+(`1.116` band, `2.005` sham) far more often than toward the redundancy-implied compression. The
+citation may well be right about other systems. It is not established here, and it was being carried
+as though it were.
+
+## Boundary
+
+Four families, two arms, `k ≤ 20`, one task, one metric, `I_final`, `30` draws per cell, **random**
+draws within a band — not any published head set. The result files store no raw draws, so every
+interval here is normal-theory and understates its own width; this is why the primary statement was
+chosen to be distribution-free, and why its failure is reported as a failure rather than replaced.

@@ -43,6 +43,12 @@ def load(pattern):
             REFUSALS.setdefault(pattern, []).append(
                 f"{d.get('model', '?')}: {d.get('verdict')} -- {d.get('why', '')[:110]}")
             continue
+        if 'model' not in d:
+            # A DIRECTORY IS NOT A SCHEMA. Any file dropped into a results/ folder is handed to
+            # every consumer that globs it, and the third time this happened the error was a bare
+            # KeyError with no filename in it. Name the file, and say what is missing.
+            raise KeyError(f"{f}: no 'model' key -- pattern {pattern!r} is matching a file that is "
+                           f"not a per-model result; narrow the pattern rather than widening this")
         out[d['model']] = d
     return out
 
@@ -56,7 +62,7 @@ def r1():
     changes that move the floor itself by 1.7x.
     """
     rows = []
-    for name, d in load('R1_noise_floor/results/*.json').items():
+    for name, d in load('R1_noise_floor/results/r1v3_atlas_*.json').items():
         c = d['cells']
         rows.append({'model': name, 'ratio_k1': c['band_k1']['floor'] / c['sham_k1']['floor'],
                      'band_floor': c['band_k1']['floor'], 'sham_floor': c['sham_k1']['floor'],
@@ -104,7 +110,7 @@ def cross_round_scale():
     import math
     CH = math.log(1 / 39000)
     out = {'chance_logprob': CH, 'r1': [], 'r2': []}
-    for name, d in load('R1_noise_floor/results/*.json').items():
+    for name, d in load('R1_noise_floor/results/r1v3_atlas_*.json').items():
         c = d['cells'].get('band_k5')
         if not c:
             continue
@@ -2943,6 +2949,128 @@ def defect_ledger():
             'cross_tab': inst}
 
 
+def additivity():
+    """DOES THE SINGLE-HEAD REFERENCE DISTRIBUTION PREDICT THE MULTI-HEAD ONE? The frame, tested.
+
+    Registered in R1_noise_floor/ADDITIVITY_PREREGISTRATION.md, committed before this code.
+
+    Every verdict in this repository is "is this head unusual among heads", scored against a
+    distribution of SINGLE knockouts. That presupposes a head's effect COMPOSES. R1 collected the
+    ladder to test it -- k in {1,2,5,10,20}, band and sham, 30 draws, four families -- and nothing
+    here has ever read band_k2, band_k10 or band_k20.
+
+    THE NULL IS NOT sqrt(k). Draws take k heads WITHOUT REPLACEMENT from a fixed population of N, so
+    pure additivity gives sd(k) = sd(1)*sqrt(k(N-k)/(N-1)) and mean(k) = k*mu exactly. At k=20 of 168
+    the correction alone is 4.209 against sqrt(20) = 4.472, so testing against sqrt(k) would
+    manufacture 6% of compression before any mechanism. N is read from each file's own band bounds.
+
+    THE MEAN IS NOT TESTED AS A RATIO. mean(k=1) has a standard error of its own order at n=30, so
+    R_mean would compare an uncertainty against a differently-paired one. Constancy of mean(k)/k with
+    each point's own SE is reported instead.
+    """
+    rows = []
+    for name, d in load('R1_noise_floor/results/r1v3_atlas_*.json').items():
+        c, bm = d['cells'], abs(d['base_margin'])
+        NH = d['n_heads']
+        pops = {'band': (d['band'][1] - d['band'][0] + 1) * NH,
+                'sham': (d['sham_band'][1] - d['sham_band'][0] + 1) * NH}
+        nd = d.get('n_draws', 30)
+        for arm in ('band', 'sham'):
+            k1 = c.get(f'{arm}_k1')
+            if not k1:
+                continue
+            N = pops[arm]
+            lad = []
+            for k in (1, 2, 5, 10, 20):
+                cell = c.get(f'{arm}_k{k}')
+                if not cell:
+                    continue
+                # POSITIVE CONTROL 1 is structural: at k=1 the correction is exactly 1, so the null
+                # reproduces the anchor by construction and R_sd(1) must print 1.000.
+                null_sd = k1['sd'] * math.sqrt(k * (N - k) / (N - 1))
+                lad.append({'k': k, 'sd': cell['sd'], 'null_sd': null_sd,
+                            'R_sd': cell['sd'] / null_sd if null_sd else float('nan'),
+                            'mean': cell['mean'], 'mean_over_k': cell['mean'] / k,
+                            'se_mean_over_k': cell['sd'] / (k * math.sqrt(nd)),
+                            'mean_pct_of_base': 100 * abs(cell['mean']) / bm})
+            if not lad:
+                continue
+            top = lad[-1]
+            # constancy of mean/k across the ladder, as an interval-overlap count rather than a
+            # ratio -- how many of the ladder's points sit within 2 SE of the k=20 estimate
+            ref = top
+            overlap = sum(1 for r in lad
+                          if abs(r['mean_over_k'] - ref['mean_over_k'])
+                          <= 2 * math.sqrt(r['se_mean_over_k'] ** 2 + ref['se_mean_over_k'] ** 2))
+            rows.append({'model': name, 'arm': arm, 'N_pop': N, 'n_draws': nd,
+                         'base_margin': bm, 'ladder': lad,
+                         'R_sd_k20': top['R_sd'], 'k_top': top['k'],
+                         'mean_over_k_spread': max(r['mean_over_k'] for r in lad)
+                                               - min(r['mean_over_k'] for r in lad),
+                         'mean_k20_pct_of_base': top['mean_pct_of_base'],
+                         'mean_consistent_points': overlap, 'n_ladder': len(lad),
+                         'min_sd': min(r['sd'] for r in lad)})
+    if not rows:
+        return None
+    # THREE EXCLUSIONS, EACH FOR A REASON THAT WOULD OTHERWISE INFLATE THE RESULT.
+    #
+    # (1) A CELL WITH ONLY k=1 SCORES 1.000 BY CONSTRUCTION. llama-3.1-8b has no rung above k=1, so
+    #     its R_sd is the positive control, not a measurement. Counting it would have let a
+    #     structural identity vote in the verdict -- the check-that-cannot-fail, inside my own tally.
+    # (2) bf16 IS THE SAME MODEL. qwen2.5-1.5b and qwen2.5-1.5b-bf16 differ in dtype, not in family.
+    #     Counting both would double one family's vote in a 4-family test. The fp32 file is kept and
+    #     the bf16 one is reported separately as a PRECISION REPLICATE, which is what it is.
+    # (3) the arms are counted per FAMILY, so the denominators below are families and not files.
+    excluded = [{'model': r['model'], 'arm': r['arm'],
+                 'why': 'ladder has only k=1; R_sd is structural, not measured'}
+                for r in rows if r['k_top'] == 1]
+    dup = [{'model': r['model'], 'arm': r['arm'], 'R_sd': r['R_sd_k20'],
+            'why': 'precision replicate of qwen2.5-1.5b, not an independent family'}
+           for r in rows if 'bf16' in r['model']]
+    # THE THREE CONSTANTS THE PRE-REGISTRATION STATED BY HAND, emitted so they are machine-checked
+    # rather than trusted. Hand arithmetic in prose is the failure this repository files against
+    # everyone else's pages, and it was in mine three paragraphs after saying so.
+    demo = {'fpc_null_k20_N168': math.sqrt(20 * (168 - 20) / 167), 'plain_sqrt_20': math.sqrt(20),
+            'se_log_sd_at_n30': 1 / math.sqrt(2 * (30 - 1))}
+    live = [r for r in rows if r['k_top'] > 1 and 'bf16' not in r['model']]
+    band = [r for r in live if r['arm'] == 'band']
+    sham = [r for r in live if r['arm'] == 'sham']
+    nb = sum(1 for r in band if r['R_sd_k20'] < 0.8)
+    ns = sum(1 for r in sham if r['R_sd_k20'] > 1.2)
+    # THE PRIMARY STATEMENT IS DISTRIBUTION-FREE -- but the p-value must be the tail for the count
+    # ACTUALLY OBSERVED, not (1/2)^n. The first version of this line reported (1/2)^12 = 0.000244
+    # regardless of how many cells landed correctly, which is a p-value for the event "all of them"
+    # attached to an outcome that was not that event. A number answering a different question than
+    # the one asked is this repository's own recurring defect, committed here by its author.
+    correct = (sum(1 for r in band if r['R_sd_k20'] < 1.0)
+               + sum(1 for r in sham if r['R_sd_k20'] > 1.0))
+    ncell = len(band) + len(sham)
+    v_band = ('COMPRESSIVE' if nb >= 3 else
+              'ADDITIVE' if sum(1 for r in band if 0.8 <= r['R_sd_k20'] <= 1.2) >= 3 else 'MIXED')
+    v_sham = ('EXPLOSIVE' if ns >= 3 else
+              'ADDITIVE' if sum(1 for r in sham if 0.8 <= r['R_sd_k20'] <= 1.2) >= 3 else 'MIXED')
+    mb = sum(r['R_sd_k20'] for r in band) / len(band) if band else float('nan')
+    ms = sum(r['R_sd_k20'] for r in sham) / len(sham) if sham else float('nan')
+    frame = ((mb - 1.0) * (ms - 1.0) < 0) and abs(mb - ms) > 0.2
+    return {'rows': rows, 'hand_constants_checked': demo, 'n_band_compressive': nb, 'n_sham_explosive': ns,
+            'verdict_band': v_band, 'verdict_sham': v_sham,
+            'mean_R_sd_band': mb, 'mean_R_sd_sham': ms,
+            'sign_test_correct': correct, 'sign_test_cells': ncell,
+            'sign_test_p': sum(math.comb(ncell, i) for i in range(correct, ncell + 1)) / 2 ** ncell,
+            'sign_test_p_if_all': 0.5 ** ncell,
+            'excluded_k1_only': excluded, 'precision_replicates': dup,
+            'frame_claim_fires': bool(frame),
+            'max_mean_pct_of_base': max(r['mean_k20_pct_of_base'] for r in rows),
+            # THE CEILING CONTROL BELONGS ON THE COMPRESSIVE CELLS, not on all of them. A
+            # global max says nothing about whether the arm that compressed was near the
+            # flip point; only the compressive cells' own distance to it does.
+            'compressive_cells_pct_of_base': [{'model': r['model'], 'arm': r['arm'],
+                                               'R_sd': r['R_sd_k20'],
+                                               'pct_of_base': r['mean_k20_pct_of_base']}
+                                              for r in live if r['R_sd_k20'] < 0.8],
+            'min_sd_any_cell': min(r['min_sd'] for r in rows)}
+
+
 def measurability():
     """WHAT SHARE OF THE FLOOR'S VARIANCE IS THE INSTRUMENT? The one component never given a number.
 
@@ -3287,7 +3415,7 @@ def r1_behavioural_scale():
     baseline, REGIME) and the fourth was never answered for the headline.
     """
     rows = []
-    for name, d in load('R1_noise_floor/results/*.json').items():
+    for name, d in load('R1_noise_floor/results/r1v3_atlas_*.json').items():
         bm = abs(d['base_margin']); c = d['cells']
         r = {'model': name, 'baseline_margin': bm}
         for k in (1, 5):
@@ -3329,7 +3457,7 @@ def r1_vocabulary():
     quantity is a RATIO of two floors rather than a floor.
     """
     old = load('R1_noise_floor/results/original_vocabulary/*.json')
-    new = load('R1_noise_floor/results/*.json')
+    new = load('R1_noise_floor/results/r1v3_atlas_*.json')
     rows = []
     for name, o in old.items():
         n = new.get(name)
@@ -3693,6 +3821,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    ADD = additivity()
     MEA = measurability()
     CSR = condition_shape_rank()
     WAC = window_arm_control()
@@ -3711,9 +3840,29 @@ def main() -> int:
     CN = centred_null()
 
     if args.json:
+        # SCAFFOLDING IS NOT A CLAIM, AND THE REFERENCE SET IS A SET OF CLAIMS. Detector 6's
+        # false-pass rate rose from 34.59% to 36.34% -- past its own 35% ceiling -- the moment
+        # additivity() emitted 365 values, most of them per-rung intermediates nothing will ever
+        # quote. They remain in R1_noise_floor/results/additivity_ladder.json. What is dropped here
+        # is dropped from the BACKING set, so quoting one in prose now correctly fails.
+        import copy as _copy
+        ADD = _copy.deepcopy(ADD) if ADD else ADD
+        if ADD:
+            # EMIT EXACTLY WHAT IS CLAIMED, AND NOTHING ELSE. The reference set is a set of the
+            # repository's CLAIMS; every extra value in it is a value a random prose number can
+            # collide with. additivity() computes 365 numbers and quotes about thirty; emitting all
+            # of them pushed detector 6's false-pass rate from 34.59% to 36.34%, through its own
+            # 35% ceiling, in a single commit. The full ladder stays in
+            # R1_noise_floor/results/additivity_ladder.json -- dropped from the BACKING set, not
+            # from the record, so quoting an unquoted intermediate in prose now correctly fails.
+            ADD['rows'] = [{'model': _r['model'], 'arm': _r['arm'], 'k_top': _r['k_top'],
+                            'R_sd_k20': _r['R_sd_k20'],
+                            'mean_k20_pct_of_base': _r['mean_k20_pct_of_base'],
+                            'mean_consistent_points': _r['mean_consistent_points'],
+                            'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -3950,6 +4099,49 @@ def main() -> int:
             print(f"        Chosen after the fact it would have been called layer-shaped; the rule")
             print(f"        is honoured at a 3% miss rather than renegotiated. Both centroids move")
             print(f"        EARLIER -- the direction replicates, the SHAPE does not resolve at n=2\n")
+
+    if ADD:
+        print('ADD  DOES THE SINGLE-HEAD DISTRIBUTION PREDICT THE MULTI-HEAD ONE? the frame,'
+              ' tested')
+        print('     null = additivity + finite-population sampling, NOT sqrt(k)')
+        print('     positive control  min sd over every cell %.4f (>0)   max |mean(k_top)| ='
+              % ADD['min_sd_any_cell'])
+        print('       %.1f%% of base margin -- a readout ceiling cannot explain compression'
+              % ADD['max_mean_pct_of_base'])
+        for r in ADD['rows']:
+            print('     %-16s %-5s N=%-3d  R_sd:  %s'
+                  % (r['model'], r['arm'], r['N_pop'],
+                     '  '.join('k%d %.3f' % (x['k'], x['R_sd']) for x in r['ladder'])))
+            print('       %-16s        mean/k: %s   spread %.4f  consistent %d/%d'
+                  % ('', '  '.join('%.4f' % x['mean_over_k'] for x in r['ladder']),
+                     r['mean_over_k_spread'], r['mean_consistent_points'], r['n_ladder']))
+        print('     band  %s   %d of %d models R_sd(k20) < 0.8   mean R_sd %.3f'
+              % (ADD['verdict_band'], ADD['n_band_compressive'],
+                 sum(1 for r in ADD['rows'] if r['arm'] == 'band'), ADD['mean_R_sd_band']))
+        print('     sham  %s   %d of %d models R_sd(k20) > 1.2   mean R_sd %.3f'
+              % (ADD['verdict_sham'], ADD['n_sham_explosive'],
+                 sum(1 for r in ADD['rows'] if r['arm'] == 'sham'), ADD['mean_R_sd_sham']))
+        print('     excluded: %s' % (', '.join(
+            '%s/%s (%s)' % (e['model'], e['arm'], e['why'])
+            for e in ADD['excluded_k1_only']) or 'none'))
+        print('     precision replicates reported but not voting: %s' % ', '.join(
+              '%s/%s R_sd %.3f' % (e['model'], e['arm'], e['R_sd'])
+              for e in ADD['precision_replicates']))
+        for cc in ADD['compressive_cells_pct_of_base']:
+            print('     CEILING CONTROL on the compressive cell %s/%s: |mean(k_top)| is %.1f%% of'
+                  % (cc['model'], cc['arm'], cc['pct_of_base']))
+            print('       the base margin, so a readout ceiling is NOT excluded there')
+        print('     distribution-free sign test  %d of %d cells in their arm s predicted'
+              % (ADD['sign_test_correct'], ADD['sign_test_cells']))
+        print('       direction   binomial tail for THIS count p = %.4f   (p if all were'
+              % ADD['sign_test_p'])
+        print('       correct would be %.6f -- a different event, and reporting it for this'
+              % ADD['sign_test_p_if_all'])
+        print('       outcome was the first version of this line)')
+        print('     THE FRAME CLAIM %s' % ('FIRES -- the single-head distribution does NOT'
+              ' determine the multi-head response'
+              if ADD['frame_claim_fires'] else 'does not fire'))
+        print()
 
     if MEA and 'error' not in MEA:
         print('MEA  WHAT SHARE OF THE FLOOR IS THE INSTRUMENT? the one component with no number')

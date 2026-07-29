@@ -87,6 +87,16 @@ one winning.
 > centroid *late*. **Cancellation, backup heads, negative heads and interaction terms all break the
 > inference**, and single-component effects are known to be badly non-additive — some
 > context-dependent heads have near-zero singleton effect and act only when other heads are present.
+>
+> > **⚠ That last clause was a BORROWED belief, and this repository's own data does not support it in
+> > the sense it was borrowed in.** R1's `k` ladder — `k ∈ {1,2,5,10,20}`, band and sham, four
+> > families, frozen since the first round and never analysed — was climbed on 2026-07-28. **Means
+> > compose:** `mean(k)/k` is constant across the ladder within its own standard errors. The
+> > departure is in **dispersion**, and it runs toward **expansion**, not the redundancy-implied
+> > compression: `R_sd(k=20)` averages `1.116` on the band and `2.005` on the sham against a null of
+> > additivity plus finite-population sampling. The citation may be right about other systems; **it
+> > was being carried here as though it had been checked here.** See
+> > `R1_noise_floor/ADDITIVITY_PREREGISTRATION.md`.
 > **A count of possible readers is not a magnitude of missed influence.**
 >
 > **The claim this page is entitled to:** `RELATIVE` is **compatible with an uncontrolled
