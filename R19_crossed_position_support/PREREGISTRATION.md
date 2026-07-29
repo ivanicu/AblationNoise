@@ -509,3 +509,51 @@ interpretation is corrected here instead, at the decision point, and the gate's 
 as *"baseline error rate plus a small increment"* rather than as a saturation measurement.
 
 Filed as `D131`.
+
+---
+
+# Amendment 7 — the lock is built and ATTACKED, and its first version's refusal path was broken
+
+Appended 2026-07-28, after the run landed and the checkpoint was consumed, which released `D129`'s
+lock-in.
+
+Two repairs, both owed and both blocked until now:
+
+- **`D126`** — an `O_EXCL` lock beside the checkpoint, holding the pid.
+- **`D129`** — a `--layers LO:HI` range, so each attempt can commit one layer inside the `5`–`20`
+  minute window between another session's preemptions.
+
+## A stale lock must not be fatal
+
+This job was SIGKILLed **eleven** times. A lock that outlives its owner would make the eleventh kill
+**permanent**, so a lock whose pid is dead is **taken over with a printed notice**, and only a lock
+whose pid is **alive** refuses. Missing, empty, garbage and unreadable are all treated as stale —
+**a guard that dies on malformed input converts a nuisance into an outage.**
+
+## The first version's refusal path was broken, and only attacking it showed that
+
+`acquire_lock` called `refuse` by name. **`refuse` is nested inside `main()`**, so the lock's own
+failure branch would have raised `NameError` instead of refusing — **it would have worked perfectly
+until the moment it mattered.** `refuse` is injected as an argument now.
+
+## Six vectors, actually performed — `attack_lock.py`, checked in
+
+```
+1. live owner, second runner            REFUSED   <- the whole point
+2. stale lock, pid 999999 (dead)        ACQUIRED  <- or the 11th kill is permanent
+3. garbage content, NUL and 0xff        ACQUIRED  <- must not crash
+4. empty file                           ACQUIRED  <- must not crash
+5. a different --out path               ACQUIRED  <- locks are per-output
+6. a real second PROCESS, live pid      rc=1, REFUSED_LOCKED
+```
+
+Vector `6` is the one that matters and it is the one the others cannot substitute for: `1` refuses
+within a single interpreter, where the pid is trivially alive. **`6` starts a genuinely separate
+process and is refused by pid**, which is the failure this lock exists to prevent.
+
+```bash
+python3 R19_crossed_position_support/attack_lock.py     # needs torch on the path
+```
+
+**The lock is now covered; the `--layers` range is not attacked** — it is a filter on a loop bound
+with no failure semantics of its own, and saying so is cheaper than pretending it was tested.

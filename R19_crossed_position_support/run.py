@@ -36,6 +36,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import math
 import random
 from pathlib import Path
@@ -131,6 +132,58 @@ def build_dataset(rooms, eligible):
     return items, elig
 
 
+
+def acquire_lock(out_path, refuse):
+    """O_EXCL lock beside the checkpoint. Owed to D126: the checkpoint is atomic against a KILL and
+    not against a SECOND RUNNER -- two processes each hold their own done_layers in memory and each
+    rewrite the whole file, so the later writer silently erases the other's progress and the
+    surviving cells are a mixture of two runs.
+
+    A STALE LOCK MUST NOT BE FATAL. This job was SIGKILLed eleven times; a lock that outlives its
+    owner would make the eleventh kill permanent. So a lock whose pid is dead is TAKEN OVER with a
+    printed notice, and only a lock whose pid is ALIVE refuses. Every failure mode of reading the
+    lock -- missing, empty, garbage, unreadable -- is treated as stale rather than crashing, because
+    a guard that dies on malformed input is a guard that converts a nuisance into an outage.
+
+    `refuse` is PASSED IN rather than looked up: the first version of this function called the
+    module's `refuse` by name, and `refuse` is nested inside main(), so the lock's own failure path
+    would have raised NameError instead of refusing. A guard whose refusal branch is broken is worse
+    than no guard, because it only fails when it matters.
+    """
+    lock = Path(str(out_path) + '.lock')
+    for _ in range(2):
+        try:
+            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+            os.write(fd, f'{os.getpid()}\n'.encode())
+            os.close(fd)
+            return lock
+        except FileExistsError:
+            pid = None
+            try:
+                pid = int(lock.read_text().split()[0])
+            except Exception:                                  # noqa: BLE001
+                pass                                           # garbage/empty -> treat as stale
+            alive = False
+            if pid:
+                try:
+                    os.kill(pid, 0)
+                    alive = True
+                except (ProcessLookupError, ValueError):
+                    alive = False
+                except PermissionError:
+                    alive = True                               # exists, owned by someone else
+            if alive:
+                refuse('REFUSED_LOCKED',
+                       f'another runner (pid {pid}) holds {lock.name}; two runners on one '
+                       f'checkpoint interleave layers and silently mix two runs')
+            print(f'  stale lock from pid {pid} -- owner is gone, taking it over', flush=True)
+            try:
+                lock.unlink()
+            except FileNotFoundError:
+                pass
+    refuse('REFUSED_LOCKED', f'could not acquire {lock.name} after a stale-lock takeover')
+
+
 def resolve_o_proj(layer):
     for an in ('self_attn', 'attention', 'attn', 'self_attention'):
         att = getattr(layer, an, None)
@@ -153,6 +206,12 @@ def main():
     ap.add_argument('--dtype', default='float32', choices=['float32', 'bfloat16'])
     ap.add_argument('--batch', type=int, default=32)
     ap.add_argument('--n-base', type=int, default=N_BASE, help='smoke-test override')
+    # D129: with another session preempting the GPU every 5-20 minutes, a run that must
+    # finish 28 layers in one sitting never finishes. --layers lets each attempt commit
+    # one layer inside the window; the checkpoint makes the attempts additive.
+    ap.add_argument('--layers', default=None,
+                    help='LO:HI half-open layer range, e.g. 26:28 -- each attempt '
+                         'commits what it finishes')
     args = ap.parse_args()
 
     N_BASE = args.n_base
@@ -297,6 +356,7 @@ def main():
     # 242 at 71m, both 'killed by system or user' with no traceback even under -u. The cause is
     # UNVERIFIED and may stay that way; what is fixable is the COST. Without this, a kill throws
     # away the entire run: 242 died at layer 13 of 28 and its restart began again at layer 1.
+    lock = acquire_lock(out_path, refuse)
     ckpt = Path(str(out_path) + '.ckpt')
     done_layers = set()
     res = {}
@@ -314,8 +374,12 @@ def main():
     n_cells_per_scope = len(items)
     flips = c['flips'] if (ckpt.exists() and done_layers) else {'final': 0, 'all': 0}
     Z = torch.zeros
+    lo_L, hi_L = 0, NL
+    if args.layers:
+        lo_L, hi_L = (int(x) for x in args.layers.split(':'))
+        print(f'  layer range restricted to [{lo_L}, {hi_L})', flush=True)
     for L in range(NL):
-        if L in done_layers:
+        if L in done_layers or not (lo_L <= L < hi_L):
             continue
         for h in range(NH):
             for scope in ('final', 'all'):
@@ -406,6 +470,10 @@ def main():
     print(f'  wrote {out_path}')
     if ckpt.exists():
         ckpt.unlink()
+    try:
+        lock.unlink()
+    except FileNotFoundError:
+        pass
 
 
 if __name__ == '__main__':
