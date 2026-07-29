@@ -1,4 +1,4 @@
-<!-- unbacked-ok: 17.2 24.3 41 500 700 35 -- the detector's own false-pass rate, which cannot
+<!-- unbacked-ok: 37.5 17.2 24.3 41 500 700 35 -- the detector's own false-pass rate, which cannot
  enter the reference set without infinite recursion (measuring it requires building the set).
  17.2% was measured 2026-07-28 at ~500 reference values, 24.3% the same day at >700. The LIVE
  figure is printed by every `make verify` run, so these two are dated history, not the current
@@ -344,3 +344,66 @@ separately.**
 **I predict the observed ICC lands in `[0.2, 0.8]`** — inside the band where `64` bases cannot
 separate the hypotheses — **and that the honest verdict is therefore UNRESOLVED.** If it lands
 outside that band, this row is the record that I was wrong about my own design's resolution.
+
+---
+
+## THE FIRST REAL ADVERSARY RAN, 2026-07-28 — and it hit the one list I said it would not
+
+Every scoring above was self-scoring. On 2026-07-28 Ivan removed the standing block on dispatching
+subagents (*「我永远允许你跑agent」*), and three independent clean-context reviewers were dispatched
+with a single mandate: move claims **down**. This section records the first to return.
+
+### It hit `What I predict the adversary will NOT find`, bullet one
+
+That list opens with **"a fabricated or unreproducible number"** and closes with:
+
+> **If the adversary finds one of these three, the failure is worse than any row above** — it means
+> the part of the process I trust most is the part that was broken.
+
+It found one. `README.md` stated the defect ledger held **`120`** rows while it held **`122`** — and
+the sentence carrying the error is the one **advertising the completeness of the error record**.
+
+**Filed as `D123`, `found_by: outside_reader`.** It is not fabricated; it is stale, which still
+satisfies *unreproducible*: no generator emits `120` as a ledger count.
+
+### Why both instruments were blind, which is the part worth keeping
+
+| checker | what it compares | why it missed this |
+|---|---|---|
+| `headline.py --check` | **emitter** against a hardcoded expectation | it never reads that sentence |
+| `detectors/prose_numbers.py` | **prose** against the emitter | **it cannot see bare integers** — a blind spot it declares and asserts in its own selftest, case 7 |
+
+**A prose integer is checked by neither.** And `120` collides with the `n = 120` item count used
+throughout, so a human eye slides past it too. This is the same shape as the fence blind spot
+measured one step earlier — `37.5%` of this repository's numbers are never drift-checked — and it is
+the second demonstration in two steps that *"every number is recomputed"* is a claim about a
+**population**, not about every number.
+
+### What the reviewer did NOT break, stated because it cuts the other way
+
+It independently recomputed the transport table from `headline.py::floor_transport()` and reported
+that **every digit on the front page reproduces**, including the layer-axis row. It also went looking
+for a fabricated number and reported finding that the repository had already filed the ones it found
+against itself. **That is a positive control on this whole exercise**: a reviewer that returns only
+hits is not obviously distinguishable from a reviewer that pattern-matches, and this one returned a
+verified reproduction as well as a break.
+
+### And it named an `L1` failure no instrument here can measure
+
+Its judgement: quality first drops at **the first screen**, because four stacked `⚠` self-limiting
+blockquotes and `83` lines of caveats precede the first result — *"the front page argues the reader
+out of reading it before showing them anything worth reading"*, and *"the confession outranks the
+method in the reader's memory."* It records that the dip fully reverses at `L2` and that every deeper
+level went up.
+
+**That is a class of defect this repository has no instrument for**, because every instrument here
+checks whether a number is right, and none checks whether a reader ever reaches it. It is logged
+here rather than acted on inside the same step that received it.
+
+### Calibration update
+
+`A1`–`A8` scored `5.88%` clean, `A9`–`A13` scored `2.63%`. The **"will NOT find"** list has now also
+failed, on its first contact with something that was not me. Three separate estimands, one
+conclusion: **my forecasts about my own work — including my forecasts about which parts are safe —
+carry close to no information.** That is not a reason to stop writing them; `A3` reshaped the front
+page. It is a reason to never again treat one as evidence.

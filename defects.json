@@ -1107,6 +1107,15 @@
    "defect": "centred_null()'s interpretive clause inverted the sign of this repository's central quantity, and PAPER.md's copy of the same paragraph already carried a correction (D90) that walked past it",
    "operation": "R10_exhaustive/run.py:281 is drops[name].append(bm - margin(enc, cor)), so a POSITIVE drop means the ablated margin is LOWER -- the ablation HURT. The page read '+0.0479 ... ablating a random late-layer head IMPROVES the correct-answer margin more often than it hurts, 100 of 168'. Every number is right; one word inverts all of them, turning an unremarkable fact into a striking one. The centring statistic is SIGN-INDEPENDENT so no count moved, which is why proofreading the numbers could never have caught it. Corrected reading: L16H3 (-0.4668) and the copy head L22H7 (-0.1317) are heads the model does BETTER without on this task. The check also produced an unclaimed cross-experiment positive control: R10 reproduces all 8 of E132b's published effects, 8 of 8 in sign, max ratio deviation from 1 of 0.0001.",
    "found_by": "author_reading_the_object"
+  },
+  {
+   "id": "D123",
+   "round": "repo",
+   "bin": "PROVENANCE",
+   "commit": "e07c8d6",
+   "defect": "README.md stated the defect ledger held 120 rows while it held 122, and the sentence carrying the error is the one advertising the completeness of the error record",
+   "operation": "Found by an INDEPENDENT ADVERSARIAL READER, not by any instrument here -- the first defect in this repository located by something other than its author or his own detectors. Both checkers are structurally blind to it: headline.py --check compares the EMITTER against a hardcoded constant and never reads this sentence, while detectors/prose_numbers.py compares PROSE against the emitter but cannot see bare integers -- a blind spot it declares and asserts in its own selftest case 7. A prose integer is checked by NEITHER. 120 additionally collides with the n=120 item count used throughout. ADVERSARY.md's 'what I predict the adversary will NOT find' list opens with 'a fabricated or unreproducible number' and says a hit there is 'worse than any row above'. It was hit.",
+   "found_by": "outside_reader"
   }
  ]
 }
