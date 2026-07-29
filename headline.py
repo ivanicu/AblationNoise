@@ -3122,6 +3122,18 @@ def mechanism():
             out.append(_partial(ya, yb, [c[i] for i in idx]) if c else _spearman(ya, yb))
         return sum(out) / len(out), out
 
+    # ---- THIRD PREDICTOR: READOUT REACH, registered in ALIGNMENT_PREREGISTRATION.md and frozen
+    # from the weights by R6_intervention/results/readout_alignment_*.json, because `make verify`
+    # must run with no model download. align_h = ||P W_O^(h)||_F / ||W_O^(h)||_F with P onto the
+    # rank-3 room-contrast subspace. Scale-free by construction, so it is not magnitude again.
+    fa = HERE / 'R6_intervention' / 'results' / 'readout_alignment_qwen2.5-1.5b.json'
+    ALI = None
+    if fa.exists():
+        da = json.load(open(fa))
+        ph = da['per_head']
+        ALI = [ph.get('L%dH%d' % k) for k in keys]
+        if any(a is None for a in ALI):
+            ALI = None
     wl_norm, per_norm = within(Y, NORM, DISP)
     wl_disp, per_disp = within(Y, DISP, NORM)
     wl_raw_norm, _ = within(Y, NORM)
@@ -3150,6 +3162,50 @@ def mechanism():
     pc = {'planted_partial_norm': _partial(planted, NORM, DISP),
           'planted_partial_disp': _partial(planted, DISP, NORM)}
 
+    ali = None
+    if ALI:
+        # partial controlling MAGNITUDE, because the registered question is whether reach adds
+        # anything beyond size -- and against the SIMULATED random baseline, never against zero.
+        wl_ali, _ = within(Y, ALI, NORM)
+        nulls_a = []
+        for _ in range(N):
+            Yp = list(Y)
+            for x, idx in by_layer.items():
+                vals = [Y[i] for i in idx]
+                rng.shuffle(vals)
+                for i, val in zip(idx, vals):
+                    Yp[i] = val
+            nulls_a.append(within(Yp, ALI, NORM)[0])
+        nulls_a.sort()
+        pc_a = da['positive_control']
+        obs = da['observed']
+        ali = {'within_layer_partial_align_given_norm': wl_ali,
+               'pooled_partial_align_given_norm': _partial(Y, ALI, NORM),
+               'p': (1 + sum(1 for z in nulls_a if abs(z) >= abs(wl_ali))) / (1 + N),
+               'null_975': nulls_a[int(.975 * N)],
+               'raw_align_vs_norm': _spearman(ALI, NORM),
+               'random_baseline_mean': pc_a['random_null_mean'],
+               'analytic_baseline': pc_a['analytic_sqrt_3_over_d'],
+               'planted_inside': pc_a['planted_inside_subspace'],
+               'planted_orthogonal': pc_a['planted_orthogonal'],
+               'observed_median': obs['med'], 'observed_min': obs['min'], 'observed_max': obs['max'],
+               'median_over_baseline': obs['med'] / pc_a['random_null_mean'],
+               'max_over_baseline': obs['max'] / pc_a['random_null_mean'],
+               'n_above_null_p95': obs['n_above_null_p95'],
+               'expected_above_p95_by_chance': 0.05 * len(keys),
+               'verdict': ('ALIGNMENT-MATTERS' if wl_ali >= 0.30 else
+                           'ALIGNMENT-IRRELEVANT' if abs(wl_ali) < 0.15 else 'MIXED'),
+               'three_predictor_unexplained': 1 - wl_norm ** 2 - wl_disp ** 2 - wl_ali ** 2,
+               # EVERY DERIVED NUMBER THE WRITE-UP QUOTES IS EMITTED, because hand arithmetic in
+               # prose is the defect D122 filed against this repository three paragraphs after it
+               # warned about hand arithmetic in prose.
+               'random_baseline_sd': pc_a['random_null_sd'],
+               'margin_over_null_975': wl_ali - nulls_a[int(.975 * N)],
+               'bonferroni_threshold_3_tests': 0.05 / 3,
+               'survives_bonferroni': ((1 + sum(1 for z in nulls_a if abs(z) >= abs(wl_ali)))
+                                       / (1 + N)) < 0.05 / 3,
+               'pooling_inflates_align_by': (_partial(Y, ALI, NORM) / wl_ali if wl_ali else
+                                             float('nan'))}
     v = ('MAGNITUDE-DOMINATED' if (wl_norm >= 0.30 and wl_disp < 0.15) else
          'INFORMATION-DOMINATED' if (wl_disp >= 0.30 and wl_norm < 0.15) else
          'BOTH' if (wl_norm >= 0.30 and wl_disp >= 0.30) else
@@ -3165,7 +3221,7 @@ def mechanism():
             'null_p_norm': (1 + sum(1 for z in nulls_n if abs(z) >= abs(wl_norm))) / (1 + N),
             'null_p_disp': (1 + sum(1 for z in nulls_d if abs(z) >= abs(wl_disp))) / (1 + N),
             'null_975_norm': nulls_n[int(.975 * N)], 'null_975_disp': nulls_d[int(.975 * N)],
-            'positive_control': pc, 'n_layers_used': len(per_norm),
+            'positive_control': pc, 'n_layers_used': len(per_norm), 'alignment': ali,
             # THE LABEL IS NOT THE SIZE. A rank partial of 0.34 leaves ~89% of the ordering
             # unexplained, so 'MAGNITUDE-DOMINATED' means 'magnitude is the only one of the
             # two that registers at all', NOT 'magnitude explains the floor'. Emitted so the

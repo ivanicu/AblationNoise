@@ -1,3 +1,5 @@
+<!-- unbacked-ok: 2307.15771 2402.15390 2607.01940 -- arXiv identifiers for the self-repair
+ literature, not measurements; same class as the identifiers exempted at the top of README.md. -->
 # Pre-registration — can the head's write even REACH the readout? The third predictor
 
 Written 2026-07-28, **before the statistic was computed**, committed alone so git ordering rather than
@@ -101,3 +103,94 @@ consequence, and it is the one I expect.**
 One model, one metric, one task, `I_final`, `168` band heads, `n = 12` per layer. Direct path only:
 no MLPs, no composition with other heads, no attention pattern — a head's write may be routed through
 later layers, and this measures none of that. Correlation, not causation.
+
+---
+
+# Amendment 1 — the outcome
+
+Appended 2026-07-28 after running the frozen weight extraction and `mechanism()`. Thresholds
+unchanged.
+
+## Positive controls, all three exact
+
+| control | returned |
+|---|---|
+| projector rank | `3`, asserted in the extractor, not assumed |
+| planted head inside the subspace | `align = 1.0000` |
+| planted head orthogonal to it | `align = 0.0000` |
+| simulated random baseline | `0.0440 ± 0.0016` against the analytic `sqrt(3/1536) = 0.0442` |
+
+Perfect separation of the two planted cases, and the simulated null lands on the analytic value.
+**The instrument measures what its name says.**
+
+## The geometric fact, which is worth more than the correlation
+
+```
+observed readout reach over the 168 band heads
+  min 0.0288      median 0.0440      max 0.0746
+  random baseline 0.0440
+  median / baseline  0.9999x          max / baseline  1.6950x
+  above the null's 95th percentile: 42 of 168   (8.4 expected by chance)
+```
+
+**At the median, a band head's write is exactly as aligned with the room-contrast subspace as a
+random projection would be.** The entire observed range sits inside `1.7×` of chance. There is a real
+excess in the tail — `42` heads above the null's `p95` against `8.4` expected — but it is an excess of
+*small* deviations, not a population of readout-addressing heads.
+
+## Registered verdict: `MIXED`, and it does not survive multiplicity
+
+```
+within-layer partial (|centred effect|, align | mean_norm)   +0.1712   p = 0.0455   null 97.5th 0.1685
+pooled                                                       +0.3249
+align vs mean_norm                                           -0.0429   (nearly independent)
+```
+
+`0.1712` sits between the registered `0.15` and `0.30`, so the rule returns `MIXED`. **And it is
+`0.0027` above its own null's 97.5th percentile.** This is the third predictor tested against the same
+effect vector; at three tests the Bonferroni threshold is `0.0167` and the uncorrected `0.0455`
+**does not clear it**. Reported as MIXED-and-not-significant-after-correction, not as a positive.
+
+## The number that matters
+
+```
+unexplained rank variance   2 predictors  0.8777   ->   3 predictors  0.8484
+```
+
+Readout reach adds `2.9` percentage points. **Three static, weight-and-activation-derived predictors
+together account for about `15%` of the ordering, and `85%` remains.**
+
+> **No weight-only property tested here explains the width of the reference distribution.** That was
+> the branch registered as *"the outcome with the larger consequence, and the one I expect"*. It is
+> the outcome.
+
+## And it kills a sentence I wrote one step earlier
+
+`mechanism()`'s amendment says pooling **masks** rather than inflates, and used that to argue "pooled
+is conservative is not a general fact". It is worse than that:
+
+```
+magnitude    pooled +0.1299   within-layer +0.3388     pooling MASKS   (2.61x)
+alignment    pooled +0.3249   within-layer +0.1712     pooling INFLATES (1.8979x)
+```
+
+**The direction of the pooling bias is a property of the PREDICTOR, not of the dataset.** Same 168
+heads, same effect vector, same layers — and pooling moves one predictor up and the other down by
+comparable factors. So neither *"pooled inflates"* nor *"pooled masks"* can be carried as a rule; the
+within-layer computation has to be done every time, and any past claim defended by *"pooling would
+only have been conservative"* was defended by nothing.
+
+## What is left, stated as the research question rather than as a gap
+
+The residual `0.8484` is not explained by how much a head writes, how variable its write is, or
+whether its write can reach the readout at all. **What remains is not a property of the head — it is
+a property of what the rest of the network does when the head is gone.** That is compensation, it
+cannot be read off the weights, and the experiment is co-ablation:
+`2307.15771`, `2402.15390`, `2607.01940`.
+
+## Boundary
+
+One model, one metric, one task, `I_final`, `168` band heads, `n = 12` per layer, direct path only —
+no MLPs, no composition through later attention, no attention pattern. A head's write may be read and
+re-expressed by a later layer, and this measures none of that; a low direct reach does not mean a
+head cannot influence the margin.
