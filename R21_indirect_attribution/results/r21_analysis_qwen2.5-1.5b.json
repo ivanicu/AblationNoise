@@ -39,7 +39,7 @@
    "cancellation": NaN
   }
  },
- "verdict": "MIXED",
+ "verdict": "UNVERIFIED_CONTROL_1_FAILED",
  "top_class": "att",
  "n_comparator_stable": 44,
  "spearman_err_vs_comparator_flip": 0.4831476732348882,

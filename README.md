@@ -605,6 +605,35 @@ last-layer heads: ATT is exactly 0, and 0 from any later layer      structural c
 OWN vs R20's independently measured `direct`:  Spearman +0.9068
 ```
 
+> ### ⚠ **`D169` — the registered verdict is `UNVERIFIED`, not `MIXED`, and `analyze.py` was dropping its own failed control out of its own gate.**
+>
+> The pre-registration registers *"`UNVERIFIED` | either identity control below fails"*. Control 1
+> failed at `1.971574097241418` against `0.012175927323649789` — a `162x` overshoot — and the gate
+> read `(ok_id_stable and ok_last and ok_own)`. **`ok_id` was not in it.** The failure survived as a
+> printed banner and the run went on to print `MIXED`. A second reviewer found it; **two reviews and
+> I had walked past it**, and the substitution was authored `21` minutes after the data that made the
+> registered gate fail, in the same commit. `ok_id` is now in the gate, and the fix is attacked in
+> [`attacks/attack_gate.py`](R21_indirect_attribution/attacks/attack_gate.py) — a gate that can only
+> fail is worth as little as one that can only pass, so both branches are shown reachable
+> (`CONFIRMED`).
+>
+> **And the verdict word is not coming back, because the quantity is not identified.**
+> [`tools/sensitivity_surface.py`](R21_indirect_attribution/tools/sensitivity_surface.py) computes
+> the class share over `8` defensible populations × `3` defensible denominators:
+>
+> ```
+> ATT share over 24 cells    min 0.3734   max 1.0421   range 0.6687
+> ATT is the top class in    21 of 24        ATT >= 0.50 in  19 of 24
+> the registered cell        0.4845      <- one of only 5 below 0.50
+> the CONTROL-PASSING cell   0.5294      <- the registered statistic, on the only population
+>                                           whose identity control passes, gives the OPPOSITE side
+> ```
+>
+> **The registered `0.50` threshold lies inside the range.** So the honest reading is a direction and
+> not a magnitude: **`ATT` is the largest class almost everywhere (`21` of `24`), and its share is not
+> resolved to anything like the precision the threshold demands.** The published `MIXED` was one cell
+> of twenty-four — and the cell whose control failed. **No verdict word replaces it.**
+
 > ### ⚠ **RETRACTED, `D159`–`D167`. An independent reviewer returned `9` confirmed findings, and the predictions I registered before dispatching it caught `5`.**
 >
 > **① There are ZERO non-tautological controls left in this round.** `D157` retracted the first as a
@@ -933,7 +962,7 @@ because the query that killed the `OV` claim was not aimed at transport. **Aimed
 > cited here or trivially findable.
 >
 > **What it still is:** a worked audit of one prior experiment, carried out in public, with an
-> unusually complete error record — `174` rows, each naming what was wrong and what the operation on
+> unusually complete error record — `175` rows, each naming what was wrong and what the operation on
 > it was.
 >
 > > **⚠ `D123` — this said `120` for two rows, and BOTH of this repository's checkers are blind to

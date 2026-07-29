@@ -126,12 +126,26 @@ def main():
               f"{'PASS' if rho_own >= OWN_VS_R20_SPEARMAN else 'FAIL'}")
     ok_own = rho_own >= OWN_VS_R20_SPEARMAN
 
-    if not (ok_id_stable and ok_last and ok_own):
-        print('\n  -> UNVERIFIED: even the comparator-stable subgroup fails. Not an acquittal.')
-        return 3
-    if not ok_id:
-        print('\n  ** THE CONTROL AS REGISTERED FAILED. ** What follows is read under the repair '
-              'above, which is post hoc. The shares are reported on BOTH populations.')
+    # D169. THE REGISTERED GATE IS `ok_id`, AND FOR ONE COMMIT IT WAS NOT IN THE GATE.
+    # PREREGISTRATION.md registers `UNVERIFIED | either identity control below fails`. Control 1
+    # failed at 1.9716 against 0.012176 -- a 162x overshoot -- and this line gated on
+    # `(ok_id_stable and ok_last and ok_own)`, where ok_id_stable is a post-hoc subgroup that
+    # appears in no pre-registration. The failure survived only as a printed banner and the run
+    # went on to print `REGISTERED VERDICT: MIXED`.
+    #
+    # A second reviewer found it. Two reviews and I had walked past it, and the substitution was
+    # authored 21 minutes after the data that made the registered gate fail, in the same commit.
+    # `ok_id` is now in the gate, which is what the pre-registration says, so this round's
+    # registered verdict is UNVERIFIED and the class shares below are printed as a SENSITIVITY
+    # SURFACE with no verdict word rather than as a measurement.
+    if not (ok_id and ok_id_stable and ok_last and ok_own):
+        print('\n  -> UNVERIFIED, as registered: control 1 failed '
+              f'({max(e_r10):.6f} > {lim:.6f}). The comparator-stable subgroup is a POST-HOC '
+              'repair and cannot restore a registered verdict. Not an acquittal.')
+        print('     The shares below are a sensitivity surface, NOT a verdict.')
+        SENSITIVITY_ONLY = True
+    else:
+        SENSITIVITY_ONLY = False
 
     # ---- the registered statistic
     def share_table(pop):
@@ -182,8 +196,14 @@ def main():
     print(f'  median |ATT from layers strictly after the ablated one| {late:.6f}   '
           f'of median |ATT| {summary["att"]["median_abs_sum"]:.6f}')
 
-    print(f'\n  REGISTERED VERDICT: {verdict}   '
-          f'(top class {top.upper()} at {med[top]:.4f}, threshold {DOMINANCE})')
+    if SENSITIVITY_ONLY:
+        print(f'\n  REGISTERED VERDICT: UNVERIFIED   (the rule the shares WOULD have returned is '
+              f'{verdict}, top class {top.upper()} at {med[top]:.4f} against {DOMINANCE} -- '
+              f'printed as a sensitivity reading, not as a verdict)')
+        verdict = 'UNVERIFIED_CONTROL_1_FAILED'
+    else:
+        print(f'\n  REGISTERED VERDICT: {verdict}   '
+              f'(top class {top.upper()} at {med[top]:.4f}, threshold {DOMINANCE})')
     out = {'model': d['model'], 'n_items': d['n_items'], 'n_band': len(band),
            'controls': {'identity_self_max': max(e_self), 'identity_vs_r10_max': max(e_r10),
                         'identity_limit': lim, 'own_vs_r20_spearman': rho_own,

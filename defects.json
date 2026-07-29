@@ -1575,6 +1575,15 @@
    "defect": "the second review's own forbidden-file control had two states and the world had three, so a disclosed partial breach forced a VOID on a run that was mostly clean",
    "operation": "SECOND_REVIEW_PREREGISTRATION.md registered 'a run that opened a forbidden file is reported as VOID, not scored'. The attacker did not open README.md's forbidden block but a grep surfaced four lines of it (617, 643, 646, 647), which it disclosed unprompted and said it could not bound. The registered rule has no partial branch BECAUSE I DID NOT WRITE ONE. Fourth registered control in three rounds that could not express what actually happened. The breach direction is knowable and unfavourable: seeing the first review can only RAISE overlap, so the observed 9/13 = 0.6923 is an UPPER BOUND and SURFACE-DRIVEN is the verdict the breach favours. The briefer's control passed cleanly -- 38 paths, none forbidden, README.md never opened -- so the brief is uncontaminated and is published verbatim. Reported as a post-hoc reading with VOID standing as the registered outcome.",
    "found_by": "author_reading_the_object"
+  },
+  {
+   "id": "D175",
+   "round": "R21",
+   "bin": "STATISTIC",
+   "commit": "b9ba904",
+   "defect": "R21's class share is not identified -- it ranges from 0.3734 to 1.0421 across 24 defensible population x denominator cells, and the registered 0.50 threshold lies inside that range",
+   "operation": "tools/sensitivity_surface.py computes the share over 8 populations (registered band168, the comparator-stable 44 whose identity control passes, R20's usable 122, above/below R10's floor-as-fraction, above the layer sd per R7's operative convention, and the top and bottom effect-size quartiles) x 3 denominators (|c|/SUM|c| registered, c/SUM c whose shares sum to 1 and whose denominator IS the indirect term, and |c/SUM c|). ATT share min 0.3734, max 1.0421, range 0.6687. ATT is the top class in 21 of 24 cells and reaches 0.50 in 19 of 24. The registered cell is 0.4845 -- one of only FIVE below 0.50 -- and the control-passing cell is 0.5294, i.e. the registered statistic on the only population whose identity control passes lands on the OPPOSITE side of the registered threshold. So the published MIXED was one cell of twenty-four and the cell whose control failed. The honest output is the surface with NO VERDICT WORD: the direction is robust (ATT largest almost everywhere) and the magnitude is not resolved to anything like the precision a 0.50 threshold demands. POST HOC: the grid's shape was seen in a reviewer's report before this tool was written, which is exactly why no threshold is applied to it and why the round's verdict stays UNVERIFIED on control 1 rather than being recovered from a cell that looks better. Both branches of the repaired gate are shown reachable by attacks/attack_gate.py -- a gate that can only fail is worth as little as one that can only pass.",
+   "found_by": "author_reading_the_object"
   }
  ]
 }
