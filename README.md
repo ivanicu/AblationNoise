@@ -169,6 +169,36 @@ on sampling noise.**
 > **A scalar floor is not merely imprecise. Its bias depends on which way the configuration moved,
 > so no safety factor fixes it.**
 
+### The obvious remedy — divide by the task's margin — does not work either
+
+If the floor were a fixed fraction of the readout's dynamic range, reporting everything as
+`floor / baseline_margin` would make it portable. **R19 supplies a second task with its own margin,
+so this is now testable.**
+
+```
+task                  margin    floor_final   floor_all    floor/margin final    all
+R10/R18 room task     4.4768      0.4870        0.9766          0.1088         0.2181
+R19 crossed task      1.6357      0.3099        0.5780          0.1895         0.3533
+
+margin shrinks to  0.3654x        floor shrinks only to  0.6364x (final)  0.5918x (all)
+normalisation residual                   1.7417 (final)          1.6198 (all)
+```
+
+> **The floor is roughly `1.6`–`1.7×` WIDER relative to the dynamic range on the harder task**, and it
+> misses in the **same direction in both scopes** — the only internal replication `n = 2` can offer.
+> A floor cannot be made portable by expressing it as a fraction of the margin: **as the task gets
+> harder the reference distribution shrinks more slowly than the signal does.**
+>
+> **⚠ Two boundaries, and they are large. (1) POST HOC** — the numbers were seen before the question
+> was asked, so this carries no verdict word and no threshold. **(2) A BUNDLE change, not a transport
+> row** — R19's task differs from R10's in line count, prompt structure, item count **and** the
+> presence of a baseline-correct filter, while the table above changes exactly **one** factor per row
+> by design. That is why it is kept out of that table.
+>
+> **Registered forward prediction, before any third task exists:** on a task harder still than R19's,
+> `floor / margin` in the `final` scope will exceed R19's `0.1895`. If it does not, the direction
+> found here was an artefact of the bundle.
+
 ### It is the **scale** that fails to transport, not the centre
 
 Transporting `mu_A` and `floor_A` together cannot say *which* of them fails to travel — and the two

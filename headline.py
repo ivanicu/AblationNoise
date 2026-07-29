@@ -3061,6 +3061,59 @@ def _partial(x, y, z):
     return (rxy - rxz * ryz) / den
 
 
+def margin_normalisation():
+    """DOES DIVIDING BY THE TASK'S BASELINE MARGIN NORMALISE THE FLOOR AWAY? On two tasks, no.
+
+    The obvious remedy for a floor that does not transport is to stop reporting it in raw margin
+    units and express it as a fraction of the readout's dynamic range. Nobody in this repository had
+    tested it, and R19 supplies a SECOND task -- a different construction with its own baseline
+    margin -- on which to try.
+
+    ### THIS IS POST HOC AND THE NUMBERS WERE SEEN BEFORE THE QUESTION WAS ASKED. It is reported as
+    a measured observation with no verdict word, and the forward prediction it generates is
+    registered separately. Treating it as a test would be choosing a threshold from the answer.
+
+    ### AND IT IS A BUNDLE CHANGE, NOT A TRANSPORT ROW. R19's task differs from R10's in line count,
+    prompt structure, item count AND the presence of a baseline-correct filter. The transport table
+    changes exactly ONE factor per row by design; this changes several at once, so it cannot join it
+    and is kept separate.
+    """
+    f10 = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    f18 = HERE / 'R18_all_positions' / 'results' / 'r18_allpos_qwen2.5-1.5b.json'
+    r = r19()
+    if not (f10.exists() and f18.exists() and r and r.get('design')):
+        return None
+
+    def band_floor(path):
+        d = json.load(open(path))
+        L = {int(k): v for k, v in d['layers'].items()}
+        NH = len(L[14]['per_head'])
+        v = [L[x]['per_head'][str(h)] for x in range(14, 28) for h in range(NH)]
+        mu = sum(v) / len(v)
+        return 2 * math.sqrt(sum((z - mu) ** 2 for z in v) / (len(v) - 1)), abs(d['base_margin'])
+
+    ff10, m10 = band_floor(f10)
+    fa10, _ = band_floor(f18)
+    sm = r['metrics']['signed_margin_drop']
+    ff19, fa19, m19 = sm['floor_final'], sm['floor_all'], r['design']['baseline_margin_mean']
+    out = {'task_A': 'R10/R18 room task', 'task_B': 'R19 crossed task',
+           'margin_A': m10, 'margin_B': m19, 'margin_ratio_B_over_A': m19 / m10,
+           'floor_final_A': ff10, 'floor_final_B': ff19,
+           'floor_all_A': fa10, 'floor_all_B': fa19,
+           'floor_ratio_final': ff19 / ff10, 'floor_ratio_all': fa19 / fa10,
+           'floor_over_margin_final_A': ff10 / m10, 'floor_over_margin_final_B': ff19 / m19,
+           'floor_over_margin_all_A': fa10 / m10, 'floor_over_margin_all_B': fa19 / m19}
+    # If the floor were a fixed fraction of the dynamic range these would be 1.0. They are not, and
+    # they miss in the SAME DIRECTION in both scopes, which is the only internal replication n=2
+    # can offer.
+    out['normalisation_residual_final'] = out['floor_over_margin_final_B'] / out['floor_over_margin_final_A']
+    out['normalisation_residual_all'] = out['floor_over_margin_all_B'] / out['floor_over_margin_all_A']
+    out['same_direction_both_scopes'] = ((out['normalisation_residual_final'] - 1)
+                                         * (out['normalisation_residual_all'] - 1) > 0)
+    out['n_tasks'] = 2
+    return out
+
+
 def r19():
     """THIS REPOSITORY'S ONLY CONFIRMATORY EXPERIMENT, read from its frozen analysis.
 
@@ -4414,6 +4467,7 @@ def main() -> int:
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
     R19C = r19()
+    MNORM = margin_normalisation()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -4459,7 +4513,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
