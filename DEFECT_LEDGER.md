@@ -36,7 +36,7 @@ against, which is a fact about your directory and not about the ledger.
 ```
     STATISTIC      46      what quantity the number is
     PROVENANCE     42      whether the number has a generator at all
-    SCOPE          42      which population the claim covers
+    SCOPE          43      which population the claim covers
     CONTROL        40      what the control arm actually holds fixed
     UNCLASSIFIED   4
     INTERVENTION   4      what the operation physically writes / where / when
@@ -62,7 +62,7 @@ And the split is not uniform. Cross-tabulating the joint against who found it:
 ```
 joint            by the author   by an instrument   by an outside reader
 PROVENANCE          20               14                    4
-SCOPE               23                4                   12
+SCOPE               24                4                   12
 STATISTIC           23                3                   15
 CONTROL             20                4                   12
 UNCLASSIFIED         3                0                    0
@@ -122,12 +122,12 @@ unreachable at n=`22`.** `THIRTEEN-ONE-OFFS` needs `â‰¥5`, and even then the `â‰
 first and masks it. **One reachable outcome is not a test**, and `validate_defects.py` now prints
 the reachable set on every run so the collapse is stated rather than discovered.
 
-**What replaces it is the distribution, and that *is* informative.** Chi-square `67.25842696629213` against a
+**What replaces it is the distribution, and that *is* informative.** Chi-square `67.73743016759776` against a
 uniform null is reached by `0` of `20000` draws, so the permutation `p` is below this test's own
 resolution floor rather than equal to any number.
 
 ```
-PROVENANCE 42   SCOPE 42   STATISTIC 46   CONTROL 40   UNCLASSIFIED 4   INTERVENTION 4
+PROVENANCE 42   SCOPE 43   STATISTIC 46   CONTROL 40   UNCLASSIFIED 4   INTERVENTION 4
                                                      expected 24.0000 each
 ```
 

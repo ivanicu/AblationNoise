@@ -1,0 +1,60 @@
+{
+ "n_eight_in_band": 8,
+ "layer_multiset": {
+  "16": 1,
+  "17": 3,
+  "18": 1,
+  "19": 2,
+  "22": 1
+ },
+ "expected_overlap": 1.3333333333333333,
+ "arms": {
+  "I_final": {
+   "with_the_eight_in_pool": {
+    "T_pub": 0.11539496999411354,
+    "null_median": 0.16849325020161887,
+    "p": 0.8069038619227615
+   },
+   "with_them_removed": {
+    "T_pub": 0.11539496999411354,
+    "null_median": 0.1875828588056186,
+    "p": 0.8898422031559369
+   },
+   "delta_p": 0.08293834123317534,
+   "published_p": 0.8069038619227615,
+   "positive_control_reproduces_published": true
+  },
+  "I_all": {
+   "with_the_eight_in_pool": {
+    "T_pub": 0.3196238237240958,
+    "null_median": 0.4020287886025413,
+    "p": 0.6916861662766745
+   },
+   "with_them_removed": {
+    "T_pub": 0.3196238237240958,
+    "null_median": 0.4137449773531111,
+    "p": 0.7258854822903542
+   },
+   "delta_p": 0.03419931601367976,
+   "published_p": 0.6916861662766745,
+   "positive_control_reproduces_published": true
+  }
+ },
+ "matched_removal_null": {
+  "I_final": {
+   "n": 2000,
+   "median": 0.006879862402751957,
+   "p05": -0.08831823363532731,
+   "p95": 0.07131857362852745,
+   "percentile_of_observed": 0.9805
+  },
+  "I_all": {
+   "n": 2000,
+   "median": 0.005379892402151976,
+   "p05": -0.15327693446131074,
+   "p95": 0.11215775684486307,
+   "percentile_of_observed": 0.647
+  }
+ },
+ "verdict": "LEAK-IMMATERIAL"
+}
