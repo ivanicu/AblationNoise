@@ -149,7 +149,7 @@ def r10():
     """
     import re as _re
     out = {}
-    for name, d in load('R10_exhaustive/results/*.json').items():
+    for name, d in load('R10_exhaustive/results/r10_exhaustive_*.json').items():
         layers = {int(k): v for k, v in d['layers'].items()}
         rows = []
         pe = r1_prior_effects()
@@ -3061,6 +3061,102 @@ def _partial(x, y, z):
     return (rxy - rxz * ryz) / den
 
 
+def enrichment_power():
+    """WHAT ENRICHMENT COULD THE CENTRAL NULL ACTUALLY HAVE DETECTED? Registered in
+    R10_exhaustive/POWER_PREREGISTRATION.md, committed before this code.
+
+    An independent adversarial reviewer returned, CONFIRMED, that set_enrichment()'s offered
+    positive control is an ARITHMETIC IDENTITY: `top8` is the argmax of the statistic over all
+    8-head subsets of the band, and every null draw is an 8-head subset of the same band, so
+    T(null) <= T(top8) with probability 1. It establishes nothing about power, and this
+    repository's own rule makes a null inadmissible without a positive control.
+
+    A REAL ONE PLANTS AN ENRICHMENT OF KNOWN SIZE AND MEASURES THE DETECTION RATE. Same
+    matched-layer distinct-per-layer test whose p is being interpreted -- a power curve for a
+    different test would answer a different question.
+
+    THE delta = 0 ROW GATES EVERYTHING ELSE. If the routine fires more often than alpha on
+    unplanted data it is measuring its own bias and no other row is readable.
+    """
+    import random as _r
+    import collections as _c
+    f = HERE / 'R10_exhaustive' / 'results' / 'r10_exhaustive_qwen2.5-1.5b.json'
+    pe = r1_prior_effects()
+    if not (f.exists() and pe):
+        return None
+    d = json.load(open(f))
+    L = {int(k): v for k, v in d['layers'].items()}
+    NH = len(L[14]['per_head'])
+    band = [(x, h) for x in range(14, 28) for h in range(NH)]
+    by_layer = {}
+    for k in band:
+        by_layer.setdefault(k[0], []).append(k)
+    v = {k: L[k[0]]['per_head'][str(k[1])] for k in band}
+    mu = sum(v.values()) / len(v)
+    sd = math.sqrt(sum((z - mu) ** 2 for z in v.values()) / (len(v) - 1))
+    mag = {k: abs(v[k] - mu) for k in band}
+    eight = [k for k in
+             sorted((int(x[1:x.index('H')]), int(x[x.index('H') + 1:])) for x in pe['effects'])
+             if 14 <= k[0] < 28]
+    cnt = _c.Counter(k[0] for k in eight)
+
+    N_PLANT, N_NULL, ALPHA = 300, 2000, 0.05
+    rng = _r.Random(20260728)
+
+    def draw():
+        st = []
+        for lay, c in cnt.items():
+            st += rng.sample(by_layer[lay], c)
+        return st
+
+    def fires(m, st):
+        t = sum(m[k] for k in st) / len(st)
+        hits = 0
+        for _ in range(N_NULL):
+            r = draw()
+            if sum(m[k] for k in r) / len(r) >= t:
+                hits += 1
+        return (1 + hits) / (1 + N_NULL) <= ALPHA
+
+    curve = []
+    for delta in (0.0, 0.25, 0.5, 1.0, 2.0, 4.0):
+        hit = 0
+        for _ in range(N_PLANT):
+            st = draw()
+            m = dict(mag)
+            for k in st:
+                m[k] = m[k] + delta * sd
+            hit += fires(m, st)
+        curve.append({'delta_sd': delta, 'power': hit / N_PLANT})
+
+    # MDE80 by linear interpolation on the swept grid. Reported as a GRID BOUND when power never
+    # reaches 0.80 -- an interpolated value beyond the sweep would be an extrapolation wearing an
+    # interpolation's clothes.
+    mde = None
+    for a, b in zip(curve, curve[1:]):
+        if a['power'] < 0.80 <= b['power']:
+            frac = (0.80 - a['power']) / (b['power'] - a['power'])
+            mde = a['delta_sd'] + frac * (b['delta_sd'] - a['delta_sd'])
+            break
+    obs = (sum(mag[k] for k in eight) / len(eight) - sum(mag.values()) / len(mag)) / sd
+    calib = curve[0]['power']
+    if not (calib <= 2 * ALPHA):
+        verdict = ('UNVERIFIED -- the delta=0 calibration fired at %.4f against a nominal %.2f, so '
+                   'no other row is readable' % (calib, ALPHA))
+    elif mde is None:
+        verdict = ('NULL IS UNDERPOWERED -- power never reached 0.80 anywhere on the swept grid, so '
+                   'MDE80 exceeds %.2f sd' % curve[-1]['delta_sd'])
+    else:
+        verdict = ('NULL IS INFORMATIVE' if obs >= mde else 'NULL IS UNDERPOWERED')
+    return {'n_band': len(band), 'n_set': len(eight), 'band_sd': sd, 'band_mean_effect': mu,
+            'n_plant': N_PLANT, 'n_null': N_NULL, 'alpha': ALPHA,
+            'curve': curve, 'calibration_at_zero': calib,
+            'mde80_sd': mde, 'observed_enrichment_sd': obs,
+            'observed_enrichment_absolute': obs * sd,
+            'mde80_absolute': mde * sd if mde is not None else None,
+            'verdict': verdict}
+
+
 def mechanism():
     """WHY IS THE REFERENCE DISTRIBUTION WIDE? Magnitude or informativeness, on frozen data.
 
@@ -4106,6 +4202,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    POW = enrichment_power()
     MECH = mechanism()
     ADD = additivity()
     MEA = measurability()
@@ -4148,7 +4245,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0

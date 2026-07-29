@@ -1,0 +1,41 @@
+{
+ "n_band": 168,
+ "n_set": 8,
+ "band_sd": 0.24351854647299576,
+ "band_mean_effect": 0.047909388561097395,
+ "n_plant": 300,
+ "n_null": 2000,
+ "alpha": 0.05,
+ "curve": [
+  {
+   "delta_sd": 0.0,
+   "power": 0.043333333333333335
+  },
+  {
+   "delta_sd": 0.25,
+   "power": 0.13333333333333333
+  },
+  {
+   "delta_sd": 0.5,
+   "power": 0.35333333333333333
+  },
+  {
+   "delta_sd": 1.0,
+   "power": 0.8933333333333333
+  },
+  {
+   "delta_sd": 2.0,
+   "power": 1.0
+  },
+  {
+   "delta_sd": 4.0,
+   "power": 1.0
+  }
+ ],
+ "calibration_at_zero": 0.043333333333333335,
+ "mde80_sd": 0.9135802469135803,
+ "observed_enrichment_sd": -0.12262708342967389,
+ "observed_enrichment_absolute": -0.02986196911501697,
+ "mde80_absolute": 0.22247373381483565,
+ "verdict": "NULL IS UNDERPOWERED"
+}

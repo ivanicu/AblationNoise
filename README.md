@@ -715,6 +715,30 @@ eight published heads are, on average, **less** extreme than random heads from t
 > by `|centred|` is reached by only `0` of `50000` matched sets, so the test can separate. Null calibration: `200`
 > random matched sets fall under `0.05` at a rate of `0.065` against a nominal `0.05`.
 >
+> > **⚠ `D124` — that positive control is an ARITHMETIC IDENTITY, and an independent adversarial
+> > reviewer found it, not any instrument here.** `top8` is by construction the argmax of the test
+> > statistic over all `8`-head subsets of the band, and every null draw is an `8`-head subset of the
+> > same band, so `T(null) <= T(top8)` with probability `1`. It establishes nothing about power. By
+> > this repository's own rule — a null is inadmissible until its instrument passes a positive
+> > control — the central negative claim was `UNVERIFIED`.
+> >
+> > **A real positive control plants an enrichment of known size and measures the detection rate.**
+> > Same matched-layer distinct-per-layer test, `300` plantings x `2000` null draws per point:
+> >
+> > ```
+> > planted enrichment   0.00   0.25   0.50   1.00   2.00   4.00   (band sd)
+> > detection rate       .0433  .1333  .3533  .8933  1.000  1.000
+> > ```
+> >
+> > **The `delta = 0` row is the calibration gate and it passes: `0.0433` against a nominal `0.05`.**
+> > `MDE80 = 0.9136` sd `= 0.2225` in margin units. The eight's observed enrichment is
+> > **`-0.1226` sd** — they are *below* the band average, not above it.
+> >
+> > **So the null is no longer `UNVERIFIED`; it is a BOUNDED ABSENCE.** The correct statement is not
+> > *"the eight are not enriched"* but: **a set-level enrichment of `0.9136` sd or more would have
+> > been caught at a rate of `0.8933`, and what was observed is `-0.1226` sd.** Enrichments below
+> > `0.9136` sd are not excluded by this test and never were.
+>
 > **Layer matching is not decoration.** The eight sit in `L16`–`L22`, magnitude varies strongly with
 > depth, and an unmatched null would manufacture enrichment out of nothing but where the heads live.
 

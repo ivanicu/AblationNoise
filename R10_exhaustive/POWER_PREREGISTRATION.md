@@ -87,3 +87,72 @@ have resolution. That defence is what is being tested here.**
 One model, one metric, one task, `I_final`, `168` band heads, `n = 8` in the tested set. A power
 curve is computed under an **additive** enrichment on the centred magnitude; a multiplicative or
 sparse enrichment would give a different MDE and is not tested. Nothing here is about `I_all`.
+
+---
+
+# Amendment 1 — the outcome, and a defect in the registered rule itself
+
+Appended 2026-07-28 after running `enrichment_power()`. **The thresholds above are unchanged and the
+verdict they produce is honoured**, but running them exposed that one of them was badly written.
+
+## Calibration gate: PASSES
+
+```
+detection rate at delta = 0     0.0433      nominal alpha  0.05
+```
+
+The routine does not fire more often than nominal on unplanted data, so every other row is readable.
+
+## The power curve
+
+```
+planted enrichment (band sd)   0.00    0.25    0.50    1.00    2.00    4.00
+detection rate                 .0433   .1333   .3533   .8933   1.000   1.000
+
+MDE80 = 0.9136 sd  =  0.2225 in margin units      (band sd = 0.2435)
+observed enrichment of the eight = -0.1226 sd  =  -0.0299 in margin units
+```
+
+Both edge controls hold: it approaches `alpha` at zero and saturates at `1` by `2` sd. **The
+instrument has real resolution — it is not blind.**
+
+## Registered verdict: `NULL IS UNDERPOWERED` — and the rule that produced it is wrong
+
+The rule was *"observed enrichment `>= MDE80` → informative, else underpowered"*. Observed is
+`-0.1226`, so it fires `UNDERPOWERED`.
+
+**That rule asks the wrong question, and it is this repository's own named failure class — a claim
+whose test is not its own statement — committed inside a pre-registration.** For a *null* claim, the
+relevant question is never *"is the observed effect large enough to be detected"* (when the claim is
+absence, the observed effect is near zero **by hypothesis**, so the rule fires `UNDERPOWERED`
+whatever the test's true resolution). The relevant question is *"what magnitude of enrichment can be
+excluded"*. The rule I wrote could not return `INFORMATIVE` for any true null. **It was a check that
+could only fail.**
+
+Recorded rather than quietly re-specified, because a pre-registration that repairs itself after
+seeing the data is not a pre-registration.
+
+## What the numbers actually license
+
+> **A set-level enrichment of `0.9136` sd or more would have been detected at a rate of `0.8933`. What
+> was observed is `-0.1226` sd.**
+
+That is a **bounded absence**, and it is strictly more than the bare `p = 0.8069` said. The adversary
+was right that the old positive control was void; the replacement shows the test is calibrated and
+has resolution, so the central claim moves:
+
+```
+before   "the eight are not enriched", p = 0.8069, positive control VOID       -> UNVERIFIED
+after    enrichments >= 0.9136 sd excluded at `0.80` power; observed -0.1226 sd   -> BOUNDED ABSENCE
+```
+
+**And the bound is what must now be quoted.** Enrichments below `0.9136` sd are not excluded by this
+test and never were — the front page said *"not enriched"* with no such qualifier for the whole life
+of the claim.
+
+## Boundary
+
+One model, one metric, one task, `I_final`, `168` band heads, `n = 8` in the tested set, additive
+enrichment on the centred magnitude. A multiplicative or sparse enrichment has a different `MDE` and
+is not tested. `300` plantings gives the detection rates a standard error near `0.02`, so `0.8933` is
+not distinguishable from `0.87` or `0.92` and `MDE80` is an interpolation on a coarse grid.
