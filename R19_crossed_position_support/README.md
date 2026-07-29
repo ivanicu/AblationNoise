@@ -1,4 +1,4 @@
-<!-- unbacked-ok: 23.6 -- the result file's size in megabytes, a measurement of a file rather
+<!-- unbacked-ok: 0.0066 -- the WRONG hand-subtracted value, quoted verbatim inside its own correction so the error can be read against the emitted 0.0065. No generator emits it, which is the point. 23.6 -- the result file's size in megabytes, a measurement of a file rather
  than a generated value; same class as the runtime figures exempted at the top of README.md. -->
 # R19 — the crossed *position × intervention-support* scan
 
@@ -29,6 +29,31 @@ H-support                   FALSE                FALSE               FALSE
 **`H-support` fails all four components on all three metrics.** *"A head"* and *"a head's write at
 the final query position"* are different objects — and that is now a confirmatory result, not an
 exploratory one.
+
+### The last escape hatch, closed with numbers from this same run
+
+`H-support` fails because `Spearman(final, all)` is `0.6778` against a registered `0.9`. The only
+remaining deflation is that `0.6778` is depressed by **measurement error** rather than by the two
+supports being different objects.
+
+**Both reliabilities are split-half over R19's own `64` bases** — same task, same items, same model,
+same run — so the ceiling is measured here rather than borrowed:
+
+```
+reliability ceiling  sqrt(r_xx * r_yy) = 0.9904        r_xx 0.9918 (final)   r_yy 0.9891 (all)
+
+metric                 raw        disattenuated     still below 0.9
+signed_margin_drop    0.6778         0.6844               yes
+room_set_kl           0.5314         0.5366               yes
+behavioural_flip      0.4991         0.5039               yes
+```
+
+**Correcting for measurement error moves the primary metric by `0.0065`.**
+*(This line said `0.0066` for one gate run — hand-subtracted from the two displayed digits instead of read from the emitter. Corrected from `r19()`; the emitter now returns the shift so the subtraction never happens in prose.)* The gap to the registered
+threshold is not noise, and `H-support`'s failure survives on all three metrics. **This is the
+cleanest form of the transport claim anywhere in this repository** — one task, one item set, one
+model, one run, with both ceilings measured on the same data instead of imported from another
+experiment.
 
 ```
 ICC median                 0.4737               0.2921              0.0289     (threshold 0.50)

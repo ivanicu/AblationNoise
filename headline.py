@@ -3116,6 +3116,27 @@ def r19():
                             'centred_tau_final': b['final']['centred_tau'],
                             'in_top10_all': b['all']['in_top10'],
                             'verdict': 'CORRECT' if b['all']['in_top10'] else 'WRONG'}
+    # THE LAST ESCAPE HATCH ON H-SUPPORT, closed with numbers measured on THIS SAME DATA.
+    # H-support fails because Spearman(final, all) is 0.6778 against a registered 0.9. The only
+    # remaining deflation is that 0.6778 is depressed by measurement error rather than by the two
+    # supports being different objects. Both reliabilities are split-half over R19's own 64 bases --
+    # same task, same items, same model, same run -- so the ceiling is not borrowed from another
+    # experiment the way the R10/R11 disattenuation had to be.
+    sh = split_half()
+    if sh:
+        rxx, ryy = sh['r_yy_final_same_task'], sh['r_yy_all']
+        for name, v in out['metrics'].items():
+            v['disattenuated_final_vs_all'] = (v['spearman_final_vs_all']
+                                               / math.sqrt(rxx * ryy))
+            v['reliability_ceiling'] = math.sqrt(rxx * ryy)
+            v['still_below_registered_0_9'] = v['disattenuated_final_vs_all'] < 0.9
+            # how much the correction actually moved it -- emitted so the write-up never
+            # subtracts two of its own numbers in prose, which is D122's defect
+            v['disattenuation_shift'] = (v['disattenuated_final_vs_all']
+                                         - v['spearman_final_vs_all'])
+        out['reliability_ceiling'] = math.sqrt(rxx * ryy)
+        out['h_support_survives_disattenuation'] = all(
+            v['still_below_registered_0_9'] for v in out['metrics'].values())
     out['h_support_false_on_all_metrics'] = all(not v['h_support'] for v in out['metrics'].values())
     out['h_published_null_on_all_metrics'] = all(not v['h_published'] for v in out['metrics'].values())
     return out
