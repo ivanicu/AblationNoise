@@ -102,10 +102,25 @@ the measurement at its own author's prior work.**
 > kurtosis `+7.43` it is not a normal-theory threshold, and *"beyond 2 sd"* means only *"outside a
 > coarse scale of this particular reference population"*.
 >
-> **The confirmatory experiment this repository points at has not been run.** It is
-> [`R19`](R19_crossed_position_support/PREREGISTRATION.md): a crossed *position × intervention-support*
-> exhaustive scan. Until it lands, **no head-level statement here is confirmatory**, and every one of
-> them is about a **final-query head-output knockout**, written `I_final(L,h)`, not about "a head".
+> **The confirmatory experiment this repository points at HAS NOW RUN.** It is
+> [`R19`](R19_crossed_position_support/), a crossed *position × intervention-support* exhaustive
+> scan, pre-registered with six amendments and landed 2026-07-28 **at the eleventh attempt**. Every
+> statement outside it is still about a **final-query head-output knockout**, written
+> `I_final(L,h)`, not about "a head".
+>
+> **`H-support` is FALSE, confirmatorily, on all four components and all three metrics.**
+> Spearman `final × all` is `0.6778` against a required `0.9`; `top-10` overlap `4` of `10`. So
+> *"a head"* and *"a head's write at the final query position"* are different objects — which was
+> the exploratory finding of [R18](R18_all_positions/) and is now a confirmatory one, on a task
+> built independently of the eight.
+>
+> **`H-published` is NOT enriched** in either scope on any of the three metrics.
+> **`H-position` returns `FALSE` by `0.0263`** — and `ADVERSARY.md`'s `A16`, written before the
+> data, predicted exactly that the design could not resolve it. **`H-depth` is `UNTESTED`** by
+> pre-registration: two models is `n = 2`.
+>
+> **And the head I bet on lost.** `L17H0` was staked on the top `10` of `168`; it came `37th`.
+> Full verdicts: [`R19_crossed_position_support/README.md`](R19_crossed_position_support/README.md).
 
 ```bash
 git clone https://github.com/ivanicu/AblationNoise.git && cd AblationNoise && make verify
@@ -596,7 +611,7 @@ because the query that killed the `OV` claim was not aimed at transport. **Aimed
 > cited here or trivially findable.
 >
 > **What it still is:** a worked audit of one prior experiment, carried out in public, with an
-> unusually complete error record — `131` rows, each naming what was wrong and what the operation on
+> unusually complete error record — `132` rows, each naming what was wrong and what the operation on
 > it was.
 >
 > > **⚠ `D123` — this said `120` for two rows, and BOTH of this repository's checkers are blind to

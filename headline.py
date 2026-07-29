@@ -3061,6 +3061,66 @@ def _partial(x, y, z):
     return (rxy - rxz * ryz) / den
 
 
+def r19():
+    """THIS REPOSITORY'S ONLY CONFIRMATORY EXPERIMENT, read from its frozen analysis.
+
+    Pre-registered in R19_crossed_position_support/PREREGISTRATION.md with six amendments, all
+    committed before the data existed. Landed 2026-07-28 at the ELEVENTH attempt after ten
+    preemptions, survived by a per-layer checkpoint.
+
+    Every number R19's page quotes is emitted here rather than carried from the analysis run, and
+    the ICC MARGIN is emitted beside the verdict because H-position misses its registered 0.50 by a
+    quantity a reader must not have to subtract by hand: A16 predicted, before the data, that 64
+    bases could not resolve it, and the size of the miss is the evidence for that.
+    """
+    f = HERE / 'R19_crossed_position_support' / 'results' / 'r19_analysis_qwen2.5-1.5b.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    ICC_THRESHOLD = 0.50            # registered in Amendment 1, not chosen here
+    out = {'n_base': d['n_base'], 'metrics': {}, 'design': d.get('design', {})}
+    # D131's comparison, emitted rather than left as prose arithmetic: the saturation gate's
+    # floor is the task's error rate, so the only informative quantity is the EXCESS above it.
+    g = out['design']
+    if g.get('flip_rate_all') is not None and g.get('baseline_error_rate') is not None:
+        out['flip_excess_over_baseline_error'] = (g['flip_rate_all']
+                                                  - g['baseline_error_rate'])
+    for name, m in d['metrics'].items():
+        out['metrics'][name] = {
+            'spearman_final_vs_all': m['spearman_final_vs_all'],
+            'ci_lo': m['spearman_ci95'][0], 'ci_hi': m['spearman_ci95'][1],
+            'published_agree': m['published_agree'], 'top10_overlap': m['top10_overlap'],
+            'centroid_shift_norm': m['centroid_shift_norm'],
+            'h_support': m['h_support'], 'h_position': m['h_position'],
+            'h_published': m['h_published'],
+            'icc_median': m['icc_median'],
+            'icc_margin_below_threshold': ICC_THRESHOLD - m['icc_median'],
+            'p_position': m['p_position'],
+            'p_published_final': m['published']['final']['p'],
+            'p_published_all': m['published']['all']['p'],
+            'floor_final': m['floor_final'], 'floor_all': m['floor_all']}
+    if 'ov_prediction' in d:
+        o = d['ov_prediction']
+        out['ov_prediction'] = {'n_heads': o['n_heads'], 'kl_larger': o['kl_larger'],
+                                'margin_null': o['margin_null'], 'confirmed': o['confirmed'],
+                                'p_kl': o['tests']['room_set_kl']['p_one_sided'],
+                                'p_margin': o['tests']['signed_margin_drop']['p_one_sided'],
+                                'T_kl': o['tests']['room_set_kl']['T'],
+                                'null_kl': o['tests']['room_set_kl']['null_median'],
+                                'T_margin': o['tests']['signed_margin_drop']['T'],
+                                'null_margin': o['tests']['signed_margin_drop']['null_median']}
+    if 'l17h0_bet' in d:
+        b = d['l17h0_bet']
+        out['l17h0_bet'] = {'rank_all': b['all']['rank'], 'rank_final': b['final']['rank'],
+                            'n': b['all']['n'], 'centred_tau_all': b['all']['centred_tau'],
+                            'centred_tau_final': b['final']['centred_tau'],
+                            'in_top10_all': b['all']['in_top10'],
+                            'verdict': 'CORRECT' if b['all']['in_top10'] else 'WRONG'}
+    out['h_support_false_on_all_metrics'] = all(not v['h_support'] for v in out['metrics'].values())
+    out['h_published_null_on_all_metrics'] = all(not v['h_published'] for v in out['metrics'].values())
+    return out
+
+
 def split_half():
     """R19's SPLIT-HALF RELIABILITY, and the death of the scalar-up-to-scale rival.
 
@@ -4332,6 +4392,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    R19C = r19()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -4377,7 +4438,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -5695,7 +5756,7 @@ def main() -> int:
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
             # 39.810 at 121 rows; filing D122 moved it. The taxonomy statistic is a function of the
             # ledger, so every row changes it -- that is the design, not drift.
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 45.748, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 46.727, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -5779,9 +5840,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 131, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 36, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.160, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 132, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 37, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.091, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

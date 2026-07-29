@@ -327,6 +327,46 @@ def main():
         report['ov_prediction'] = {'n_heads': len(cop), 'tests': pred,
                                    'kl_larger': ok_kl, 'margin_null': ok_mg,
                                    'confirmed': bool(ok_kl and ok_mg)}
+    # ---- THE REGISTERED HEAD-LEVEL BET. PREREGISTRATION.md line 316 stakes L17H0 on the top 10
+    # of 168 by |centred tau^all| under signed_margin_drop, and says in its own words: "if it fails,
+    # the three-instrument convergence was a coincidence over 168 heads and this line is the record
+    # that I bet on it." THAT PREDICTION HAD NO SCORER -- it was registered in prose and this file,
+    # written before the data, never computed it. A registered bet nobody scores is not registered.
+    l17 = {}
+    for scope in ('all', 'final'):
+        c = cells(d, scope, 0)
+        tv = {k: sum(c[k]['base']) / nb for k in band}
+        mu = sum(tv.values()) / len(tv)
+        order = sorted(band, key=lambda k: -abs(tv[k] - mu))
+        rk = order.index((17, 0)) + 1 if (17, 0) in order else -1
+        l17[scope] = {'rank': rk, 'n': len(band), 'centred_tau': tv.get((17, 0), float('nan')) - mu,
+                      'in_top10': 0 < rk <= 10,
+                      'top10': ['L%dH%d' % k for k in order[:10]]}
+    print()
+    print('  --- REGISTERED HEAD BET: L17H0 in the top 10 of %d by |centred tau^all|' % len(band))
+    for scope in ('all', 'final'):
+        o = l17[scope]
+        print('      %-6s rank %3d of %d   centred tau %+.4f   -> %s'
+              % (scope, o['rank'], o['n'], o['centred_tau'],
+                 'CORRECT' if o['in_top10'] else 'WRONG'))
+    print('      top10 (all): %s' % ' '.join(l17['all']['top10']))
+    print('      VERDICT: %s' % ('CORRECT' if l17['all']['in_top10'] else
+                                 'WRONG -- the three-instrument convergence was a coincidence '
+                                 'over %d heads' % len(band)))
+    report['l17h0_bet'] = l17
+
+    # THE DESIGN PARAMETERS THE ANALYSIS ANALYSED, carried into the report so the write-up can
+    # quote them without headline.py loading a 23 MB result file. baseline_error_rate is emitted
+    # because D131 turns on comparing it against the saturation gate's flip rate, and a reader must
+    # not have to subtract by hand.
+    report['design'] = {'baseline_accuracy': d.get('baseline_accuracy'),
+                        'baseline_margin_mean': d.get('baseline_margin_mean'),
+                        'flip_rate_all': d.get('flip_rate_all'),
+                        'baseline_error_rate': (1 - d['baseline_accuracy']
+                                                if 'baseline_accuracy' in d else None),
+                        'n_prompts': d.get('n_prompts'), 'n_positions': d.get('n_positions'),
+                        'n_nuisance': d.get('n_nuisance'), 'n_layers': d.get('n_layers')}
+
     out = HERE / 'results' / f"r19_analysis_{d['model']}.json"
     json.dump(report, open(out, 'w'), indent=1)
     print(f"\n  wrote {out}")

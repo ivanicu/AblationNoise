@@ -1188,6 +1188,15 @@
    "defect": "R19's saturation gate counts cells where the correct room is not the argmax, which is already true for every baseline-INCORRECT item -- so its floor is the baseline error rate and it measures almost nothing about the ablation",
    "operation": "run.py:347 is `nflip += int((am < 0).sum())` with am = correct_logit - best_other_logit. R19 does NOT filter to baseline-correct items (R10 does, at run.py:274), and its baseline accuracy is 0.7412, i.e. an error rate of 0.2588. Observed flip rates: final 0.2587, all 0.2616 -- the final-scope value sits 0.0001 BELOW the baseline error rate and the all-scope value 0.0028 above it. The gate's pre-registered refusal at >50% therefore tests a quantity whose floor is set by the task's difficulty, not by the intervention, and on any task with >50% baseline error it would refuse regardless of what the ablation does. WHAT SURVIVES: metric index 2, `fl = (argmax != baseline_argmax)`, IS correctly referenced to the baseline argmax and is unaffected -- the data to do this right is present and the analysis uses it. WHAT THE CORRECTED READING SUGGESTS, stated as an observation and not a result because the counter is a NET (an ablation can also FIX a baseline-wrong item, reducing the count): once the floor is subtracted, I_final changes the answer on essentially no additional cells and I_all on about 0.28 percentage points. Found before the analysis ran; not fixed in run.py because D129 -- editing it would discard 27 of 28 layers.",
    "found_by": "author_reading_the_object"
+  },
+  {
+   "id": "D132",
+   "round": "R19",
+   "bin": "PROVENANCE",
+   "commit": "3f834b8",
+   "defect": "the L17H0 head-level bet was registered in prose and never given a scorer -- analyze.py, written before the data specifically so the analysis could not be tuned to it, did not compute the one prediction the pre-registration staked a head on",
+   "operation": "PREREGISTRATION.md stakes L17H0 on the top 10 of 168 by |centred tau^all| under signed_margin_drop and says 'if it fails, the three-instrument convergence was a coincidence over 168 heads and this line is the record that I bet on it'. When the data landed I had to compute the rank by hand from a scratchpad script, which is the mode this repository files against everyone else. A REGISTERED BET NOBODY SCORES IS NOT REGISTERED -- writing the analysis before the data protects against tuning, and it protects against nothing if a registered quantity is missing from it. Scorer added to analyze.py; the bet is WRONG, rank 37 of 168 under I_all and 45 under I_final.",
+   "found_by": "author_reading_the_object"
   }
  ]
 }
