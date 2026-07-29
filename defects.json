@@ -1170,6 +1170,15 @@
    "defect": "the checkpoint's own version guard makes the runner UNIMPROVABLE while a long job is partially done -- the fix that would let the job survive costs the work the guard protects",
    "operation": "_CODE_VERSION is sha256(run.py)[:8] and the resume path refuses any checkpoint whose version differs, on the correct reasoning that mixing two code versions' cells is a silent corruption. After ten preemptions the job stands at 26 of 28 layers with 26 and 27 -- both INSIDE the band the four hypotheses are scoped to -- still missing. The obvious repair is a --layers range so each attempt finishes one layer inside the ~5-20 minute window between preemptions, plus an O_EXCL lock for D126. BOTH REQUIRE EDITING run.py, WHICH DISCARDS ALL 26 LAYERS. The guard is not wrong; the tension is real and general: a version-hashed checkpoint creates lock-in exactly when a job is long enough to need one. Resolved by resubmitting UNMODIFIED and deferring both improvements until the run lands, because bypassing the guard on the grounds that 'this edit changes no number' is the same claim I made about batch 32 to 64, which changed whether the job could run at all.",
    "found_by": "author_reading_the_object"
+  },
+  {
+   "id": "D130",
+   "round": "R19",
+   "bin": "PROVENANCE",
+   "commit": "43bbf7d",
+   "defect": "`pueue kill -g` and `pueue kill -a` PAUSE the group as a documented side effect, so every submission after a group-kill sits Queued forever -- and D127 attributed the resulting stalls to an adversarial second session",
+   "operation": "Read from `pueue kill --help` on pueue 4.0.4: '-g, --group <GROUP>  Kill all running tasks in a group. This also pauses the group' and '-a, --all ... This also pauses all groups'. I resumed the gpu group at D128, and 25 minutes later it was paused again with my task 273 Queued and the card idle -- so D128's 'another session left it paused' was a one-off framing of a RECURRING mechanism. The kills recorded in D127 are real and directly observed, but the STALLS are a documented flag behaviour, not additional hostility, and the other session's own job 268 shows Failed(1) for the same reason. CORRECTS D127's attribution and corrects a standing rule in memory: 'kill and restart, never pause' is unachievable with the group form, because THE KILL IS A PAUSE. Checked my own wrapper first -- /home/ivan/.local/bin/gpu-run never calls pause, so it was not mine.",
+   "found_by": "author_reading_the_object"
   }
  ]
 }
