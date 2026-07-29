@@ -1,0 +1,31 @@
+{
+ "method": "split-half over bases 0-31 vs 32-63, Spearman-Brown to full length. ceiling_of_magnitude uses RANK correlations of |x - mean(half)|, matching analyze.py:187 which correlates |tau - mu|. ceiling_signed_pearson is the SUPERSEDED quantity: Pearson reliability of the SIGNED effect.",
+ "n_band": 168,
+ "n_base": 64,
+ "per_metric": {
+  "signed_margin_drop": {
+   "pearson_signed_final": 0.9917862315190659,
+   "spearman_magnitude_final": 0.9537183167215686,
+   "pearson_signed_all": 0.9890874505898294,
+   "spearman_magnitude_all": 0.9331940163913403,
+   "ceiling_of_magnitude": 0.9434003532368371,
+   "ceiling_signed_pearson": 0.9904359218360808
+  },
+  "room_set_kl": {
+   "pearson_signed_final": 0.9993710008066483,
+   "spearman_magnitude_final": 0.9823904894478148,
+   "pearson_signed_all": 0.9986071414484016,
+   "spearman_magnitude_all": 0.9903241591933265,
+   "ceiling_of_magnitude": 0.9863493475751518,
+   "ceiling_signed_pearson": 0.9989889981185754
+  },
+  "behavioural_flip": {
+   "pearson_signed_final": 0.9844978732773803,
+   "spearman_magnitude_final": 0.9064606113407724,
+   "pearson_signed_all": 0.9853250152620153,
+   "spearman_magnitude_all": 0.9046586691757621,
+   "ceiling_of_magnitude": 0.9055591920552686,
+   "ceiling_signed_pearson": 0.9849113574390623
+  }
+ }
+}

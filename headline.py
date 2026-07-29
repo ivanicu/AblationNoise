@@ -3149,6 +3149,11 @@ def r19():
             'icc_median': m['icc_median'],
             'icc_margin_below_threshold': ICC_THRESHOLD - m['icc_median'],
             'p_position': m['p_position'],
+            # THE COMPONENT THAT ACTUALLY DECIDES H-position, and it was the one field the
+            # write-up surface dropped while the near-miss ICC got a bespoke margin field.
+            # An independent reviewer found that; emitted now so it cannot be dropped again.
+            'spearman_line0_vs_posavg': m['spearman_line0_vs_posavg'],
+            'line0_margin_below_threshold': 0.8 - m['spearman_line0_vs_posavg'],
             'p_published_final': m['published']['final']['p'],
             'p_published_all': m['published']['all']['p'],
             'floor_final': m['floor_final'], 'floor_all': m['floor_all']}
@@ -3175,19 +3180,33 @@ def r19():
     # supports being different objects. Both reliabilities are split-half over R19's own 64 bases --
     # same task, same items, same model, same run -- so the ceiling is not borrowed from another
     # experiment the way the R10/R11 disattenuation had to be.
-    sh = split_half()
-    if sh:
-        rxx, ryy = sh['r_yy_final_same_task'], sh['r_yy_all']
+    fm = HERE / 'R19_crossed_position_support' / 'results' / 'r19_reliability_of_magnitude.json'
+    rel = json.load(open(fm)) if fm.exists() else None
+    if rel:
         for name, v in out['metrics'].items():
+            r = rel['per_metric'].get(name)
+            if not r:
+                continue
+            # THE CEILING MUST BE THE RELIABILITY OF THE QUANTITY BEING CORRELATED. analyze.py:187
+            # correlates |tau - mu| -- a centred MAGNITUDE -- and the ceiling used here was the
+            # PEARSON reliability of the SIGNED tau. Taking |centred| destroys information, so the
+            # signed reliability is HIGHER than the right one and the correction was biased toward
+            # flattering the conclusion. Now: rank-based split-half reliability of |centred|.
             v['disattenuated_final_vs_all'] = (v['spearman_final_vs_all']
-                                               / math.sqrt(rxx * ryy))
-            v['reliability_ceiling'] = math.sqrt(rxx * ryy)
+                                               / r['ceiling_of_magnitude'])
+            v['reliability_ceiling'] = r['ceiling_of_magnitude']
+            v['superseded_ceiling_signed_pearson'] = r['ceiling_signed_pearson']
+            v['superseded_disattenuated'] = (v['spearman_final_vs_all']
+                                             / r['ceiling_signed_pearson'])
+            # how much the WRONG ceiling understated the correction, emitted so the
+            # write-up never subtracts two of its own numbers -- D122, seven times now
+            v['understated_by'] = (v['disattenuated_final_vs_all']
+                                   - v['superseded_disattenuated'])
             v['still_below_registered_0_9'] = v['disattenuated_final_vs_all'] < 0.9
             # how much the correction actually moved it -- emitted so the write-up never
             # subtracts two of its own numbers in prose, which is D122's defect
             v['disattenuation_shift'] = (v['disattenuated_final_vs_all']
                                          - v['spearman_final_vs_all'])
-        out['reliability_ceiling'] = math.sqrt(rxx * ryy)
         out['h_support_survives_disattenuation'] = all(
             v['still_below_registered_0_9'] for v in out['metrics'].values())
     out['h_support_false_on_all_metrics'] = all(not v['h_support'] for v in out['metrics'].values())
@@ -3210,6 +3229,12 @@ def split_half():
     d = json.load(open(f))
     ryy = d['splits']['all']['r_full_spearman_brown']
     rxx = d['splits']['final']['r_full_spearman_brown']
+    # ### CORRECTED. These two are PEARSON reliabilities of the SIGNED per-head effect, and for a
+    # while they were fed to r19()'s disattenuation of a SPEARMAN over |centred| magnitudes. Two
+    # mismatches at once -- wrong coefficient family, and wrong quantity. Both are recorded in
+    # R19's README; the rank-based reliabilities OF |centred| live in the R19 analysis and are what
+    # r19() uses now. These are kept because the shape-rank amendment quotes them and because a
+    # reliability of the signed effect is a real quantity, just not that one.
     # DISATTENUATED WITH THE MEASURED r_yy, both correlations this repository has published for the
     # decisive pair: the pooled one and the within-layer one an adversary showed was the right
     # control. r_xx here is R11's final-scope reliability on R10's task, NOT R19's -- the two tasks
@@ -5831,7 +5856,7 @@ def main() -> int:
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
             # 39.810 at 121 rows; filing D122 moved it. The taxonomy statistic is a function of the
             # ledger, so every row changes it -- that is the design, not drift.
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 46.727, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 50.532, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -5915,9 +5940,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 132, 0),
-            ('LDG largest bin', DL['largest_bin'] if DL else -1, 37, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 9.091, 0.001),
+            ('LDG defect rows', DL['n'] if DL else -1, 141, 0),
+            ('LDG largest bin', DL['largest_bin'] if DL else -1, 38, 0),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 14.184, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
