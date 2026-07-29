@@ -966,7 +966,8 @@ RESOLVABLE at 2σ      8 of 8            DISTINGUISHABLE from a random head     
 > **`46%`** — also clear the sham floor. Clearing it is not a mark of distinction.
 >
 > **And "late-layer" was too coarse — corrected the step after it was written.** The fraction of a
-> layer's heads that clear the sham floor rises with depth (Spearman `+0.645` over `28` layers) but
+> layer's heads that clear the sham floor rises with depth (Spearman `+0.6494` over `28` layers — was
+> published as `+0.645` under a **wrong tie rule**, see the note below) but
 > **not monotonically**: it peaks at `83%` in `L16–L17` and falls back to `8%` by `L25`. `L25`
 > clears *less* often than `L11`. It is a **hump**, not a half, and the earlier wording — *"being
 > in the second half of the network"* — described a monotone rise that the data does not show.
@@ -976,6 +977,21 @@ RESOLVABLE at 2σ      8 of 8            DISTINGUISHABLE from a random head     
 > L8–10   8–17%       L15–17   67–83% ←peak L23–27    8–42%
 > ```
 >
+<!-- unbacked-ok: 0.645 -- the SUPERSEDED value, quoted verbatim beside its correction so the
+ retraction can be read against what it retracts. No generator emits it any more, by design: the
+ tie rule that produced it was fixed. -->
+
+> **⚠ The tie rule was wrong, and only one number moved.** This repository's Spearman assigned every
+> member of a tied group its group's **minimum** rank (`sorted(v).index(x)`), not midranks. It shipped
+> that way from the first Spearman written here. It surfaced on 2026-07-28 only because a second
+> `_spearman` was added lower in `headline.py`, silently shadowed the first, and moved this number —
+> **two definitions of one name is the only reason it was ever seen.** Blast radius, measured rather
+> than assumed by re-running eight verdict-bearing functions under both rules: `r18`,
+> `item_noise_bound`, `depth_sensitivity`, `r15`, `rank_vs_role`, `r1_floor_audit`, `r9`, `ov_copying`
+> — **all identical.** They correlate continuous values, which do not tie. Clearing *counts* are small
+> integers and tie constantly, which is exactly why this one number was the only casualty and why the
+> defect was invisible for twenty rounds.
+
 > > **`L22H7` is distinguishable from an early-layer head and indistinguishable from a late-layer
 > > one. Its ablation number carries *depth* information, not *role* information.**
 >

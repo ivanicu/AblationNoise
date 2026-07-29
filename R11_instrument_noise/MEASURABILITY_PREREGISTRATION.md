@@ -1,3 +1,7 @@
+<!-- unbacked-ok: 1.96 -- the two-sided normal quantile of the SUPERSEDED Bland-Altman design.
+ Amendment 1 replaced that design before it ran, so no generator emits this constant and none should:
+ it is kept because the abandoned design is kept, and a design deleted after being committed is a
+ record destroyed rather than corrected. -->
 # Pre-registration — the direct measurement `item_noise_bound()` said would need a re-run
 
 Written 2026-07-28, **before the statistic was computed**, committed alone so git ordering rather than
@@ -180,3 +184,93 @@ verdict** — a number reached by an unfit method is not vindicated by landing n
 
 One model, one metric, `I_final` only, `n = 120` items per arm, band `L14-27`. Every `sem` is the
 precision of a `120`-item mean.
+
+---
+
+# Amendment 2 — the outcome
+
+Appended 2026-07-28, after running `measurability()`. Thresholds above unchanged.
+
+## Positive controls
+
+| control | returned |
+|---|---|
+| per-head `sem` strictly positive on every band head | min `0.0013` — the instrument is not blind |
+| the retraction's own premise, at head level | `Spearman(|effect|, sem) = +0.5975` over `336` heads, `+0.4878` on the band, `+0.8259` layer-level |
+
+**The retraction was right, and its argument was the wrong one.** It quoted `+0.962` between a
+layer's mean `|drop|` and its **between-head spread** — a different pair of quantities. Against the
+actual error term the correlation is `+0.5975`, clearly positive but far weaker, so the premise
+survives while the number that supported it does not transfer.
+
+**And the dependence is strongly sublinear**, which is the part neither the claim nor its retraction
+saw: from the quietest layer to the loudest, `mean |effect|` rises `0.0080 → 0.2399` while `mean sem`
+rises only `0.0051 → 0.0134`. Effect grows about thirty-fold; noise grows under three-fold.
+
+## The number
+
+```
+item-sampling share of the band floor's variance   0.0194   95% CI [0.0064, 0.0413]
+                                          = 1.9436%   against the withdrawn 0.66%
+all 336 heads rather than the band                 0.0188
+mean sem 0.0169   band sd 0.2446   base margin 4.4177
+```
+
+**Verdict: `HETEROGENEITY-DOMINATED`** by the registered rule — the share and its entire CI sit below
+`0.05`. **At `n = 120` items the band floor is roughly `98%` true between-head heterogeneity.**
+
+**The withdrawn `0.66%` is reported, not vindicated.** It was low by a factor of about three and its
+own value sits at the very bottom of the corrected CI. A number produced by an unfit method is not
+made right by landing near the right answer, and the sublinear scaling above is exactly why the
+quiet-layer extrapolation ran low.
+
+## The scope that makes this a claim rather than a slogan
+
+`sem^2` scales as `1/n` and the true between-head variance does not, so:
+
+```
+item sampling reaches 25% of the floor only at n = 9.3 items
+                       5%                        n = 46.6 items
+```
+
+**`D6` — it assumes nothing else about the task changes with `n`.** But it converts *"item sampling
+is negligible"* into *"item sampling is negligible above roughly fifty items"*, which is a statement
+with a boundary. Every published number here uses `n = 120`.
+
+## What this does and does not settle
+
+**Settles:** one of the five components the front page says the reference distribution mixes now has
+a number and a CI, on one model and one metric.
+
+**Does not settle:** the other four. And it says nothing about `I_all`, which has no second item draw
+and no stored `sem` — so the `2.0051x` scale difference between the two intervention supports remains
+undecomposed.
+
+---
+
+# Amendment 3 — a name collision exposed a wrong tie rule that had shipped for twenty rounds
+
+Appended 2026-07-28. Not part of the registered design; found while running it.
+
+Adding a helper named `_spearman` for Amendment 2's positive control created a **second definition of
+a name that already existed** at `headline.py:180`. The later definition wins, and `make verify`
+immediately reported a published number had moved:
+
+```
+STALE: REF depth vs clearing rate is 0.6493557139430766, the README says 0.645
+```
+
+The original rank rule was `rk = lambda v: [sorted(v).index(x) for x in v]` — every member of a tied
+group receives the group's **minimum** rank. That is not a convention choice; it is the wrong rank
+transform for Spearman, which uses midranks.
+
+**Blast radius, measured rather than asserted.** Eight verdict-bearing functions re-run under both
+rules — `r18`, `item_noise_bound`, `depth_sensitivity`, `r15`, `rank_vs_role`, `r1_floor_audit`, `r9`,
+`ov_copying` — return **byte-identical output**. They correlate continuous quantities, which do not
+tie. Only `spearman_layer_vs_clearing_rate` moved, `+0.645 → +0.6494`, because clearing **counts** are
+small integers and tie constantly.
+
+**The lesson is the detection path, not the number.** A wrong tie rule that only bites on tied data,
+in a codebase whose Spearmans are mostly over floats, is invisible to every test that passes. It was
+caught by an accident — a duplicate name — and not by any check here. The repair is one definition,
+midranks, with the old rule recorded in the docstring rather than erased.

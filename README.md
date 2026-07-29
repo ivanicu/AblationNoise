@@ -177,6 +177,36 @@ qwen2.5-1.5b, band L14-27, four frozen conditions on one 168-head index
 > `0.7381`. **The degree of conditionality is itself conditional**, which is the finding this section
 > exists to state and the reason no single number belongs on the front page.
 
+### One of the five components now has a number: the instrument is `0.0194` of the floor
+
+The status block above says the reference distribution mixes at least five things. **Four of them
+have never been given a number, and the fifth had one that this repository withdrew** — *"at most
+`0.66%` of the floor's variance can be item sampling"*, killed for extrapolating a quiet layer's
+spread to the band. It was never recomputed. R11 stores per-head `sem`, so it can be:
+
+```
+var(measured effect over heads) = var(true effect) + mean(sem^2)
+
+  item-sampling share of the band floor's variance   0.0194   95% CI [0.0064, 0.0413]
+  all 336 heads rather than the band                 0.0188
+  mean sem 0.0169    band sd 0.2446    min sem 0.0013 (the instrument is not blind)
+```
+
+> **At `n = 120` items the band floor is dominated by true between-head heterogeneity, not by the
+> instrument.** The withdrawn `0.66%` is reported and **not** vindicated — it was low by about
+> threefold and sits at the very bottom of the corrected CI.
+>
+> **And this is a statement about `n`, not about the model.** `sem^2` scales as `1/n`, so item
+> sampling would reach `25%` of the floor only at `n = 9.3` items and `5%` at `n = 46.6` (`D6` — it
+> assumes nothing else changes with `n`). Every number here uses `n = 120`.
+>
+> **The retraction that killed the old figure was right, and its argument was not.** It cited
+> `+0.962` between a layer's mean `|drop|` and its *between-head spread*; against the actual error
+> term the correlation is `+0.5975` over `336` heads. The dependence is also strongly **sublinear** —
+> from the quietest layer to the loudest, effect rises `0.0080` → `0.2399` while `sem` rises only
+> `0.0051` → `0.0134`. **That sublinearity is exactly why the quiet-layer extrapolation ran low**, and
+> neither the claim nor its retraction had seen it.
+
 **And the confound written before the test is refuted in the useful direction.** `mu` and `floor` are
 not independent, so a "centre-driven" verdict could have been a spread effect wearing a location
 mask. Here it is the reverse: **the centre moves by almost exactly the same factor as the scale**

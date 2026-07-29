@@ -1,3 +1,8 @@
+<!-- unbacked-ok: 0.645 -- the value AS PRE-REGISTERED. On 2026-07-28 this repository's Spearman
+ was found to assign tied values their group's MINIMUM rank rather than midranks; corrected, the
+ quantity is 0.6494. THE PRE-REGISTRATION IS NOT EDITED TO MATCH, because a pre-registration whose
+ numbers move with later corrections cannot do the one job it exists for. The correction is recorded
+ in PAPER.md and in R11_instrument_noise/MEASURABILITY_PREREGISTRATION.md, Amendment 3. -->
 # R12 — is the hump a fact about depth, or a fact about `qwen2.5-1.5b`?
 
 Written and committed **while `qwen2.5-3b`'s exhaustive run was still executing** (task `59`,

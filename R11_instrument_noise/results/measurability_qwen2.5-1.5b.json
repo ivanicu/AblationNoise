@@ -1,0 +1,31 @@
+{
+ "source": "r11_itemsB",
+ "n_band": 168,
+ "n_all": 336,
+ "base_margin": 4.417667237917582,
+ "share_band": 0.019436180612625163,
+ "boot_lo": 0.006366589486639723,
+ "boot_hi": 0.04128707424493361,
+ "share_all_heads": 0.01884194123631097,
+ "withdrawn_claim_pct": 0.66,
+ "measured_pct": 1.9436180612625162,
+ "min_sem_band": 0.0013298599518390952,
+ "mean_sem_band": 0.016949197883734137,
+ "band_sd": 0.24457228958398747,
+ "spearman_effect_sem_heads": 0.5974919805381739,
+ "spearman_effect_sem_band": 0.48777845829895583,
+ "spearman_effect_sem_layer": 0.8259441707717571,
+ "quiet_layer": {
+  "layer": 1,
+  "mean_abs_effect": 0.007984124289618597,
+  "mean_sem": 0.005136752675501144
+ },
+ "loud_layer": {
+  "layer": 18,
+  "mean_abs_effect": 0.23985496825642058,
+  "mean_sem": 0.013393624581612818
+ },
+ "n_items_at_which_share_is_0.25": 9.329366694060079,
+ "n_items_at_which_share_is_0.05": 46.64683347030039,
+ "verdict": "HETEROGENEITY-DOMINATED -- item sampling negligible AT n=120, and only at n=120"
+}

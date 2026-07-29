@@ -178,7 +178,32 @@ def r10():
 
 
 def _spearman(a, b):
-    rk = lambda v: [sorted(v).index(x) for x in v]  # noqa: E731
+    """Spearman with MIDRANKS for ties.
+
+    ### CORRECTED 2026-07-28, and found by accident. The rank rule was
+    `rk = lambda v: [sorted(v).index(x) for x in v]`, which gives every member of a tied group the
+    group's MINIMUM rank. That is not a convention choice; it is the wrong rank transform, and this
+    repository's data is full of ties -- clearing COUNTS over layers are small integers, so most
+    layers tie with several others. It surfaced only because a second `_spearman` was added lower in
+    this file, silently shadowed this one, and moved a published number. TWO DEFS OF ONE NAME IS THE
+    ONLY REASON I SAW IT; the wrong tie rule had been shipping since the first Spearman was written.
+
+    Every number that moved is listed in R11_instrument_noise/MEASURABILITY_PREREGISTRATION.md,
+    Amendment 3.
+    """
+    def rk(v):
+        order = sorted(range(len(v)), key=lambda i: v[i])
+        r = [0.0] * len(v)
+        i = 0
+        while i < len(order):
+            j = i
+            while j + 1 < len(order) and v[order[j + 1]] == v[order[i]]:
+                j += 1
+            avg = (i + j) / 2.0 + 1
+            for k in range(i, j + 1):
+                r[order[k]] = avg
+            i = j + 1
+        return r
     x, y = rk(a), rk(b)
     n = len(x)
     mx, my = sum(x) / n, sum(y) / n
@@ -2806,6 +2831,15 @@ def item_noise_bound():
     item set and store `sd_over_items/sqrt(n)` per head. The runner already computes the per-item
     drops and throws them away.
 
+    ### ^ THAT PARAGRAPH WENT STALE ONE COMMIT LATER AND SAT HERE POINTING THE WRONG WAY. Commit
+    6890700 landed exactly that re-run: R11's runner stores `per_head_sem` per head, and the file
+    `R11_instrument_noise/results/r11_itemsB_qwen2.5-1.5b.json` has carried it ever since. It is
+    kept above rather than rewritten because a reader who sees only the correction loses the fact
+    that this sentence was ever true -- but AS AN INSTRUCTION IT IS VOID. On 2026-07-28 I read it,
+    believed it, and pre-registered a whole design to obtain a measurement that was already in the
+    directory this docstring names. A comment is a hypothesis; the data is the verdict, including
+    when the comment is mine. **The measurement is in `measurability()` below.**
+
     WHAT FALLS OUT IS SHARPER THAN THE FLOOR ITSELF. Placing the eight published effects against
     the item-noise bound rather than against the floor separates two things the phrase "inside the
     noise floor" had been conflating: NOT MEASURABLE (below the instrument's precision) and NOT
@@ -2907,6 +2941,99 @@ def defect_ledger():
             'largest_bin_name': max(bins, key=bins.get),
             'n_unclassified': bins.get('UNCLASSIFIED', 0),
             'cross_tab': inst}
+
+
+def measurability():
+    """WHAT SHARE OF THE FLOOR'S VARIANCE IS THE INSTRUMENT? The one component never given a number.
+
+    Registered in R11_instrument_noise/MEASURABILITY_PREREGISTRATION.md, Amendment 1, committed
+    before this code. THE ORIGINAL DESIGN IN THAT FILE IS SUPERSEDED AND THE AMENDMENT SAYS SO: it
+    proposed a Bland-Altman two-arm difference, which commit 6890700 had already beaten with a
+    within-run per-head SEM, and which is additionally contaminated because R11's two arms carry
+    different code_version stamps (b3aee67d, a6126d03). Kept in the file rather than deleted, because
+    a reader who sees only the surviving design cannot tell it replaced anything.
+
+    THE OPEN RESIDUE. item_noise_bound() above killed "at most 0.66% of the floor's variance can be
+    item sampling" for METHOD -- it extrapolated a quiet layer's spread to the band -- and never
+    recomputed it. Per-head SEM makes the decomposition direct:
+
+        var(measured effect over heads) = var(true effect) + mean(sem^2)
+        item-sampling share             = mean(sem^2) / var(measured effect)
+
+    This is one of the five components the front page says the reference distribution mixes, and the
+    only one that had no number.
+
+    THE POSITIVE CONTROL IS ALSO THE RETRACTION'S OWN PREMISE. item_noise_bound() argued that a quiet
+    head is quiet in BOTH terms, from a LAYER-level Spearman between mean |drop| and BETWEEN-HEAD
+    SPREAD -- which is not the error term. Correlating |effect| against the actual per-head sem tests
+    the premise directly, and a near-zero result would mean the retraction reached the right verdict
+    by the wrong argument.
+    """
+    import random as _r
+    fb = HERE / 'R11_instrument_noise' / 'results' / 'r11_itemsB_qwen2.5-1.5b.json'
+    if not fb.exists():
+        return None
+    d = json.load(open(fb))
+    L = {int(k): v for k, v in d['layers'].items()}
+    if 'per_head_sem' not in L[0]:
+        # WITHOUT THE ERROR TERM THIS IS THE QUIET-LAYER EXTRAPOLATION AGAIN. Refuse rather than
+        # substitute a proxy for the quantity the whole function is about.
+        return {'error': 'per_head_sem absent; the SEM route is unavailable in this file'}
+    NL, NH = len(L), len(L[0]['per_head'])
+    bm = abs(d['base_margin'])
+    heads = [(x, h) for x in range(NL) for h in range(NH)]
+    eff = {k: L[k[0]]['per_head'][str(k[1])] for k in heads}
+    sem = {k: L[k[0]]['per_head_sem'][str(k[1])] for k in heads}
+    band = [k for k in heads if k[0] >= 14]
+
+    def var(v):
+        m = sum(v) / len(v)
+        return sum((z - m) ** 2 for z in v) / (len(v) - 1)
+
+    def share(ks):
+        return (sum(sem[k] ** 2 for k in ks) / len(ks)) / var([eff[k] for k in ks])
+
+    sh = share(band)
+    rng = _r.Random(20260728)
+    NB = 10000
+    boot = sorted(share([band[rng.randrange(len(band))] for _ in range(len(band))])
+                  for _ in range(NB))
+
+    # POSITIVE CONTROL 1 -- an error term of zero would make this instrument as blind as the
+    # quiet-layer route it replaces, and would read as infinite precision rather than as a failure.
+    mn = min(sem[k] for k in band)
+    # POSITIVE CONTROL 2 -- the retraction's premise, tested at the level it actually concerns.
+    rho_head = _spearman([abs(eff[k]) for k in heads], [sem[k] for k in heads])
+    rho_band = _spearman([abs(eff[k]) for k in band], [sem[k] for k in band])
+    per_layer = [{'layer': x,
+                  'mean_abs_effect': sum(abs(eff[(x, h)]) for h in range(NH)) / NH,
+                  'mean_sem': sum(sem[(x, h)] for h in range(NH)) / NH} for x in range(NL)]
+    rho_layer = _spearman([r['mean_abs_effect'] for r in per_layer],
+                          [r['mean_sem'] for r in per_layer])
+
+    verdict = ('INSTRUMENT-DOMINATED -- component heterogeneity is not the floor s dominant term'
+               if sh > 0.25 else
+               'HETEROGENEITY-DOMINATED -- item sampling negligible AT n=120, and only at n=120'
+               if sh < 0.05 else
+               'INTERMEDIATE -- reported as a number, no verdict word')
+    return {'source': 'r11_itemsB', 'n_band': len(band), 'n_all': len(heads), 'base_margin': bm,
+            'share_band': sh, 'boot_lo': boot[int(0.025 * NB)], 'boot_hi': boot[int(0.975 * NB)],
+            'share_all_heads': share(heads),
+            'withdrawn_claim_pct': 0.66, 'measured_pct': 100 * sh,
+            'min_sem_band': mn, 'mean_sem_band': sum(sem[k] for k in band) / len(band),
+            'band_sd': math.sqrt(var([eff[k] for k in band])),
+            'spearman_effect_sem_heads': rho_head, 'spearman_effect_sem_band': rho_band,
+            'spearman_effect_sem_layer': rho_layer,
+            'quiet_layer': min(per_layer, key=lambda r: r['mean_abs_effect']),
+            'loud_layer': max(per_layer, key=lambda r: r['mean_abs_effect']),
+            # THE SHARE IS A FUNCTION OF n, NOT A PROPERTY OF THE MODEL. sem^2 scales as 1/n and
+            # the true between-head variance does not, so the item-sampling share of the floor at
+            # any other item count follows -- D6, since it assumes nothing else about the task
+            # changes with n. Emitted rather than left for a reader to infer, because "negligible"
+            # without its n is exactly the scope-free claim this repository is about.
+            'n_items_at_which_share_is_0.25': 120 * sh / 0.25,
+            'n_items_at_which_share_is_0.05': 120 * sh / 0.05,
+            'verdict': verdict}
 
 
 def variance_decomposition():
@@ -3566,6 +3693,7 @@ def main() -> int:
     # NOT `FT` -- that name is already bound to R14's result 120 lines below, and this
     # assignment shadowed it. It failed loudly only because the two dicts share no key;
     # had they shared one, the wrong number would have printed silently.
+    MEA = measurability()
     CSR = condition_shape_rank()
     WAC = window_arm_control()
     BND = band_boundary()
@@ -3585,7 +3713,7 @@ def main() -> int:
     if args.json:
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -3822,6 +3950,38 @@ def main() -> int:
             print(f"        Chosen after the fact it would have been called layer-shaped; the rule")
             print(f"        is honoured at a 3% miss rather than renegotiated. Both centroids move")
             print(f"        EARLIER -- the direction replicates, the SHAPE does not resolve at n=2\n")
+
+    if MEA and 'error' not in MEA:
+        print('MEA  WHAT SHARE OF THE FLOOR IS THE INSTRUMENT? the one component with no number')
+        print('     item_noise_bound() killed "at most %.2f%% of the floor s variance can be'
+              % MEA['withdrawn_claim_pct'])
+        print('     item sampling" for METHOD and never recomputed it. Per-head SEM makes it'
+              ' direct.')
+        print('     positive control  min per-head sem over the band %.6f  (must exceed 0)'
+              % MEA['min_sem_band'])
+        print('     mean sem %.4f   band sd %.4f   base margin %.4f'
+              % (MEA['mean_sem_band'], MEA['band_sd'], MEA['base_margin']))
+        print('     item-sampling share of the band floor variance  %.4f  95%% CI [%.4f, %.4f]'
+              % (MEA['share_band'], MEA['boot_lo'], MEA['boot_hi']))
+        print('       = %.2f%% against the withdrawn %.2f%% -- reported, NOT vindicated: a number'
+              % (MEA['measured_pct'], MEA['withdrawn_claim_pct']))
+        print('       from an unfit method is not made right by landing near the right answer.')
+        print('     all %d heads rather than the band  %.4f' % (MEA['n_all'], MEA['share_all_heads']))
+        print('     THE RETRACTION S OWN PREMISE, tested at the level it concerns:')
+        print('       Spearman(|effect|, sem)  heads %+.4f   band %+.4f   layer-level %+.4f'
+              % (MEA['spearman_effect_sem_heads'], MEA['spearman_effect_sem_band'],
+                 MEA['spearman_effect_sem_layer']))
+        print('       quiet L%-2d |effect| %.4f sem %.4f    loud L%-2d |effect| %.4f sem %.4f'
+              % (MEA['quiet_layer']['layer'], MEA['quiet_layer']['mean_abs_effect'],
+                 MEA['quiet_layer']['mean_sem'], MEA['loud_layer']['layer'],
+                 MEA['loud_layer']['mean_abs_effect'], MEA['loud_layer']['mean_sem']))
+        print('     AND THE SHARE IS A FUNCTION OF n, NOT OF THE MODEL: sem^2 goes as 1/n,'
+              ' so item sampling')
+        print('     would reach 25%% of the floor only at n = %.1f items, and 5%% at n = %.1f.'
+              % (MEA['n_items_at_which_share_is_0.25'],
+                 MEA['n_items_at_which_share_is_0.05']))
+        print('     VERDICT: %s' % MEA['verdict'])
+        print()
 
     if CSR:
         print('CSR  IS THE REFERENCE DISTRIBUTION SCALAR-UP-TO-SCALE? the headline attacked')
@@ -4862,8 +5022,11 @@ def main() -> int:
              RC['r12_window_absolute_max'] if RC else -1, 19.5, 0.0),
             ('R12 ambiguous window upper edge',
              RC['r12_window_relative_min'] if RC else -1, 20.5, 0.0),
+            # 0.645 until 2026-07-28, when the Spearman tie rule was corrected from minimum-rank
+            # to midranks. This is the ONLY published number the correction moved -- verified by
+            # re-running every no-argument emitter under both rules, not by inspection.
             ('REF depth vs clearing rate',
-             RC['spearman_layer_vs_clearing_rate'] if RC else -1, 0.645, 0.001),
+             RC['spearman_layer_vs_clearing_rate'] if RC else -1, 0.6494, 0.001),
             ('REF copy head rank in its layer clearing set',
              RC['copy_head_rank_in_its_layer_clearing_set'] if RC else -1, 5, 0),
             ('REF published heads in the peak layers',
