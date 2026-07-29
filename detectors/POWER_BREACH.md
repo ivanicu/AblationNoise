@@ -1,4 +1,4 @@
-<!-- unbacked-ok: 36.06 36.07 35.86 35.69 35.71 35.53 34.59 34.16 34.72 35.02 35.38 36.74 2006 1719 1713 1671 1669 1683
+<!-- unbacked-ok: 36.07 36.06 36.07 35.86 35.69 35.71 35.53 34.59 34.16 34.72 35.02 35.38 36.74 2006 1719 1713 1671 1669 1683
  1596 1434 467 33 2909 2507 86 2 14 35.0 6 1.03 0.41 64 100 365 3 15
  -- MEASUREMENTS OF THE DETECTOR'S OWN POWER, and of the remedies tried against it. A detector
  cannot emit the statistics of its own false-pass rate into the reference set that rate is computed
@@ -7,7 +7,7 @@
  `python3 detectors/prose_numbers.py --power` and by the measurement script quoted in each section. -->
 # Detector 6 power breach — acknowledged, with the remedies measured and rejected
 
-`measured_false_pass_rate = 36.06`
+`measured_false_pass_rate = 36.07`
 
 The line above is machine-read by `detectors/prose_numbers.py`. **The gate fails unless it matches
 the current rate to two decimals**, so this file cannot be written in advance and goes stale the

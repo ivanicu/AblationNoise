@@ -1134,6 +1134,15 @@
    "defect": "the front page's '22-24% recovery' quotes a ratio of signal-to-noise ratios, not effect recovery; its median cell is sign-inverted; and the intersection of informative, valid and sign-consistent cells is empty",
    "operation": "Found by an independent adversarial reviewer, all three verified against R6's own JSONs. (1) rr = (|pc|/band_sd)_arm / (|pc|/band_sd)_zero carries the factor band_sd_zero/band_sd_arm; the prose describes |pc_arm|/|pc_zero|. Median over informative cells: rr 0.2368 vs recovery 0.1199. (2) qwen2.5-3b's zero control is +1.60537 while mean and resample are NEGATIVE; R7 and R8 exclude sign-inverted arms and R6 never did, because pc_clears_own_floor tests magnitude only. That cell sets the published median. (3) informative AND round_valid AND sign_consistent = 0 of 4 cells; the page disclosed the first two counts and never the empty intersection. Corrected reading makes the off-manifold limitation WORSE: median recovery over informative and sign-consistent cells is 0.1359, so ~85% of the zeroing effect is not the head's contribution, not 76%.",
    "found_by": "outside_reader"
+  },
+  {
+   "id": "D126",
+   "round": "R19",
+   "bin": "PROVENANCE",
+   "commit": "02887a1",
+   "defect": "the per-layer checkpoint has NO CONCURRENCY GUARD, and I queued a second runner against the same --out path while the first was still running",
+   "operation": "run.py resumes by reading <out>.ckpt and writes it back after every layer via a temp file plus Path.replace. That is atomic against a KILL but not against a SECOND RUNNER: two processes resuming the same checkpoint would each hold their own done_layers set in memory and each write the whole file, so whichever finishes a layer last silently erases the other's progress and the surviving cells dict is a mixture of two runs. Caught because pueue showed task 262 RUNNING under label R19-RESUME-from-22 while my task 269 sat QUEUED to run the identical command on the identical path -- I had submitted duplicates because I was tracking my own submissions from memory instead of listing the queue by label, which is the third variant of the same defect after D95 and D121. 269 removed before it could start. The guard is NOT added in the same step because editing run.py while 262 is running would make its result file's source stamp STALE -- the hazard validate_provenance.py exists to surface.",
+   "found_by": "author_reading_the_object"
   }
  ]
 }

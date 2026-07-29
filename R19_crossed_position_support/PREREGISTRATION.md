@@ -402,3 +402,32 @@ behavioural_flip`, in the order `analyze.py` indexes them.
 **This is a positive result recorded before the data exists**, so it cannot be a rationalisation of a
 verdict. If R19's four hypotheses come out any particular way, the direction of `signed_margin_drop`
 is not a free parameter in reading them.
+
+---
+
+# Amendment 4 — the checkpoint has no lock, and I nearly proved it the expensive way
+
+Appended 2026-07-28, while task `262` is still running.
+
+`run.py` resumes by reading `<out>.ckpt` and rewrites it after every layer through a temp file plus
+`Path.replace`. **That is atomic against a kill and not against a second runner.** Two processes
+resuming the same checkpoint each hold their own `done_layers` in memory and each write the whole
+file, so whichever finishes a layer last silently erases the other's progress and the surviving
+`cells` dict is a **mixture of two runs** — with no error and no marker.
+
+**I queued exactly that.** `pueue` showed task `262` *Running* under label `R19-RESUME-from-22` while
+my task `269` sat *Queued* to run the identical command against the identical `--out` path. `269` was
+removed before it could start.
+
+**Why I did it:** I was tracking my own submissions from memory rather than listing the queue by
+label. That is the third variant of one defect — `D95` reported a job as running that had ended two
+hours earlier, `D121` reported a layer number from a process that had been dead 25 minutes, and this
+one submitted a duplicate of a job that was already running. **Read the queue, not the recollection.**
+
+**The guard is deliberately NOT added in this step.** Editing `run.py` while `262` is using it would
+make the result file's source stamp `STALE` — precisely the hazard `validate_provenance.py` exists to
+surface, and this repository already carries one such row for `SMOKE_smoke.json`. The lock lands
+after `262` finishes: an `O_EXCL` lockfile beside the checkpoint, holding the pid, refusing to start
+rather than interleaving.
+
+Filed as `D126`.
