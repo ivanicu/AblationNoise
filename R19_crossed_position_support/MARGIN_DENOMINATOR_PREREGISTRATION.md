@@ -105,3 +105,75 @@ convert it into one — it repairs an arithmetic mismatch inside it. One model, 
 metric (`signed_margin_drop`), floors defined as `2 sd` over the `L14`–`L27` band. Matching the
 denominators does not make the two tasks differ in one factor: they still differ in line count,
 prompt structure and item count simultaneously, which is why this stays out of the transport table.
+
+---
+
+# Amendment 1 — registering the SECOND half of the repair, before it is computed
+
+Appended 2026-07-28. The denominator has been recomputed (`pueue 318`/`319`, both landed) and its
+verdict is fixed by the rules above; it is written up in Amendment 2. **This amendment registers a
+test that has not been run**, and is committed alone, before the tool that runs it exists.
+
+## Matching the denominator is only half the repair, and I did not notice until after
+
+R10's denominator is baseline-correct-only. So is **R10's numerator**: every per-head drop it
+averages comes from an item that survived `run.py:273`. R19's numerator averages all `1024`. So
+`floor_A / margin_A` and `floor_B / margin_B` differ in **both** terms, and Amendment 2 fixes one.
+
+**The direction is not obvious and must not be guessed.** Items with a wrong baseline have negative
+margins and are plausibly noisier under ablation, which would inflate `floor_B` and inflate the
+residual — but they could equally be *saturated* and move less, which would deflate it.
+
+## The test
+
+The frozen `r19_crossed_qwen2.5-1.5b.json` stores each head's mean effect at `(base, pos)`
+granularity, each cell the mean of `N_NUISANCE = 2` replicates. `pueue 320` emitted
+`n_correct_by_base_pos`, so each cell is known to be `2/2`, `1/2` or `0/2` baseline-correct:
+**`315` / `129` / `68` of `512`**, reconciling to the `759` correct items exactly.
+
+Restrict to the `315` fully-correct cells, recompute each head's mean, recompute the floor as the
+same `2 sd` over the same `168` band heads, and recompute the residual with **both** terms matched.
+
+## The strongest confound, written before the run, and it is the whole reason for the control
+
+**Dropping `197` of `512` cells changes the floor by itself.** Fewer cells per head means a noisier
+per-head mean, and `2 sd` across heads of a noisier quantity is **larger** — so a rise in the
+restricted floor is the DEFAULT expectation under no effect whatsoever, and reading one as evidence
+about baseline correctness would be reading sampling noise as a finding.
+
+**Control, in the same iteration:** a matched-count random restriction. Draw `315` of the `512`
+cells uniformly at random, recompute the floor, repeat `N_DROP = 2000` times, and report the
+observed restricted floor as a **percentile of that distribution**. The correctness restriction is
+informative only where it leaves that distribution.
+
+**Second confound, and it is this round's own subject:** baseline correctness is not independent of
+position — that is exactly why `run.py:356` refuses to filter, citing R15. The retained cells will
+have a different position composition from the full grid, so any change may be a position effect
+wearing a correctness label. **The position composition of the retained cells is reported beside
+the floor**, and the random control is drawn without regard to position, so it does *not* absorb
+this — it is stated as a limit, not controlled away.
+
+## Registered thresholds
+
+| verdict | rule |
+|---|---|
+| **NUMERATOR-MATTERS** | observed restricted floor outside the central `95%` of the random-drop distribution, in either scope |
+| **NUMERATOR-IS-CELL-COUNT** | inside it in both scopes — the change is the restriction's cost, not baseline correctness |
+
+And the number reported regardless of the verdict word: **the fully-matched residual in both
+scopes, against Amendment 2's denominator-matched `1.0466` / `0.9734` and the published
+`1.7417` / `1.6198`.**
+
+## What each outcome costs me
+
+If the fully-matched residual falls below `1` in **both** scopes, the claim *"dividing by the task's
+margin does not normalise the floor away"* is dead on the only cross-task comparison this
+repository has, and the front page's `1.7417` was an artifact of comparing two ratios that shared
+neither a numerator definition nor a denominator definition.
+
+## Boundary
+
+`n = 2` tasks. The restriction is at `(base, pos)` cell granularity, not item granularity, because
+that is the resolution the frozen result stores — the `129` half-correct cells are dropped rather
+than partially credited, which is a coarser filter than R10's per-item one and is not equivalent
+to it.
