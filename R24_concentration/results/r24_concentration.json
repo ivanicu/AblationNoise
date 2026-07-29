@@ -1256,7 +1256,53 @@
    "step": 2
   }
  },
- "data_description_not_a_verdict": "NO_STATISTIC_REJECTS_IN_EVERY_STRATUM",
+ "n_statistics_monotone_in_every_stratum": 0,
+ "n_statistics_step_in_every_stratum": 0,
+ "statistic_pairs": {
+  "pr|pr_normalised": {
+   "max_abs_rho_difference_across_strata": 0.0,
+   "exact_duplicate": true
+  },
+  "pr|gini": {
+   "max_abs_rho_difference_across_strata": 0.9912424740010948,
+   "exact_duplicate": false
+  },
+  "pr|top1_share": {
+   "max_abs_rho_difference_across_strata": 0.8637110016420362,
+   "exact_duplicate": false
+  },
+  "pr|top2_share": {
+   "max_abs_rho_difference_across_strata": 0.9370552818828681,
+   "exact_duplicate": false
+  },
+  "pr_normalised|gini": {
+   "max_abs_rho_difference_across_strata": 0.9912424740010948,
+   "exact_duplicate": false
+  },
+  "pr_normalised|top1_share": {
+   "max_abs_rho_difference_across_strata": 0.8637110016420362,
+   "exact_duplicate": false
+  },
+  "pr_normalised|top2_share": {
+   "max_abs_rho_difference_across_strata": 0.9370552818828681,
+   "exact_duplicate": false
+  },
+  "gini|top1_share": {
+   "max_abs_rho_difference_across_strata": 0.1275314723590586,
+   "exact_duplicate": false
+  },
+  "gini|top2_share": {
+   "max_abs_rho_difference_across_strata": 0.06254826254826257,
+   "exact_duplicate": false
+  },
+  "top1_share|top2_share": {
+   "max_abs_rho_difference_across_strata": 0.08108108108108109,
+   "exact_duplicate": false
+  }
+ },
+ "n_exact_duplicate_pairs": 1,
+ "n_statistics_nominal": 5,
+ "data_description_not_a_verdict": "monotone_everywhere=0_of_5__step_everywhere=0_of_5",
  "tests": {
   "pr": {
    "qwen2.5-1.5b|I_all": {

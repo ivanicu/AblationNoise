@@ -255,12 +255,51 @@ def main():
                                         'step': sum(1 for v in res[stat].values()
                                                     if v['p_step'] < ALPHA)}
                                  for stat in STATS}
-    # The registered verdict when a control fails is UNVERIFIED, full stop. The data description
-    # below it is kept, and labelled.
-    data_description = ('NO_STATISTIC_REJECTS_IN_EVERY_STRATUM'
-                        if not any(v['monotone_everywhere'] or v['step_everywhere']
-                                   for v in per_stat_strict.values())
-                        else 'SOME_STATISTIC_REJECTS_IN_EVERY_STRATUM')
+    # ⚠ THE PREVIOUS REPAIR OF THE `or` WAS COSMETIC AND AN INDEPENDENT REVIEWER SAID SO.
+    # The comment twelve lines above promised the two flags are "emitted separately and never
+    # combined". This line then read
+    #     not any(v['monotone_everywhere'] or v['step_everywhere'] for v in ...)
+    # which is the condemned expression with the `or` moved inside the generator. Renaming the
+    # verdict string fixed the NAME; the leniency was untouched and sat back on the decision path.
+    # Now: two counts, computed separately, never combined, and the description names which.
+    n_mono = sum(1 for v in per_stat_strict.values() if v['monotone_everywhere'])
+    n_step = sum(1 for v in per_stat_strict.values() if v['step_everywhere'])
+    out['n_statistics_monotone_in_every_stratum'] = n_mono
+    out['n_statistics_step_in_every_stratum'] = n_step
+    data_description = f'monotone_everywhere={n_mono}_of_{len(STATS)}__step_everywhere={n_step}_of_{len(STATS)}'
+
+    # AND THE DENOMINATOR IS NOT 5. pr_normalised = (n*pr-1)/(n-1) is an EXACT affine map of pr, so
+    # it cannot carry independent evidence; R23 was withdrawn for counting one statistic as four and
+    # R24 repeated it. Emitted as a MEASUREMENT rather than asserted: the pairwise |Spearman| across
+    # layers, and the count of pairs that are exact duplicates (identical rho AND identical step_t in
+    # every stratum, to 1e-12).
+    names = list(STATS)
+    pair = {}
+    dup = 0
+    for i in range(len(names)):
+        for j in range(i + 1, len(names)):
+            a, b = names[i], names[j]
+            rr = []
+            same = True
+            for k in res[a]:
+                ya = [r[a] for r in data[tuple(k.split('|'))]]
+                yb = [r[b] for r in data[tuple(k.split('|'))]]
+                rr.append(abs(spearman(list(range(len(ya))), ya)
+                              - spearman(list(range(len(yb))), yb)))
+                if (abs(res[a][k]['spearman'] - res[b][k]['spearman']) > 1e-12
+                        or abs(res[a][k]['step_t'] - res[b][k]['step_t']) > 1e-12):
+                    same = False
+            pair[f'{a}|{b}'] = {'max_abs_rho_difference_across_strata': max(rr),
+                                'exact_duplicate': same}
+            dup += same
+    out['statistic_pairs'] = pair
+    out['n_exact_duplicate_pairs'] = dup
+    out['n_statistics_nominal'] = len(names)
+    print(f'\n  THE FAMILY SIZE, measured not asserted: {len(names)} nominal statistics, '
+          f'{dup} exact-duplicate pair(s)')
+    for k, v in pair.items():
+        if v['exact_duplicate']:
+            print(f'    {k} are the SAME statistic -- identical spearman and step_t in every stratum')
     out['data_description_not_a_verdict'] = data_description
     verdict = 'UNVERIFIED_CONTROL_FAILED' if not out['inferential'] else data_description
     out['tests'] = res
