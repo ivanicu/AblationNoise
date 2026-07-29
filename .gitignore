@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 .venv/
+
+# 8.7 GB of downloaded checkpoints. R6 froze the W_O reference precisely so `make verify`
+# never needs these; they are fetched on demand and must never enter history.
+artifacts/
