@@ -1,4 +1,4 @@
-<!-- unbacked-ok: 0.4906 0.5871 -- the WRONG-SCOPE values, quoted verbatim inside their own correction so the error can be read against the right ones; no generator emits them, which is the point. 0.5616 -- the reviewer's independently computed ICC(3,1), their number not mine, same class as the other reviewer-computed figures exempted here. 0.669 0.094 0.62 5.35 -- an independent reviewer's own measurements of the design effect, computed during its audit from the raw result file. No generator here emits them because this repository did not compute them; what it DID compute is the group-clustered interval beside them, which is emitted by tools/clustered_ci.py. 0.0066 -- the WRONG hand-subtracted value, quoted verbatim inside its own correction so the error can be read against the emitted 0.0065. No generator emits it, which is the point. 23.6 -- the result file's size in megabytes, a measurement of a file rather
+<!-- unbacked-ok: 0.9837 0.0240 0.3697 0.9561 -- the REVIEWER's split figures, computed on the SIGNED profile rather than the centred magnitude; quoted verbatim so their numbers can be read against mine. No generator here emits them because this repository does not compute the signed-profile splits -- that difference IS the finding. 0.4906 0.5871 -- the WRONG-SCOPE values, quoted verbatim inside their own correction so the error can be read against the right ones; no generator emits them, which is the point. 0.5616 -- the reviewer's independently computed ICC(3,1), their number not mine, same class as the other reviewer-computed figures exempted here. 0.669 0.094 0.62 5.35 -- an independent reviewer's own measurements of the design effect, computed during its audit from the raw result file. No generator here emits them because this repository did not compute them; what it DID compute is the group-clustered interval beside them, which is emitted by tools/clustered_ci.py. 0.0066 -- the WRONG hand-subtracted value, quoted verbatim inside its own correction so the error can be read against the emitted 0.0065. No generator emits it, which is the point. 23.6 -- the result file's size in megabytes, a measurement of a file rather
  than a generated value; same class as the runtime figures exempted at the top of README.md. -->
 # R19 — the crossed *position × intervention-support* scan
 
@@ -154,6 +154,50 @@ H-published   final p     0.7914               0.3613              0.0704
                     NOT enriched — both scopes, all three metrics
 H-depth       UNTESTED by pre-registration: two models is n = 2
 ```
+
+## `D139` — the ceiling was a maximum over splits, and the reviewer's number is for a different quantity
+
+A reviewer found that `bases 0-31 vs 32-63` is the **one** split balanced on both design factors, and
+that splitting by room collapses the correlation. **The direction is confirmed. The magnitude is not,
+and the reason is the same mismatch that produced `D133` and `D142`.**
+
+The reviewer's splits were computed on the **signed** per-head means. `analyze.py:187` correlates the
+**centred magnitude**, which is the quantity the ceiling is applied to. On that quantity, `final`
+scope:
+
+```
+metric                balanced  by-name   by-room  even/odd
+signed_margin_drop    +0.9115  +0.8173  +0.4816  +0.5417
+room_set_kl           +0.9654  +0.9307  +0.7931  +0.8918
+behavioural_flip      +0.8289  +0.7951  +0.6827  +0.7849
+```
+
+```
+reviewer (SIGNED)      balanced +0.9837   by_room +0.0240   even/odd -0.3697
+mine     (|centred|)   balanced +0.9115   by_room +0.4816   even/odd +0.5417
+```
+
+**Internal consistency check:** my balanced half-split `0.9115` Spearman-Browns to `0.9537`, which is
+exactly `spearman_magnitude_final` in the frozen reliability file. The two computations are the same
+object.
+
+### The distinction `D139` needs, and it changes what the finding is
+
+| | |
+|---|---|
+| **replicate reliability** | does a `32`-base estimate replicate *another* `32`-base estimate drawn the same way? **This is the ceiling disattenuation needs**, and a *balanced* split is the correct one — an unbalanced split confounds replicate noise with a design factor |
+| **cross-condition generalisation** | does the head profile survive *changing* a design factor? A room-split answers this. **It is not a reliability**, and using it as a disattenuation ceiling would correct for a real effect rather than for noise |
+
+**So the ceiling stands** — but the reviewer's underlying observation becomes a **separate and larger
+finding about R19's own result**:
+
+> **The head magnitude profile only half-survives changing the answer room.** Spearman `0.4816` across
+> rooms against `0.9115` within balanced replicates — a ratio of `0.5284`. The same aliasing that made
+> the bases non-exchangeable (`D138`) also means **`H-support`'s ranking is substantially a ranking
+> within a fixed (query, answer-room) assignment.**
+
+**Reporting only the maximum over splits was the defect. Reporting only the minimum would be the same
+defect mirrored** — all four are emitted, each labelled with what it measures.
 
 ## Two registered bets, one lost
 

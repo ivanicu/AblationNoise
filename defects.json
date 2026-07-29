@@ -1287,6 +1287,15 @@
    "defect": "the first icc_models.py read the .final scope while the analysis uses .all, giving a 0.017 discrepancy that looked like two implementations of one statistic disagreeing",
    "operation": "It was not a disagreement; it was comparing unlike with unlike, ONE HOUR after a reviewer caught exactly that in margin_normalisation(). analyze.py:215 names the scope in plain sight. Corrected: ICC(1,1) 0.4734 vs the analysis's 0.4737, ICC(3,1) 0.5599 vs the reviewer's independent 0.5616 -- three computations agreeing to ~0.002 once the scope matches. Caught before publication ONLY because the numbers failed to line up; had they happened to agree it would have shipped.",
    "found_by": "author_reading_the_object"
+  },
+  {
+   "id": "D143",
+   "round": "R19",
+   "bin": "SCOPE",
+   "commit": "5183f98",
+   "defect": "the head magnitude profile only half-survives changing the answer room -- Spearman 0.4816 across rooms against 0.9115 within balanced replicates",
+   "operation": "Chasing D139 separated two questions a reviewer had merged. REPLICATE RELIABILITY (does a 32-base estimate replicate another drawn the same way) is what disattenuation needs and requires a BALANCED split; CROSS-CONDITION GENERALISATION (does the profile survive changing a design factor) is what a room-split measures and is NOT a reliability. So the ceiling stands. But the underlying observation is a larger finding: ratio 0.5284, so H-support's ranking is substantially a ranking WITHIN a fixed (query, answer-room) assignment -- the same aliasing as D138, surfacing as a scope limit rather than a variance one. AND THE REVIEWER'S MAGNITUDE DOES NOT REPRODUCE: they computed on the SIGNED profile (by_room +0.0240, even/odd -0.3697) while analyze.py:187 correlates the CENTRED MAGNITUDE (+0.4816, +0.5417). Direction CONFIRMED, magnitude UNVERIFIED on the quantity that matters -- the third time in this session that a mismatch between signed and centred-magnitude quantities produced a wrong number.",
+   "found_by": "outside_reader"
   }
  ]
 }

@@ -3186,6 +3186,18 @@ def r19():
     # D140: icc1() is the ONE-WAY model on a fully CROSSED design. The pre-registration named
     # ICC(1,1) explicitly, so the registered verdict stands -- but ICC(3,1) is what the design
     # calls for, and it crosses the threshold. Both emitted; the registered one decides.
+    # D139/D143: all four splits, each labelled. Reporting only the maximum was the defect;
+    # reporting only the minimum would be the same defect mirrored.
+    fs = HERE / 'R19_crossed_position_support' / 'results' / 'r19_split_structure.json'
+    if fs.exists():
+        ss = json.load(open(fs))
+        out['split_structure'] = ss['per_metric']
+        sm = ss['per_metric'].get('signed_margin_drop')
+        if sm:
+            bal = sm['contiguous_balanced']['final']
+            out['room_generalisation_ratio'] = sm['by_room']['final'] / bal if bal else None
+            out['balanced_half_split_final'] = bal
+            out['balanced_spearman_brown'] = 2 * bal / (1 + bal)
     fi = HERE / 'R19_crossed_position_support' / 'results' / 'r19_icc_models.json'
     if fi.exists():
         ic = json.load(open(fi))
@@ -5894,7 +5906,7 @@ def main() -> int:
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
             # 39.810 at 121 rows; filing D122 moved it. The taxonomy statistic is a function of the
             # ledger, so every row changes it -- that is the design, not drift.
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 51.183, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 51.392, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -5978,9 +5990,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 142, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 143, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 38, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 14.085, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 14.685, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a

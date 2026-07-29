@@ -1,0 +1,89 @@
+{
+ "n_base": 64,
+ "n_band": 168,
+ "rooms": [
+  "pine",
+  "gold",
+  "rust",
+  "frost"
+ ],
+ "query_names": [
+  "Alice",
+  "Bob",
+  "Carol",
+  "Dave",
+  "Eve",
+  "Frank",
+  "Grace",
+  "Hank"
+ ],
+ "note": "contiguous_balanced is the REPLICATE reliability and the only one admissible as a disattenuation ceiling; the others are CROSS-CONDITION GENERALISATION and are reported as findings about the task, not about noise.",
+ "per_metric": {
+  "signed_margin_drop": {
+   "contiguous_balanced": {
+    "what_it_measures": "BALANCED on name AND room",
+    "final": 0.911531122033195,
+    "all": 0.8747551389191188
+   },
+   "by_name_group": {
+    "what_it_measures": "splits NAME, room balanced",
+    "final": 0.8173095904556062,
+    "all": 0.7918617540911416
+   },
+   "by_room": {
+    "what_it_measures": "splits ROOM and name",
+    "final": 0.4816309899221001,
+    "all": 0.43379006990246055
+   },
+   "even_odd": {
+    "what_it_measures": "splits ROOM and name",
+    "final": 0.5417263528732899,
+    "all": 0.4767362991683582
+   }
+  },
+  "room_set_kl": {
+   "contiguous_balanced": {
+    "what_it_measures": "BALANCED on name AND room",
+    "final": 0.9653904363715512,
+    "all": 0.9808337677983004
+   },
+   "by_name_group": {
+    "what_it_measures": "splits NAME, room balanced",
+    "final": 0.9307125394182052,
+    "all": 0.9132951341610946
+   },
+   "by_room": {
+    "what_it_measures": "splits ROOM and name",
+    "final": 0.7931246551697958,
+    "all": 0.808150394055507
+   },
+   "even_odd": {
+    "what_it_measures": "splits ROOM and name",
+    "final": 0.891843531871169,
+    "all": 0.9019872343225638
+   }
+  },
+  "behavioural_flip": {
+   "contiguous_balanced": {
+    "what_it_measures": "BALANCED on name AND room",
+    "final": 0.8289236041622334,
+    "all": 0.8259148483833908
+   },
+   "by_name_group": {
+    "what_it_measures": "splits NAME, room balanced",
+    "final": 0.795102517998521,
+    "all": 0.8287614237090306
+   },
+   "by_room": {
+    "what_it_measures": "splits ROOM and name",
+    "final": 0.6826868176399965,
+    "all": 0.7273104954058403
+   },
+   "even_odd": {
+    "what_it_measures": "splits ROOM and name",
+    "final": 0.7848613020411453,
+    "all": 0.8209219297063178
+   }
+  }
+ }
+}
