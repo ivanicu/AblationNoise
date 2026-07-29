@@ -3505,6 +3505,37 @@ def r26_support_divergence():
                        for k, v in d.get('models', {}).items()}}
 
 
+def r26_identity_gates():
+    """R26 gates 1 and 2: is the object on this box the object the scans measured?
+
+    The checkpoints were re-downloaded today; the copies the twenty-five rounds measured are gone.
+
+    GATE 1, weight-level. R6_intervention froze per-head W_O singular summaries for all 168 band
+    heads of 1.5b back when a local copy existed, explicitly so `make verify` would never need
+    weights. That makes it a reference for the DOWNLOADED TENSOR BYTES, independent of tokenizer,
+    prompt, sampling and library version. 672 values compared, worst relative deviation 1.183e-06,
+    all inside 6 significant figures -- float32 SVD reproducibility, which is the floor.
+
+    GATE 2, behavioural. Gate 1 says nothing about whether this box REPRODUCES the scans: tokenizer,
+    transformers, attention implementation and device placement have all moved. Replaying R10's item
+    loop with no ablation hooks reproduces base_margin to |delta| = 0.0 exactly -- bit-identical mean
+    over 120 items -- in BOTH checkpoints, against a registered requirement of 4 decimals. 3b has no
+    frozen weight reference, so this is its only identity gate and was stated as the weaker of the
+    two before the run.
+
+    Both gates are hard returns. The registration's failure branch -- 1.5b passes, 3b does not ->
+    run 1.5b alone on its 2 strata, never pool -- was written before either ran and was not needed.
+    """
+    out = {}
+    for name, f in (('gate1_weight', HERE / 'R26_decomposition' / 'results'
+                     / 'r26_gate1_weight_identity.json'),
+                    ('gate2_behavioural', HERE / 'R26_decomposition' / 'results'
+                     / 'r26_gate2_behavioural_identity.json')):
+        if f.exists():
+            out[name] = json.load(open(f))
+    return out or None
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -4999,6 +5030,7 @@ def main() -> int:
     R25 = r25_kv_group()
     R25A = r25_attack_partition()
     R26S = r26_support_divergence()
+    R26G = r26_identity_gates()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -5044,7 +5076,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0

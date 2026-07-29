@@ -1,0 +1,14 @@
+{
+ "reference": "R6_intervention/results/wo_block_conditioning_qwen2.5-1.5b.json",
+ "sigfig": 6,
+ "n_heads_compared": 168,
+ "n_values_compared": 672,
+ "n_mismatches": 0,
+ "worst_relative_deviation": {
+  "smax": 5.941858910560169e-07,
+  "smin": 1.0166879154440994e-06,
+  "cond": 1.1825678719737744e-06,
+  "srank": 4.480367494712636e-07
+ },
+ "pass": true
+}

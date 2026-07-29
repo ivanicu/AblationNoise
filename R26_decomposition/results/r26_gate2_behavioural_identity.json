@@ -1,0 +1,32 @@
+{
+ "gate": "behavioural_identity",
+ "decimals": 4,
+ "models": {
+  "qwen2.5-1.5b": {
+   "tag": "qwen2.5-1.5b",
+   "frozen_base_margin": 4.476821851730347,
+   "recomputed_base_margin": 4.476821851730347,
+   "abs_delta": 0.0,
+   "decimals": 4,
+   "n_items": 120,
+   "n_items_reference": 120,
+   "dtype": "float32",
+   "skipped_no_single_token_query": 0,
+   "skipped_baseline_wrong": 0,
+   "pass": true
+  },
+  "qwen2.5-3b": {
+   "tag": "qwen2.5-3b",
+   "frozen_base_margin": 6.637211505572001,
+   "recomputed_base_margin": 6.637211505572001,
+   "abs_delta": 0.0,
+   "decimals": 4,
+   "n_items": 120,
+   "n_items_reference": 120,
+   "dtype": "float32",
+   "skipped_no_single_token_query": 0,
+   "skipped_baseline_wrong": 0,
+   "pass": true
+  }
+ }
+}
