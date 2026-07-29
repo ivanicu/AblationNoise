@@ -460,3 +460,52 @@ Filed as `D129`. The tension is general and worth stating once: **a version-hash
 lock-in precisely when a job is long enough to need a checkpoint.** The resolution is not to weaken
 the hash but to get the runner right *before* the long run — which is what a smoke test is for, and
 this one passed `--n-base 2` in five minutes without ever exercising a preemption.
+
+---
+
+# Amendment 6 — the saturation gate's floor is the baseline error rate
+
+Appended 2026-07-28 with `27` of `28` layers done, **before the analysis has been run.**
+
+`run.py:347` is
+
+```
+nflip += int((am < 0).sum())        am = correct_logit − best_other_logit
+```
+
+`am < 0` means the correct room is **not** the argmax. **That is already true, before any ablation,
+for every baseline-incorrect item** — and unlike `R10` (`run.py:274`), **`R19` does not filter to
+baseline-correct items.**
+
+```
+baseline accuracy 0.7412   ->   baseline ERROR rate   0.2588
+observed flip rate, final                             0.2587    difference  -0.00010
+observed flip rate, all                               0.2616    difference  +0.00280
+```
+
+**The final-scope flip rate is the baseline error rate to four decimal places.** The gate's
+pre-registered refusal at `>50%` therefore tests a quantity whose floor is set by the *task's
+difficulty*, not by the intervention: on any task with more than `50%` baseline error it would refuse
+whatever the ablation did.
+
+## What survives, and it is most of it
+
+**Metric index `2`, `fl = (argmax != baseline_argmax)`, is correctly referenced to the baseline
+argmax and is unaffected.** The data to measure behavioural flipping properly is present and
+`analyze.py` uses it. Only the summary counter feeding the saturation refusal is confounded.
+
+## What the corrected reading suggests — an observation, not a result
+
+Subtracting the floor leaves `I_final` changing the answer on **essentially no additional cells** and
+`I_all` on about `0.28` percentage points. **That is stated as an observation because the counter is
+a NET** — an ablation can also *fix* a baseline-wrong item, which lowers the count — so the
+difference is a lower bound on activity, not a measurement of it. The clean version comes from metric
+`2` in the analysis.
+
+## Not fixed in the runner
+
+`D129`: `_CODE_VERSION = sha256(run.py)`, so editing it now discards `27` of `28` layers. The
+interpretation is corrected here instead, at the decision point, and the gate's output must be read
+as *"baseline error rate plus a small increment"* rather than as a saturation measurement.
+
+Filed as `D131`.

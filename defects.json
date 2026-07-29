@@ -1179,6 +1179,15 @@
    "defect": "`pueue kill -g` and `pueue kill -a` PAUSE the group as a documented side effect, so every submission after a group-kill sits Queued forever -- and D127 attributed the resulting stalls to an adversarial second session",
    "operation": "Read from `pueue kill --help` on pueue 4.0.4: '-g, --group <GROUP>  Kill all running tasks in a group. This also pauses the group' and '-a, --all ... This also pauses all groups'. I resumed the gpu group at D128, and 25 minutes later it was paused again with my task 273 Queued and the card idle -- so D128's 'another session left it paused' was a one-off framing of a RECURRING mechanism. The kills recorded in D127 are real and directly observed, but the STALLS are a documented flag behaviour, not additional hostility, and the other session's own job 268 shows Failed(1) for the same reason. CORRECTS D127's attribution and corrects a standing rule in memory: 'kill and restart, never pause' is unachievable with the group form, because THE KILL IS A PAUSE. Checked my own wrapper first -- /home/ivan/.local/bin/gpu-run never calls pause, so it was not mine.",
    "found_by": "author_reading_the_object"
+  },
+  {
+   "id": "D131",
+   "round": "R19",
+   "bin": "STATISTIC",
+   "commit": "f748ffa",
+   "defect": "R19's saturation gate counts cells where the correct room is not the argmax, which is already true for every baseline-INCORRECT item -- so its floor is the baseline error rate and it measures almost nothing about the ablation",
+   "operation": "run.py:347 is `nflip += int((am < 0).sum())` with am = correct_logit - best_other_logit. R19 does NOT filter to baseline-correct items (R10 does, at run.py:274), and its baseline accuracy is 0.7412, i.e. an error rate of 0.2588. Observed flip rates: final 0.2587, all 0.2616 -- the final-scope value sits 0.0001 BELOW the baseline error rate and the all-scope value 0.0028 above it. The gate's pre-registered refusal at >50% therefore tests a quantity whose floor is set by the task's difficulty, not by the intervention, and on any task with >50% baseline error it would refuse regardless of what the ablation does. WHAT SURVIVES: metric index 2, `fl = (argmax != baseline_argmax)`, IS correctly referenced to the baseline argmax and is unaffected -- the data to do this right is present and the analysis uses it. WHAT THE CORRECTED READING SUGGESTS, stated as an observation and not a result because the counter is a NET (an ablation can also FIX a baseline-wrong item, reducing the count): once the floor is subtracted, I_final changes the answer on essentially no additional cells and I_all on about 0.28 percentage points. Found before the analysis ran; not fixed in run.py because D129 -- editing it would discard 27 of 28 layers.",
+   "found_by": "author_reading_the_object"
   }
  ]
 }
