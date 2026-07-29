@@ -375,3 +375,30 @@ profile cannot be compared to anything. The **margin** profile does show primacy
 mild recency (`2.43` at the last position against `1.83`–`2.14` in the middle), qualitatively like
 R14's U — **but R19 balances the query across eight persons and R14 did not, so a difference could be
 the balancing rather than noise.** The full run is the test; this is not it.
+
+---
+
+# Amendment 3 — the sign convention is verified IDENTICAL across runners, before the data is read
+
+Appended 2026-07-28, while the scan is still running.
+
+`D122` found that `centred_null()`'s prose inverted the meaning of the sign in this repository's
+central quantity — the numbers were right and one word made them say the opposite. That defect is in
+prose, but the same error in **code**, between two runners, would silently invert `H-support`: R18's
+`eta = tau_all - tau_final` and R19's crossed cells would be subtracted in opposite senses and the
+verdict would flip with nothing to show for it.
+
+Checked by reading both runners rather than trusting that they were built from one another:
+
+```
+R10_exhaustive/run.py:281               drops[name].append(bm - margin(enc, cor))
+R19_crossed_position_support/run.py:344 d = b['bm'] - am
+```
+
+**Both are `baseline − ablated`, so a POSITIVE value means the ablated margin is LOWER — the ablation
+HURT.** `metrics[0] = signed_margin_drop = d`, `metrics[1] = room_set_kl`, `metrics[2] =
+behavioural_flip`, in the order `analyze.py` indexes them.
+
+**This is a positive result recorded before the data exists**, so it cannot be a rationalisation of a
+verdict. If R19's four hypotheses come out any particular way, the direction of `signed_margin_drop`
+is not a free parameter in reading them.
