@@ -690,6 +690,55 @@ OWN vs R20's independently measured `direct`:  Spearman +0.9068
 > under *"what I expect to be WRONG about"* named `0.001698` as the number I had inspected least.
 > **It is wrong by `3.7x`.**
 
+### The floor this project is named for is not identified either — but the COUNT nearly is, and the head that decides it was inside its own reference
+
+`R21`'s share was not identified. **That question had never been asked of anything else**, including
+the sentence the repository exists to deliver: *`7` of `8` published single-head effects sit inside
+the floor.* [`R22`](R22_floor_identification/) asks it. No GPU — arithmetic on frozen artifacts, with
+the grid required to land on the published cell exactly before anything else is read (it does:
+`0.4417733517951077`, `n_inside 7`).
+
+> **① The head that decides the count was inside its own reference distribution.** The stored `min`
+> of the `30` random band draws is `-0.4668109973271688`; `L16H3`'s published drop is
+> `-0.4668108383814494`. **They agree to `1.589e-07` — the same head, measured in two runs.** So the
+> floor `L16H3` is judged against was computed partly *from* `L16H3`. `resolution_limit()` already
+> states the rule — *"leave-one-out so no head is judged against a null containing itself"* — and it
+> was never applied to the central floor. Leave-one-out: the floor shrinks `8.1186%` to
+> `0.4059074350270176`, and `L16H3` clears by `+15.0043%` instead of `+5.667495896844854%`.
+> **The correction makes the published claim safer, not weaker** — which is why nobody looked.
+>
+> **② The sampling error on the floor is `2.3168x` the margin that decides the count.** The floor is
+> `2 sd` of `30` draws; the SE of an sd at `n = 30` is `0.131306` of it. `7 of 8` and `8 of 8` are
+> both inside one standard error of the same experiment. That was arithmetic on two already-published
+> numbers and is in the pre-registration, before any grid was run.
+>
+> **③ `18` of the registered grid's cells are UNCOMPUTABLE, because the `30` raw draws are not
+> checked in.** `r1v1_atlas_qwen2.5-1.5b.json` stores `n_draws / mean / sd / min / max` and nothing
+> else, so MAD, IQR, a trimmed sd and the empirical percentiles cannot be computed *at the registered
+> reference* at all. They are reported uncomputable, not skipped.
+>
+> ### **Registered verdict: `NOT-IDENTIFIED`** — `n_inside` takes **all eight values `1`–`8`** across
+> the `48` computable cells, modal `7` at `0.3958`.
+>
+> **But the size of that has to be stated honestly, and the registration said how before the run.**
+> The sham-band reference is a **bundle change** — it swaps the population, not just the estimator —
+> and it alone produces the values `1`–`5`. On band references only:
+>
+> ```
+> band references, 26 cells    n_inside in {6, 7, 8}   modal 7 at 0.7308
+>                              floor 0.1793 to 0.6990  -- a 3.8980x span
+> ```
+>
+> **The floor is not identified; the count nearly is.** A `3.9x` span in the threshold moves the
+> count by `±1`, because seven of the eight effects sit at `0.03`–`0.30` of any version of the floor
+> and only `L16H3` is anywhere near a boundary. **So the honest headline is `6`–`8` of `8`, modal
+> `7`** — and the *conclusion* is robust exactly where the *number* is not.
+>
+> **World G survives, at a smaller size than `R21` suggested.** Every statistic here does rest on
+> unjustified choices — but how much that costs depends on the statistic: a share over a continuum
+> moved `0.67` and lost its verdict; a count over a bimodal population moves `±1` and keeps its
+> conclusion.
+
 ### The repository's own family of decision rules — and a correction would make its headline *stronger*
 
 `ADVERSARY.md`'s `A18` was confirmed by two reviewers and left standing: `31` registered decision
@@ -962,7 +1011,7 @@ because the query that killed the `OV` claim was not aimed at transport. **Aimed
 > cited here or trivially findable.
 >
 > **What it still is:** a worked audit of one prior experiment, carried out in public, with an
-> unusually complete error record — `175` rows, each naming what was wrong and what the operation on
+> unusually complete error record — `176` rows, each naming what was wrong and what the operation on
 > it was.
 >
 > > **⚠ `D123` — this said `120` for two rows, and BOTH of this repository's checkers are blind to

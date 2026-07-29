@@ -3267,6 +3267,20 @@ def r21_sensitivity():
     return json.load(open(f)) if f.exists() else None
 
 
+def r22_floor_identification():
+    """R22 -- is `7 of 8 inside the floor` identified, or one cell of an uncomputed surface?
+
+    Registered in R22_floor_identification/PREREGISTRATION.md before the grid was computed. No GPU;
+    arithmetic on frozen artifacts. Positive control: the grid must land on the published
+    0.4417733517951077 and n_inside 7 exactly, which it does.
+    """
+    f = HERE / 'R22_floor_identification' / 'results' / 'r22_floor_identification.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    return {k: d[k] for k in d if k != 'cells'}
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -4747,6 +4761,7 @@ def main() -> int:
     R21 = r21()
     R21A = r21_adversary()
     R21S = r21_sensitivity()
+    R22 = r22_floor_identification()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -4792,7 +4807,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
@@ -6110,7 +6125,7 @@ def main() -> int:
              TP['verdict_fires_under_random_labels_pct'] if TP else -1, 100.0, 0.01),
             # 39.810 at 121 rows; filing D122 moved it. The taxonomy statistic is a function of the
             # ledger, so every row changes it -- that is the design, not drift.
-            ('TAX chi-square', TP['chi_square'] if TP else -1, 65.99428571428571, 0.001),
+            ('TAX chi-square', TP['chi_square'] if TP else -1, 66.38636363636364, 0.001),
             ('R15 selection skew points', FD['skew_points'] if FD else -1, 10.2, 0.05),
             ('R15 kept under shuffling', FD['n_kept'] if FD else -1, 96, 0),
             ('R12 centroid', TW['centroid'] if TW else -1, 22.833, 0.001),
@@ -6194,9 +6209,9 @@ def main() -> int:
             ('RNK proven copy head rank', RV['copy_head_rank'] if RV else -1, 41, 0),
             ('RNK clearing heads where ablation HELPS',
              RV['n_clear_positive'] if RV else -1, 7, 0),
-            ('LDG defect rows', DL['n'] if DL else -1, 175, 0),
+            ('LDG defect rows', DL['n'] if DL else -1, 176, 0),
             ('LDG largest bin', DL['largest_bin'] if DL else -1, 46, 0),
-            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 24.571428571428573, 0.001),
+            ('LDG outside reader pct', DL['outside_reader_pct'] if DL else -1, 24.431818181818183, 0.001),
             # THE ASSERTION FIRED, AND IT WAS RIGHT. It was written at n=37 to fail the build
             # the day an instrument finally caught a CONTROL defect. At n=49 the provenance
             # validator fired on its own during a routine gate run, and what it revealed was a
