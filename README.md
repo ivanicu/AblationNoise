@@ -690,6 +690,48 @@ OWN vs R20's independently measured `direct`:  Spearman +0.9068
 > under *"what I expect to be WRONG about"* named `0.001698` as the number I had inspected least.
 > **It is wrong by `3.7x`.**
 
+### `R1` and `R10` are the SAME measurement — so the floor was a 30-draw sample of a parameter this repository has a CENSUS of
+
+`R1_noise_floor/run.py:80-82` and `R10_exhaustive/run.py:71-73` both read `N_ITEMS = 120`,
+`SEEDS = range(3000, 3400)`, `DRAW_SEED = 20260727`, and their `bindings()` and `prompt()` are
+**byte-identical**. That is why the leakage audit's second control returned `abs err 0.000e+00`:
+`R1`'s `band_k1` draws and `R10`'s exhaustive scan are the same measurement on the same items.
+
+**So `R10` is a census of the population `R1` sampled `30` times with replacement**, and the floor
+this project publishes is a sample estimate of a parameter measured in full one directory away.
+
+```
+published, 30 draws                    0.4417733517951077
+CENSUS, all 168 heads                  0.4870370929459915       1.102459193083871x
+CENSUS with the eight removed, 160     0.4911033692180353
+
+n_inside      published 7      census 8      census leave-the-eight-out 8
+
+30-from-census bootstrap, 20000 draws  95% [0.2309544615772209, 0.7351703499669623]
+the published floor sits at percentile 0.4418  -- dead centre
+```
+
+> ### **`7 of 8` becomes `8 of 8` on the census, and the head that made the difference was held
+> outside by sampling error alone.**
+>
+> `L16H3` cleared the published floor by `5.667495896844854%`. The census floor is `10.2%` larger, so
+> it falls inside — and still inside after removing the eight from their own reference, which is the
+> leave-out `resolution_limit()` already mandates. **This moves the central claim in the
+> deflationary direction: the eight are not less special than published, they are not special at all
+> on a reference the repository already owns.**
+>
+> **Nothing was cherry-picked.** The published floor sits at percentile `0.4418` of the `30`-draw
+> sampling distribution — an ordinary draw. **It was merely noisy, and it did not have to be:** the
+> `95%` interval of a `30`-draw estimate from this census spans `3.18x`, which is of the same order
+> as the *entire* estimator-and-population grid above (`3.8980x`). **Sampling `30` when a census of
+> `168` existed cost more instability than every estimator choice put together, and it was avoidable
+> by reading a file.**
+>
+> **What this does not license:** a census over `168` heads removes the **between-head** sampling
+> error and nothing else. The item-level component, the cross-model component and the estimator
+> choice are untouched — the census is one cell of the grid above, not an escape from it, and `2 sd`
+> on `168` heads is still `2 sd` at excess kurtosis `7.31`. `D178`.
+
 ### The floor this project is named for is not identified either — but the COUNT nearly is, and the head that decides it was inside its own reference
 
 `R21`'s share was not identified. **That question had never been asked of anything else**, including
@@ -1024,7 +1066,7 @@ because the query that killed the `OV` claim was not aimed at transport. **Aimed
 > cited here or trivially findable.
 >
 > **What it still is:** a worked audit of one prior experiment, carried out in public, with an
-> unusually complete error record — `177` rows, each naming what was wrong and what the operation on
+> unusually complete error record — `178` rows, each naming what was wrong and what the operation on
 > it was.
 >
 > > **⚠ `D123` — this said `120` for two rows, and BOTH of this repository's checkers are blind to

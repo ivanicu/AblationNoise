@@ -1,0 +1,24 @@
+{
+ "published_floor_30draw": 0.4417733517951077,
+ "census_floor_168": 0.4870370929459915,
+ "census_floor_leave_the_eight_out_160": 0.4911033692180353,
+ "n_band": 168,
+ "n_after_leave_out": 160,
+ "n_inside_published": 7,
+ "n_inside_census": 8,
+ "n_inside_census_leave_out": 8,
+ "census_over_published": 1.102459193083871,
+ "bootstrap_30_from_census": {
+  "n": 20000,
+  "seed": 20260729,
+  "ci95": [
+   0.2309544615772209,
+   0.7351703499669623
+  ],
+  "median": 0.46351226239502186,
+  "percentile_of_published": 0.4418
+ },
+ "scope": "between-head variation only; a census over HEADS removes no item-level or cross-model component of the estimand",
+ "instrument_component_carried_from_R11": null,
+ "verdict": "SAMPLE-IS-ORDINARY"
+}
