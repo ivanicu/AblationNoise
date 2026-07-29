@@ -3356,6 +3356,60 @@ def r23_attack():
     return json.load(open(f)) if f.exists() else None
 
 
+def r24_concentration():
+    """R24 -- CONCENTRATION of a layer's ablation effect over its heads, and whether depth is a
+    GRADIENT or a BOUNDARY.
+
+    Every statistic is EXACTLY scale-invariant, so this cannot be the known effect-size gradient in
+    disguise. The null REFITS the changepoint, because a fitted location is a free parameter that
+    always beats a fitted line on noise.
+
+    BOTH REGISTERED CONTROLS FAIL and the failure is the result: a planted gradient fires the step
+    test and a planted step fires the monotone test. A rising step IS monotone, so the two worlds
+    overlap by construction and GRADIENT-vs-BOUNDARY was never an answerable question. The first
+    version of the control accepted "both" for either plant -- a check that cannot fail.
+    """
+    f = HERE / 'R24_concentration' / 'results' / 'r24_concentration.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    return {k: d[k] for k in d if k != 'profiles'}
+
+
+def r24_boundary():
+    """Is the fitted step a location, or the edge of its own search window?
+
+    All ten R24 tests landed at depth 0.889 = c 24 of n 28, which is exactly the last split
+    min_side 4 permits. Relaxing the fence to 3, 2, 1 moves it to 25, 26, 27; the argmax settles at
+    25 and does not follow. The fence-tracking world is dead.
+
+    The rule is still UNFIT for the claim it certifies: relaxing min_side only ADDS endpoint
+    candidates, so a PLATEAU is 'pinned' too. SHARPNESS v1 scored planted FLAT at 8.216 against
+    planted STEP at 10.054 because a one-element block collapses the curve's median -- the very
+    endpoint instability the amendment predicted, computed on the curve that contains it.
+    """
+    f = HERE / 'R24_concentration' / 'results' / 'r24_boundary.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    out = {k: v for k, v in d.items() if k != 'tests'}
+    out['tests'] = {k: {kk: vv for kk, vv in v.items() if kk != 'profile_min_side_1'}
+                    for k, v in d.get('tests', {}).items()}
+    return out
+
+
+def r24_power():
+    """At the effect size actually present, can a step be told from a ramp at all?
+
+    The plant that scores 10.054 jumps concentration 0.15 -> 0.65; the data's fitted t is about 2.
+    UNDERPOWERED is checked FIRST and wins outright, registered before the run so it cannot be
+    reached for after an inconvenient result. The confound arm matches the ramp on fitted t instead
+    of amplitude, because a ramp and a step with the same endpoints differ in total variance.
+    """
+    f = HERE / 'R24_concentration' / 'results' / 'r24_power.json'
+    return json.load(open(f)) if f.exists() else None
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -4843,6 +4897,9 @@ def main() -> int:
     R23 = r23_shape()
     R23D = r23_depth()
     R23A = r23_attack()
+    R24 = r24_concentration()
+    R24B = r24_boundary()
+    R24P = r24_power()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -4888,7 +4945,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
