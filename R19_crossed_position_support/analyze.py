@@ -199,7 +199,17 @@ def main():
 
         cf, ca = centroid(tf, muf, ff), centroid(ta, mua, fa)
         shift = abs(ca - cf) / (NL - 1)
-        h_support = (rho >= SPEARMAN_SUPPORT and (agree == 8 or not eight)
+        # D141: `agree == 8 or not eight` CONVERTED A MISSING DEPENDENCY INTO A PASS. If importing
+        # headline failed, `eight` was empty, the published-agreement component silently dropped out
+        # of the conjunction, and H-support could be satisfied by three components instead of four --
+        # in the PASS direction, with no message. An independent reviewer found it; it never fired,
+        # which is exactly why it survived. A missing input is UNVERIFIED, never a pass.
+        if not eight:
+            print('     -> REFUSED_NO_PUBLISHED_SET: the eight published effects could not be '
+                  'loaded, so H-support cannot be evaluated on four components; three of four is '
+                  'not this hypothesis.')
+            return 3
+        h_support = (rho >= SPEARMAN_SUPPORT and agree == 8
                      and shift <= CENTROID_SHIFT_MAX and overlap >= TOP10_OVERLAP_MIN)
 
         # H-position, on the `all` arm (the intervention that sees whole-sequence writes)
@@ -228,7 +238,14 @@ def main():
             p_pos = (1 + sum(1 for z in null if z >= tp)) / (1 + N_PERM)
         rank0 = sorted(band, key=lambda k: -abs(alle[k]['pos'][0] - ta[k]))
         rho_pos = spearman([rank0.index(k) for k in band], [oa.index(k) for k in band])
-        h_position = (has_bp and icc_med >= ICC_FLOOR and (p_pos != p_pos or p_pos >= ALPHA)
+        # D141, second instance: `p_pos != p_pos` is a NaN test, and NaN meant "the permutation
+        # test did not run". Treating that as satisfying the condition is a missing measurement
+        # scored as a pass. NaN is now REFUSED.
+        if p_pos != p_pos:
+            print('     -> REFUSED_NO_POSITION_NULL: the position permutation test produced NaN, '
+                  'so H-position has no p-value; an absent test is UNVERIFIED, not a pass.')
+            return 3
+        h_position = (has_bp and icc_med >= ICC_FLOOR and p_pos >= ALPHA
                       and rho_pos >= SPEARMAN_POSITION)
 
         # H-published, TWO-SIDED (Amendment 2), distinct-per-layer (D105)
