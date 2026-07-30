@@ -1,0 +1,24 @@
+{
+ "defect": "R34 permuted the within-layer ranks GLOBALLY, destroying the one-per-layer balance; with 2 KV groups per layer the statistic is a paired SIGN TEST and its exact null is Binomial(n_layers, 1/2)",
+ "scope": "does NOT reopen DUPLICATION_DEAD, which was read off the RAW Spearman",
+ "cells": {
+  "1.5b": {
+   "n_layers_used": 28,
+   "concordant": 10,
+   "discordant": 18,
+   "rho_w": -0.2857142857142857,
+   "p_exact_binomial_two_sided": 0.1849333420395851,
+   "min_abs_rho_w_detectable_at_0p05": 0.42857142857142855,
+   "control_is_silent_below": 0.42857142857142855
+  },
+  "3b": {
+   "n_layers_used": 36,
+   "concordant": 16,
+   "discordant": 20,
+   "rho_w": -0.1111111111111111,
+   "p_exact_binomial_two_sided": 0.617719317029696,
+   "min_abs_rho_w_detectable_at_0p05": 0.3888888888888889,
+   "control_is_silent_below": 0.3888888888888889
+  }
+ }
+}

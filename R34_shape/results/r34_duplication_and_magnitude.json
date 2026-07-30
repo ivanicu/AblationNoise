@@ -61,5 +61,22 @@
    "passes_registered": true
   }
  },
- "verdict": "DUPLICATION_DEAD"
+ "verdict": "DUPLICATION_DEAD",
+ "ANNOTATION_2026_07_30_within_layer_p_corrected": {
+  "why": "R34 permuted the within-layer ranks GLOBALLY, destroying the one-per-layer balance; with 2 KV groups per layer the statistic is a paired SIGN TEST and its exact null is Binomial(n_layers, 1/2)",
+  "superseded_p_values": {
+   "1.5b": 0.0598,
+   "3b": 0.4822
+  },
+  "corrected_exact_binomial_p": {
+   "1.5b": 0.1849333420395851,
+   "3b": 0.617719317029696
+  },
+  "power_floor_abs_rho_w": {
+   "1.5b": 0.42857142857142855,
+   "3b": 0.3888888888888889
+  },
+  "verdict_unchanged": "DUPLICATION_DEAD was read off the RAW Spearman; the correction runs toward significance so the collapse reading is strengthened",
+  "generator": "R34_shape/correct_within_layer_p.py"
+ }
 }
