@@ -1,0 +1,198 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "G1_gate_k": 8,
+  "G2_wb_is_subspace_if_inside_p95_at_k": 8,
+  "G3_survives_if_ratio_over_p95_at_k12_atleast": 3.0,
+  "n_null": 200
+ },
+ "question": "Is the +0.9559 cross-item-set replicate head-PRIVATE selectivity, or is it ranks 2..5 of ONE shared field that my rank-1 strip failed to remove?",
+ "G1_shared_only_arm": {
+  "k0": {
+   "replicate": 0.9556430334274865,
+   "null_median": 0.00408274767750651,
+   "null_p95": 0.014616097497236491,
+   "inside_null_p95": false,
+   "over_p95": 65.38291316188693
+  },
+  "k1": {
+   "replicate": 0.6980553303018872,
+   "null_median": 0.0032994652130122993,
+   "null_p95": 0.013698038657026157,
+   "inside_null_p95": false,
+   "over_p95": 50.960239475147965
+  },
+  "k2": {
+   "replicate": 0.5972681494495794,
+   "null_median": 0.0017334998970182638,
+   "null_p95": 0.011633100691876138,
+   "inside_null_p95": false,
+   "over_p95": 51.342128403193115
+  },
+  "k3": {
+   "replicate": 0.664645394559566,
+   "null_median": 0.0025104948784653706,
+   "null_p95": 0.01510421736493798,
+   "inside_null_p95": false,
+   "over_p95": 44.00396117858008
+  },
+  "k4": {
+   "replicate": -0.012728447980882667,
+   "null_median": -0.0008674782911329058,
+   "null_p95": 0.007498151370559096,
+   "inside_null_p95": true,
+   "over_p95": -1.6975448149606476
+  },
+  "k5": {
+   "replicate": 0.008662834716635742,
+   "null_median": -0.000970394689651728,
+   "null_p95": 0.006200739505698405,
+   "inside_null_p95": false,
+   "over_p95": 1.3970647708510735
+  },
+  "k6": {
+   "replicate": 0.01126723274783649,
+   "null_median": -0.0013589697803872234,
+   "null_p95": 0.00528772013317038,
+   "inside_null_p95": false,
+   "over_p95": 2.1308300106800373
+  },
+  "k7": {
+   "replicate": 0.009492209852330872,
+   "null_median": -0.000922753824457159,
+   "null_p95": 0.005696080018105905,
+   "inside_null_p95": false,
+   "over_p95": 1.6664460158843204
+  },
+  "k8": {
+   "replicate": 0.00919643330783045,
+   "null_median": -0.0007602169011246459,
+   "null_p95": 0.005752165501763593,
+   "inside_null_p95": false,
+   "over_p95": 1.5987775916758404
+  },
+  "k9": {
+   "replicate": 0.009852136244534715,
+   "null_median": -0.0014538715888597587,
+   "null_p95": 0.006299363686329609,
+   "inside_null_p95": false,
+   "over_p95": 1.5639891162205886
+  },
+  "k10": {
+   "replicate": 0.007536088873388797,
+   "null_median": -0.00024531680880641055,
+   "null_p95": 0.007044131489149466,
+   "inside_null_p95": false,
+   "over_p95": 1.069839324407434
+  },
+  "k11": {
+   "replicate": 0.006121505983884734,
+   "null_median": -0.00015594242794723942,
+   "null_p95": 0.007017955757614016,
+   "inside_null_p95": true,
+   "over_p95": 0.872263404801791
+  },
+  "k12": {
+   "replicate": 0.004220616284031419,
+   "null_median": -0.0009336681614622228,
+   "null_p95": 0.007278816236447533,
+   "inside_null_p95": true,
+   "over_p95": 0.5798492703933565
+  }
+ },
+ "G1_passed": false,
+ "observed": {
+  "k0": {
+   "replicate": 0.9649256006177562,
+   "null_median": 0.05803771852705178,
+   "null_p95": 0.08683987532260727,
+   "inside_null_p95": false,
+   "over_p95": 11.11154981548614
+  },
+  "k1": {
+   "replicate": 0.9558752539337032,
+   "null_median": 0.03769469710060576,
+   "null_p95": 0.06113320102806355,
+   "inside_null_p95": false,
+   "over_p95": 15.635943118615744
+  },
+  "k2": {
+   "replicate": 0.9292466975692438,
+   "null_median": 0.06310565242949683,
+   "null_p95": 0.0898414075907491,
+   "inside_null_p95": false,
+   "over_p95": 10.343189432229329
+  },
+  "k3": {
+   "replicate": 0.9099279779792969,
+   "null_median": 0.07496980891914512,
+   "null_p95": 0.10559644678508259,
+   "inside_null_p95": false,
+   "over_p95": 8.617032160478345
+  },
+  "k4": {
+   "replicate": 0.8912802632471081,
+   "null_median": 0.057887947125373734,
+   "null_p95": 0.08797956352508954,
+   "inside_null_p95": false,
+   "over_p95": 10.130537451381395
+  },
+  "k5": {
+   "replicate": 0.8574403953048968,
+   "null_median": 0.05539194861722033,
+   "null_p95": 0.08408670569646466,
+   "inside_null_p95": false,
+   "over_p95": 10.197098200042186
+  },
+  "k6": {
+   "replicate": 0.8178600944218785,
+   "null_median": 0.08390755036944397,
+   "null_p95": 0.10535042433080087,
+   "inside_null_p95": false,
+   "over_p95": 7.7632349334806054
+  },
+  "k7": {
+   "replicate": 0.7786396216425054,
+   "null_median": 0.11283125778529542,
+   "null_p95": 0.13878997692997136,
+   "inside_null_p95": false,
+   "over_p95": 5.610200670581422
+  },
+  "k8": {
+   "replicate": 0.8085317149630115,
+   "null_median": 0.11592819862386938,
+   "null_p95": 0.14752021160245277,
+   "inside_null_p95": false,
+   "over_p95": 5.4808199241328115
+  },
+  "k9": {
+   "replicate": 0.7901684567515468,
+   "null_median": 0.12667202487910417,
+   "null_p95": 0.155010340914326,
+   "inside_null_p95": false,
+   "over_p95": 5.097520927253956
+  },
+  "k10": {
+   "replicate": 0.8054925389131092,
+   "null_median": 0.1399773146801669,
+   "null_p95": 0.16721363285330015,
+   "inside_null_p95": false,
+   "over_p95": 4.817146336505851
+  },
+  "k11": {
+   "replicate": 0.7636142810743584,
+   "null_median": 0.10497703606700493,
+   "null_p95": 0.12445903660662977,
+   "inside_null_p95": false,
+   "over_p95": 6.135466751907042
+  },
+  "k12": {
+   "replicate": 0.743957058427765,
+   "null_median": 0.11334378633609096,
+   "null_p95": 0.13787303069335538,
+   "inside_null_p95": false,
+   "over_p95": 5.395957822109579
+  }
+ },
+ "verdict": "UNVERIFIED_GATE_FAILED"
+}
