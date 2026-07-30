@@ -23,7 +23,9 @@ sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / 'R10_exhaustive'))
 
 ALPHAS = (1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125)
-CTRL1_REL = 0.01
+CTRL1_REL = 0.01                 # now on the MINIMUM over alpha, per AMENDMENT_1
+CTRL1_RATIO_LO = 1.6             # two-sided band on the halving ratio in the truncation regime
+CTRL1_RATIO_HI = 2.4
 CTRL2_RHO = 0.90
 CURV_ALPHA = 0.5
 N_CURV_PER_SEXTILE = 4
@@ -199,8 +201,12 @@ def main():
                 norms[(L, h)].append(float(av[h].norm()))
 
     # ---------- CONTROL 1: the finite-difference limit ----------
-    print(f'\n  CONTROL 1  finite-difference limit -> <a,g>, need rel err <= {CTRL1_REL} at '
-          f'alpha={ALPHAS[-1]} and monotone convergence', flush=True)
+    # AMENDMENT_1: the rule is NOT read at the endpoint. Truncation error falls as alpha, roundoff
+    # rises as 1/alpha, so the smallest alpha is the worst place to look and the original threshold
+    # was below the float32 floor. Now: min over alpha of rel err <= 1%, AND the halving ratio must
+    # lie in a TWO-SIDED band in the truncation-dominated regime (before each cell's own argmin).
+    print(f'\n  CONTROL 1  need min-over-alpha rel err <= {CTRL1_REL} AND halving ratios in '
+          f'[{CTRL1_RATIO_LO}, {CTRL1_RATIO_HI}] before the argmin', flush=True)
     c1 = {}
     ok1 = True
     picks = [(L, h) for L in (NL // 3, 2 * NL // 3) for h in range(4)]
@@ -217,19 +223,24 @@ def main():
                     got = float(margin_of(enc, cor))
                     seq.append((bm - got) / al)
                 SCALE.clear()
-                rel = abs(seq[-1] - want) / max(abs(want), 1e-12)
-                mono = all(abs(seq[i + 1] - want) <= abs(seq[i] - want) * 1.05
-                           for i in range(len(seq) - 1))
-                errs.append({'item': it, 'want': want, 'seq': seq, 'rel_err_smallest_alpha': rel,
-                             'monotone': mono})
-            worst = max(e['rel_err_smallest_alpha'] for e in errs)
-            allm = all(e['monotone'] for e in errs)
-            good = worst <= CTRL1_REL and allm
+                rel_seq = [abs(v - want) / max(abs(want), 1e-12) for v in seq]
+                jmin = min(range(len(rel_seq)), key=lambda j: rel_seq[j])
+                ratios = [rel_seq[j] / rel_seq[j + 1] for j in range(jmin)
+                          if rel_seq[j + 1] > 0]
+                in_band = all(CTRL1_RATIO_LO <= r <= CTRL1_RATIO_HI for r in ratios) if ratios \
+                    else False
+                errs.append({'item': it, 'want': want, 'seq': seq, 'rel_err_seq': rel_seq,
+                             'rel_err_min': rel_seq[jmin], 'argmin_alpha': ALPHAS[jmin],
+                             'rel_err_smallest_alpha': rel_seq[-1],
+                             'halving_ratios_before_argmin': ratios, 'ratios_in_band': in_band})
+            worst_min = max(e['rel_err_min'] for e in errs)
+            allband = all(e['ratios_in_band'] for e in errs)
+            good = worst_min <= CTRL1_REL and allband
             ok1 = ok1 and good
-            c1[f'L{L:02d}H{h:02d}'] = {'worst_rel_err': worst, 'all_monotone': allm,
+            c1[f'L{L:02d}H{h:02d}'] = {'worst_rel_err_min': worst_min, 'ratios_in_band': allband,
                                        'pass': good, 'detail': errs}
-            print(f'    L{L:02d}H{h:02d}  worst rel err {worst:.3e}  monotone {allm}  '
-                  f'-> {"PASS" if good else "FAIL"}', flush=True)
+            print(f'    L{L:02d}H{h:02d}  worst min-rel-err {worst_min:.3e}  ratios in band '
+                  f'{allband}  -> {"PASS" if good else "FAIL"}', flush=True)
     out = {'model': args.tag, 'n_items': len(items), 'n_layers': NL, 'n_heads': NH,
            'alphas': list(ALPHAS), 'control1': {'per_cell': c1, 'pass': ok1}}
     if not ok1:
