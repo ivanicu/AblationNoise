@@ -30,7 +30,8 @@ sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / 'R10_exhaustive'))
 
 PROD_CHUNK = 40
-N_PER_LAYER = 2
+N_PER_LAYER = 4
+SEED = 20260730
 
 
 def main():
@@ -42,7 +43,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--tag', default='qwen2.5-1.5b')
     ap.add_argument('--model', default='artifacts/model_qwen2.5-1.5b-instruct')
-    ap.add_argument('--layer-stride', type=int, default=4)
+    ap.add_argument('--layer-stride', type=int, default=2)
     args = ap.parse_args()
     rooms = list(ROOMS)
 
@@ -117,7 +118,16 @@ def main():
             acc.append((c - o).float())
         return torch.cat(acc)
 
-    picks = [(L, h) for L in range(0, NL, args.layer_stride) for h in range(N_PER_LAYER)]
+    # ⚠ THE SAMPLE WAS HEAD-BIASED AND IT IS THE DENOMINATOR OF A TOLERANCE RULE. The first version
+    # took `for h in range(N_PER_LAYER)` -- heads 0 and 1 of every sampled layer, never any other --
+    # while the docstring said "stratified sample of cells". Heads are not exchangeable here: R25
+    # measured that the KV-group partition explains 4-9 points of within-layer spread, and heads 0..5
+    # are one whole KV group in 1.5b. So M was estimated from one group's low-index heads. Seeded
+    # random heads per layer, stride 2, 4 per layer.
+    import random as _r
+    _rng = _r.Random(SEED)
+    picks = [(L, h) for L in range(0, NL, args.layer_stride)
+             for h in sorted(_rng.sample(range(NH), min(N_PER_LAYER, NH)))]
     out = {'model': args.tag, 'n_items': n, 'prod_chunk': PROD_CHUNK,
            'n_cells_probed': len(picks), 'supports': {}}
     print(f'  {args.tag}: {len(picks)} cells, chunk 1 vs {PROD_CHUNK}, {n} items', flush=True)
