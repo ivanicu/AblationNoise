@@ -142,6 +142,11 @@ def main():
             out.append((c - o).float())
         return torch.cat(out)
 
+    # ⚠ THE FIRST PROBE GRID WAS WRONG AND I READ IT AS AN ANSWER. Chunks 20/40/60/120 all sit
+    # INSIDE the batched regime, so their spread (5.230e-06 for one I_all cell) measures variation
+    # among batch sizes -- not the thing being compared. R18 ran ONE ITEM AT A TIME. The reference
+    # regime is chunk=1, and the comparison the control makes is batch-vs-no-batch, so chunk=1 must
+    # be in the grid or the floor is measured against the wrong baseline.
     # THE BATCHING NOISE FLOOR, MEASURED RATHER THAN ASSUMED. The registered mean tolerance of 1e-5
     # was set from I_final's behaviour. I_all zeroes 121 positions instead of 1, so the perturbation
     # propagates through far more arithmetic and accumulates more float32 divergence -- and the right

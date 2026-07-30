@@ -3,6 +3,10 @@
  "n_cells_required": 4,
  "n_cells_to_decide": 3,
  "cells": {
+  "qwen2.5-1.5b|I_all|off0": {
+   "contributes": false,
+   "reason": "positive control did not pass"
+  },
   "qwen2.5-1.5b|I_final|off0": {
    "contributes": true,
    "coords": {
@@ -26,10 +30,73 @@
     "W3_few_items": false
    },
    "reading": "W1_head_property"
+  },
+  "qwen2.5-1.5b|I_final|off400": {
+   "contributes": true,
+   "coords": {
+    "sd_w": 0.8335496746991266,
+    "lam1": 0.5400600401330791,
+    "lam1_mean_projected": 0.46631663854440236,
+    "lam1_null_iid": 0.12842607726737376,
+    "lam1_null_resign": 0.13733824109376713,
+    "split": 0.8351245236644551,
+    "split_spearman_brown_reported_only": 0.9101557010385789,
+    "maxrms": 2.597229213733453,
+    "sign": 0.7583333333333333,
+    "jackknife_se_median_nats": 0.09691370441085397,
+    "n_cells": 336
+   },
+   "coordinate1_above_instrument_floor": true,
+   "coordinate1_verdict": "read",
+   "worlds_satisfied": {
+    "W1_head_property": true,
+    "W2_degenerate_ratio": false,
+    "W3_few_items": false
+   },
+   "reading": "W1_head_property"
+  },
+  "qwen2.5-3b|I_final|off0": {
+   "contributes": true,
+   "coords": {
+    "sd_w": 0.6709969025513532,
+    "lam1": 0.5261577145080574,
+    "lam1_mean_projected": 0.5176757459796728,
+    "lam1_null_iid": 0.10432250611111178,
+    "lam1_null_resign": 0.11172413610857423,
+    "split": 0.8310270761882268,
+    "split_spearman_brown_reported_only": 0.9077168622959222,
+    "maxrms": 2.4605574285202096,
+    "sign": 0.8,
+    "jackknife_se_median_nats": 0.07671654885151816,
+    "n_cells": 576
+   },
+   "coordinate1_above_instrument_floor": true,
+   "coordinate1_verdict": "read",
+   "worlds_satisfied": {
+    "W1_head_property": true,
+    "W2_degenerate_ratio": false,
+    "W3_few_items": false
+   },
+   "reading": "W1_head_property"
+  }
+ },
+ "collapsed_cells": {
+  "qwen2.5-1.5b|I_final": {
+   "item_sets": {
+    "off0": "W1_head_property",
+    "off400": "W1_head_property"
+   },
+   "reading": "W1_head_property"
+  },
+  "qwen2.5-3b|I_final": {
+   "item_sets": {
+    "off0": "W1_head_property"
+   },
+   "reading": "W1_head_property"
   }
  },
  "readings_by_cell": {
-  "W1_head_property": 1
+  "W1_head_property": 2
  },
  "enough_cells_to_decide": false,
  "verdict": "INCOMPLETE"

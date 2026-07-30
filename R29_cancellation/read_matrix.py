@@ -133,11 +133,30 @@ def main():
         print(f'      worlds satisfied: ' + ', '.join(k for k, v in hits.items() if v) +
               (f'   -> {read}' if n_true != 1 else f'   -> {read}'))
 
-    good = [v for v in out['cells'].values() if v.get('contributes')]
+    # ⚠ A CELL IS (model x support), NOT A FILE. The first version counted scan files, so item set 0
+    # and item set 400 of the SAME (model, support) counted as two cells -- which would let one
+    # (model, support) supply two thirds of the required majority on its own. The registration lists
+    # four cells, {1.5b, 3b} x {I_final, I_all}, and names the two item sets as REPLICATIONS for 1.5b.
+    # Item sets are collapsed within a cell and must AGREE, or the cell is UNVERIFIED.
+    bycell = {}
+    for key, v in out['cells'].items():
+        if not v.get('contributes'):
+            continue
+        model, support, off = key.split('|')
+        bycell.setdefault(f'{model}|{support}', {})[off] = v['reading']
+    collapsed = {}
+    for cell, offs in bycell.items():
+        rr = set(offs.values())
+        collapsed[cell] = {'item_sets': offs,
+                           'reading': (next(iter(rr)) if len(rr) == 1
+                                       else 'ITEM_SETS_DISAGREE_UNVERIFIED')}
+        print(f'    cell {cell:<26} item sets {offs}  -> {collapsed[cell]["reading"]}')
+    out['collapsed_cells'] = collapsed
     agree = {}
-    for v in good:
+    for v in collapsed.values():
         agree[v['reading']] = agree.get(v['reading'], 0) + 1
     out['readings_by_cell'] = agree
+    good = list(collapsed.values())
     enough = len(good) >= N_CELLS_TO_DECIDE
     out['enough_cells_to_decide'] = enough
     if not enough:
