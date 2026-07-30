@@ -59,6 +59,10 @@
    "reading": "UNVERIFIED_MATRIX_UNFIT",
    "reading_under_the_retracted_matrix": "W1_head_property"
   },
+  "qwen2.5-3b|I_all|off0": {
+   "contributes": false,
+   "reason": "positive control did not pass"
+  },
   "qwen2.5-3b|I_final|off0": {
    "contributes": true,
    "coords": {
@@ -104,6 +108,8 @@
  "readings_by_cell": {
   "UNVERIFIED_MATRIX_UNFIT": 2
  },
+ "n_cells_control_failed": 2,
+ "denominator_is_registered_not_surviving": 4,
  "enough_cells_to_decide": false,
  "verdict": "INCOMPLETE"
 }

@@ -177,12 +177,21 @@ def main():
     for v in collapsed.values():
         agree[v['reading']] = agree.get(v['reading'], 0) + 1
     out['readings_by_cell'] = agree
+    # ⚠ CONTROL-FAILED CELLS WERE DROPPED, NOT COUNTED AS MISSES. `good` held only the cells whose
+    # control passed, so the registered "at least 3 of 4" silently became "at least 3 of however many
+    # happened to pass" -- a denominator that shrinks toward its own numerator. The registered
+    # denominator is 4 and it is fixed here; a cell that failed its control counts against the rule
+    # rather than vanishing from it.
     good = list(collapsed.values())
+    n_failed = sum(1 for v in out['cells'].values() if not v.get('contributes'))
+    out['n_cells_control_failed'] = n_failed
+    out['denominator_is_registered_not_surviving'] = N_CELLS_REQUIRED
     enough = len(good) >= N_CELLS_TO_DECIDE
     out['enough_cells_to_decide'] = enough
     if not enough:
         out['verdict'] = 'INCOMPLETE'
-        print(f'\n  {len(good)} contributing cell(s). The registered rule needs '
+        print(f'\n  {len(good)} contributing cell(s), {n_failed} failed their control and count '
+              f'AGAINST the rule rather than vanishing from it. The registered rule needs '
               f'{N_CELLS_TO_DECIDE} of {N_CELLS_REQUIRED} and is NOT satisfiable yet. '
               f'NO VERDICT IS READ.')
     else:

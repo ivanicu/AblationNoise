@@ -227,8 +227,14 @@ def main():
     sem_abs_bound = SEM_NOISE_FACTOR * worst_mean / math.sqrt(n)
     worst_sem_abs = max((abs(v['sem_got'] - v['sem_ref']) for v in diag.values()
                          if 'sem_got' in v), default=0.0)
+    # ⚠ `semref is None or ...` WAS AN `or` ON THE DECISION PATH, and it made `pass` mean different
+    # things in different cells. semref is loaded only for I_final at offset 0, so in 3 of the 4
+    # registered cells the sem leg was VACUOUSLY TRUE and a reader of `pass: true` could not tell
+    # whether the sem control had held or had never run. A skipped leg is not a passed leg.
+    sem_applicable = semref is not None
+    sem_ok = (worst_sem_abs <= sem_abs_bound) if sem_applicable else None
     ok = (worst_mean <= TOL_MEAN and abs(bm - want_bm) <= TOL_MEAN
-          and (semref is None or worst_sem_abs <= sem_abs_bound))
+          and (sem_ok is not False))
     print(f'    sem, ABSOLUTE rule: worst |delta| {worst_sem_abs:.3e} against bound '
           f'{sem_abs_bound:.3e} = {SEM_NOISE_FACTOR} * {worst_mean:.3e} / sqrt({n})', flush=True)
     print(f'\n  POSITIVE CONTROL over {nchk} cells: worst |delta mean| {worst_mean:.3e} '
@@ -254,6 +260,9 @@ def main():
                        'sem_abs_bound': sem_abs_bound, 'sem_noise_factor': SEM_NOISE_FACTOR,
                        'sem_abs_floor': worst_mean / math.sqrt(n),
                        'tol_mean': TOL_MEAN, 'tol_sem_rel_reported_only': TOL_SEM_REL,
+                       'sem_control_applicable': sem_applicable, 'sem_control_result': sem_ok,
+                       'legs_actually_evaluated': (['mean', 'base'] +
+                                                   (['sem'] if sem_applicable else [])),
                        'pass': ok}}
     rs = sorted(((v['rel_delta_sem'], k) for k, v in diag.items() if 'rel_delta_sem' in v),
                 reverse=True)
