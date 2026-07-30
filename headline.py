@@ -3901,6 +3901,47 @@ def r29_batch_noise():
                      for k, v in d['supports'].items()}}
 
 
+def r29_kv_item_patterns():
+    """Do KV-group mates share PER-ITEM patterns? R25's proposed mechanism, tested and dead.
+
+    R25 measured that the grouped-query partition explains 4-9 points of within-layer spread in |effect|,
+    and a reviewer named the mechanism as a testable consequence: heads sharing a key/value stream read
+    the same keys, so their per-item effect patterns should correlate, and grouped cancellation would be
+    why the partition shows in MAGNITUDE but not orientation. It could not be tested until the per-item
+    vectors were persisted.
+
+        cell                          r_within   r_between   delta_r    p        positive layers
+        1.5b|I_final|off0             +0.0537    +0.0523     +0.0014   0.44748   10 of 28
+        1.5b|I_final|off400           +0.0512    +0.0529     -0.0017   0.51027   10 of 28
+        3b  |I_final|off0             +0.0307    +0.0278     +0.0030   0.40263   12 of 36
+
+    Null everywhere, and the two INDEPENDENT item sets disagree in sign -- which is what a quantity
+    scattered about zero looks like. The null is a head-label permutation WITHIN each layer, so the
+    layer's own correlation matrix is held exactly fixed and only the group assignment moves; nothing is
+    pooled, so it cannot inherit the mixture trap.
+
+    THE STATISTIC IS NOT AN IDENTITY, and that is checked rather than asserted: delta_r regressed on
+    layer index, log mean |per_head|, log mean per_head_sem and their difference gives R2 = 0.0416, with
+    a residual sd of 0.1323 against a target sd of 0.1351. So this is a genuinely new coordinate that
+    returns null -- the strongest form of a negative, and the opposite of how Lambda died.
+
+    A second fact falls out: pairwise per-item correlations between heads of a layer are about +0.05
+    overall, regardless of group. Heads have nearly UNCORRELATED item patterns. That reconciles the
+    earlier lambda1 share of 0.54, which was computed on uncentred columns and is therefore dominated by
+    the shared all-ones direction whose correct null is 0.414, not the emitted iid 0.128.
+
+    R25's eta^2 stands as a measurement. Its explanation does not.
+    """
+    f = HERE / 'R29_cancellation' / 'results' / 'r29_kv_item_patterns.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    return {'seed': d.get('seed'), 'n_perm': d.get('n_perm'), 'statistic': d.get('statistic'),
+            'identity_check': d.get('identity_check'),
+            'cells': {k: {kk: vv for kk, vv in v.items() if kk != 'per_layer'}
+                      for k, v in d.get('cells', {}).items()}}
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -5407,6 +5448,7 @@ def main() -> int:
     R29M = r29_matrix()
     R29R = r29_retraction()
     R29B = r29_batch_noise()
+    R29K = r29_kv_item_patterns()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -5452,7 +5494,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'r28_kappa': R28K, 'r28_gate1_fd64': R28F, 'r29_on_disk': R29, 'r29_scan': R29S, 'r29_matrix': R29M, 'r29_retraction': R29R, 'r29_batch_noise': R29B, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'r28_kappa': R28K, 'r28_gate1_fd64': R28F, 'r29_on_disk': R29, 'r29_scan': R29S, 'r29_matrix': R29M, 'r29_retraction': R29R, 'r29_batch_noise': R29B, 'r29_kv_item_patterns': R29K, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0

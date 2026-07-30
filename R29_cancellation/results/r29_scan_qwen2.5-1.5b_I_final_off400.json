@@ -7755,6 +7755,11 @@
    "snr": 2.4944875961326773
   }
  },
+ "vectors_file": "r29_vectors_qwen2.5-1.5b_I_final_off400.npz",
+ "vectors_shape": [
+  336,
+  120
+ ],
  "median_lambda_jackknife_se_nats": 0.09691370441085397,
  "layer_eigen": {
   "0": {

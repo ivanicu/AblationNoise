@@ -8,6 +8,9 @@
  "chunk": 40,
  "base_margin_replayed": 4.476827144622803,
  "base_margin_frozen": 4.476821851730347,
+ "chunk_probe": {},
+ "batching_spread_base": null,
+ "batching_spread_one_cell": null,
  "control_per_cell": {
   "L00H00": {
    "delta_mean": 2.305085460344719e-06,
@@ -9099,6 +9102,11 @@
    "snr": 1.27451366499105
   }
  },
+ "vectors_file": "r29_vectors_qwen2.5-1.5b_I_final_off0.npz",
+ "vectors_shape": [
+  336,
+  120
+ ],
  "median_lambda_jackknife_se_nats": 0.09274180562809012,
  "layer_eigen": {
   "0": {

@@ -51,6 +51,34 @@ def main():
     print(f'  1. Lambda == 0.5*log(1 + (n-1)/snr^2)   max|dev| {max(dev):.3e} nats over '
           f'{len(dev)} cells')
 
+    # ---------- 1b. G IS AN IDENTITY TOO, and that is the deeper retraction ----------
+    #   rms^2 = mean^2 + (n-1)/n * sd_i^2  and  sd_i = sem*sqrt(n)
+    #   =>  G = log rms = 0.5*log(mean^2 + (n-1)*sem^2)
+    # So (mean, sem) <-> (G, Lambda) is a BIJECTION: the round's entire "split" is a change of
+    # coordinates on two columns R11 published. G's celebrated 0.9982 replication across disjoint item
+    # sets is a property of those two columns, not of anything the scan measured.
+    A0 = json.load(open(REPO / 'R11_instrument_noise' / 'results'
+                        / 'r11_itemsA_qwen2.5-1.5b.json'))
+    L0 = {int(k): v for k, v in A0['layers'].items()}
+    gdev = []
+    for lay in sorted(L0):
+        ph, ps = L0[lay]['per_head'], L0[lay].get('per_head_sem')
+        if not ps:
+            continue
+        for h in range(len(ph)):
+            k = f'L{lay:02d}H{h:02d}'
+            if k in per0:
+                gdev.append(abs(0.5 * math.log(ph[str(h)] ** 2 + (n - 1) * ps[str(h)] ** 2)
+                                - per0[k]['G']))
+    out['identity_G'] = {'formula': 'G == 0.5*log(mean^2 + (n-1)*sem^2)',
+                         'max_abs_deviation_nats': max(gdev), 'n_cells': len(gdev),
+                         'note': 'residual is the float32 precision of the stored columns; the '
+                                 'relation is exact in exact arithmetic'}
+    print(f'  1b. G == 0.5*log(mean^2 + (n-1)*sem^2)   max|dev| {max(gdev):.3e} nats over '
+          f'{len(gdev)} cells')
+    print(f'      -> (mean, sem) <-> (G, Lambda) is a BIJECTION. BOTH coordinates are functions of '
+          f'two published columns.')
+
     # ---------- 2. Lambda from two published columns, zero forwards ----------
     A = json.load(open(REPO / 'R11_instrument_noise' / 'results'
                        / 'r11_itemsA_qwen2.5-1.5b.json'))
@@ -156,7 +184,8 @@ def main():
           f'{out["snr_preserving_null"]["w1_sign_threshold_below_null"]}')
     print(f'     max|Delta|/rms: null median {mr[len(mr) // 2]:.4f}   observed {obs_mr:.4f}')
 
-    out['retracted'] = ['W1_head_property as read by read_matrix.py',
+    out['retracted'] = ['G, on the same ground as Lambda -- an identity on (per_head, per_head_sem)',
+                        'W1_head_property as read by read_matrix.py',
                         'the claim that W3 was positively excluded -- its threshold was unreachable',
                         'the jackknife SE as the instrument floor for Lambda']
     (HERE / 'results').mkdir(parents=True, exist_ok=True)

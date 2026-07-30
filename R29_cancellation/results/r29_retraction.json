@@ -6,6 +6,12 @@
   "n_cells": 336,
   "n_items": 120
  },
+ "identity_G": {
+  "formula": "G == 0.5*log(mean^2 + (n-1)*sem^2)",
+  "max_abs_deviation_nats": 0.001839700994890059,
+  "n_cells": 336,
+  "note": "residual is the float32 precision of the stored columns; the relation is exact in exact arithmetic"
+ },
  "from_published_columns": {
   "corr_with_scan": 0.9999996155614955,
   "max_abs_diff_nats": 0.008122673701705274,
@@ -48,6 +54,7 @@
   "w1_sign_threshold_below_null": true
  },
  "retracted": [
+  "G, on the same ground as Lambda -- an identity on (per_head, per_head_sem)",
   "W1_head_property as read by read_matrix.py",
   "the claim that W3 was positively excluded -- its threshold was unreachable",
   "the jackknife SE as the instrument floor for Lambda"
