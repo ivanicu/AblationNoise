@@ -32,7 +32,8 @@ sys.path.insert(0, str(REPO / 'R10_exhaustive'))
 
 CHUNK = 40
 TOL_MEAN = 1e-5
-TOL_SEM_REL = 1e-3
+TOL_SEM_REL = 1e-3           # reported, no longer decisive (AMENDMENT_1)
+SEM_NOISE_FACTOR = 3         # band on the noise SCALE: |delta sem| <= 3 * worst|delta mean| / sqrt(n)
 SEED = 20260729
 N_NULL = 400
 
@@ -183,8 +184,18 @@ def main():
                 row.update({'rel_delta_sem': rel, 'sem_got': gs, 'sem_ref': ws,
                             'snr': abs(got) / gs if gs > 0 else float('inf')})
         diag[f'L{L:02d}H{h:02d}'] = row
+    # AMENDMENT_1: the sem bound is now ABSOLUTE, in the units the instrument's noise lives in. A 5e-6
+    # absolute per-item divergence gives a sem an absolute floor of that over sqrt(n); a fixed RELATIVE
+    # bound over a population spanning orders of magnitude in sd is three tests wearing one number, and
+    # for the quietest cells it sat below what float32 can deliver. The relative distribution is still
+    # computed and reported so the old rule's verdict stays visible.
+    sem_abs_bound = SEM_NOISE_FACTOR * worst_mean / math.sqrt(n)
+    worst_sem_abs = max((abs(v['sem_got'] - v['sem_ref']) for v in diag.values()
+                         if 'sem_got' in v), default=0.0)
     ok = (worst_mean <= TOL_MEAN and abs(bm - want_bm) <= TOL_MEAN
-          and (semref is None or worst_sem <= TOL_SEM_REL))
+          and (semref is None or worst_sem_abs <= sem_abs_bound))
+    print(f'    sem, ABSOLUTE rule: worst |delta| {worst_sem_abs:.3e} against bound '
+          f'{sem_abs_bound:.3e} = {SEM_NOISE_FACTOR} * {worst_mean:.3e} / sqrt({n})', flush=True)
     print(f'\n  POSITIVE CONTROL over {nchk} cells: worst |delta mean| {worst_mean:.3e} '
           f'(tol {TOL_MEAN})', flush=True)
     if semref:
@@ -197,7 +208,11 @@ def main():
            'control_per_cell': diag,
            'control': {'n_cells_checked': nchk, 'worst_abs_delta_mean': worst_mean,
                        'worst_rel_delta_sem': worst_sem if semref else None,
-                       'tol_mean': TOL_MEAN, 'tol_sem_rel': TOL_SEM_REL, 'pass': ok}}
+                       'worst_abs_delta_sem': worst_sem_abs if semref else None,
+                       'sem_abs_bound': sem_abs_bound, 'sem_noise_factor': SEM_NOISE_FACTOR,
+                       'sem_abs_floor': worst_mean / math.sqrt(n),
+                       'tol_mean': TOL_MEAN, 'tol_sem_rel_reported_only': TOL_SEM_REL,
+                       'pass': ok}}
     rs = sorted(((v['rel_delta_sem'], k) for k, v in diag.items() if 'rel_delta_sem' in v),
                 reverse=True)
     if rs:

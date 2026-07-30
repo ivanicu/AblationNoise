@@ -1,0 +1,36 @@
+{
+ "jk_gate_nats": 0.15,
+ "n_cells_required": 4,
+ "n_cells_to_decide": 3,
+ "cells": {
+  "qwen2.5-1.5b|I_final|off0": {
+   "contributes": true,
+   "coords": {
+    "sd_w": 0.8199951667588837,
+    "lam1": 0.5405157637187027,
+    "lam1_mean_projected": 0.4621933027548367,
+    "lam1_null_iid": 0.12842607726737376,
+    "lam1_null_resign": 0.13599651041903213,
+    "split": 0.7815610037655245,
+    "split_spearman_brown_reported_only": 0.8773889887728903,
+    "maxrms": 2.573167328640345,
+    "sign": 0.7625,
+    "jackknife_se_median_nats": 0.09274180562809012,
+    "n_cells": 336
+   },
+   "coordinate1_above_instrument_floor": true,
+   "coordinate1_verdict": "read",
+   "worlds_satisfied": {
+    "W1_head_property": true,
+    "W2_degenerate_ratio": false,
+    "W3_few_items": false
+   },
+   "reading": "W1_head_property"
+  }
+ },
+ "readings_by_cell": {
+  "W1_head_property": 1
+ },
+ "enough_cells_to_decide": false,
+ "verdict": "INCOMPLETE"
+}
