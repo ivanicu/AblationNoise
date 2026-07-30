@@ -107,19 +107,40 @@ def main():
             print(f'    {key:<34} control FAILED -> contributes nothing')
             continue
         c = coords(d)
+        # ⚠ THE MATRIX CANNOT DISCRIMINATE, PROVEN IN retract_w1.py, AND NO WORLD IS READ FROM IT.
+        #   · Lambda == 0.5*log(1 + (n-1)/snr^2) to 1.332e-15 -- an ALGEBRAIC IDENTITY on |mean|/sem,
+        #     both columns already published in R11. Recomputed from those two columns with ZERO
+        #     forwards it matches this 2976-forward scan at corr 0.99999962. So Lambda cannot separate
+        #     a head property from a resolution limit, which was the whole question.
+        #   · sign_frac is also a function of snr, so 4 of 5 coordinates are one quantity.
+        #   · W1's sign bar of 0.65 sits BELOW its own SNR-preserving null, whose median is 0.7333.
+        #   · W3's bar needed a MEDIAN max|Delta|/rms >= 6.5 while the MAX over every cell is 4.4596
+        #     (1.5b) and 5.4534 (3b) -- unreachable, dead on arrival like W0.
+        #   · the jackknife SE, used as "the instrument's own floor", is 0.0933 nats against a DIRECT
+        #     off0-vs-off400 replicate precision of 0.3910 -- 4.19x optimistic. The 0.15 gate passes
+        #     on the flattering estimator and FAILS on the honest one, and the registration quotes the
+        #     honest one itself, in its own W0 refutation.
+        # The gate below was also DEAD: jk_ok was computed, printed, and never consulted by `hits`.
         jk_ok = c['jackknife_se_median_nats'] <= JK_GATE
+        c['replicate_precision_note'] = ('jackknife is 4.19x optimistic vs the off0/off400 '
+                                         'replicate precision of 0.3910 nats; see retract_w1.py')
         hits = {}
         for wn, conds in W.items():
             ok = all((c[k] >= v) if op == 'ge' else (c[k] <= v)
                      for k, (op, v) in conds.items())
             hits[wn] = ok
         n_true = sum(hits.values())
-        read = ([k for k, v in hits.items() if v][0] if n_true == 1
-                else 'ALL_MISS' if n_true == 0 else 'MULTIPLE_WORLDS_UNVERIFIED')
+        # No `or`, and no world read: the matrix is unfit, so the reading is UNVERIFIED regardless of
+        # which conditions happen to hold. The satisfied set is still reported, because hiding it would
+        # hide the evidence that the thresholds were mis-set.
+        read = 'UNVERIFIED_MATRIX_UNFIT'
+        would_have_read = ([k for k, v in hits.items() if v][0] if n_true == 1
+                           else 'ALL_MISS' if n_true == 0 else 'MULTIPLE')
         out['cells'][key] = {'contributes': True, 'coords': c,
                              'coordinate1_above_instrument_floor': jk_ok,
                              'coordinate1_verdict': 'read' if jk_ok else 'UNVERIFIED',
-                             'worlds_satisfied': hits, 'reading': read}
+                             'worlds_satisfied': hits, 'reading': read,
+                             'reading_under_the_retracted_matrix': would_have_read}
         print(f'\n    {key}   cells {c["n_cells"]}')
         print(f'      sd_w(Lambda|log rms) {c["sd_w"]:.4f} nats   jackknife floor '
               f'{c["jackknife_se_median_nats"]:.4f}  -> coordinate 1 '
@@ -131,7 +152,7 @@ def main():
               f'{c["split_spearman_brown_reported_only"]:.4f}, reported not gated)')
         print(f'      med max|Delta|/rms {c["maxrms"]:.4f}   med sign frac {c["sign"]:.4f}')
         print(f'      worlds satisfied: ' + ', '.join(k for k, v in hits.items() if v) +
-              (f'   -> {read}' if n_true != 1 else f'   -> {read}'))
+              f'   -> {read}  (the retracted matrix would have read {would_have_read})')
 
     # ⚠ A CELL IS (model x support), NOT A FILE. The first version counted scan files, so item set 0
     # and item set 400 of the SAME (model, support) counted as two cells -- which would let one

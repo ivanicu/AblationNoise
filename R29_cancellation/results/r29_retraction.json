@@ -1,0 +1,55 @@
+{
+ "note": "retraction; every figure reproduced here, none quoted",
+ "identity": {
+  "formula": "Lambda == 0.5*log(1 + (n-1)/snr^2)",
+  "max_abs_deviation_nats": 1.3322676295501878e-15,
+  "n_cells": 336,
+  "n_items": 120
+ },
+ "from_published_columns": {
+  "corr_with_scan": 0.9999996155614955,
+  "max_abs_diff_nats": 0.008122673701705274,
+  "n_cells": 336,
+  "forwards_used": 0,
+  "forwards_the_scan_used": 2976
+ },
+ "w3_unreachable": {
+  "qwen2.5-1.5b": {
+   "max_over_all_cells": 4.459564776293613,
+   "w3_threshold": 6.5,
+   "reachable": false,
+   "n_cells": 336
+  },
+  "qwen2.5-3b": {
+   "max_over_all_cells": 5.4534113198938075,
+   "w3_threshold": 6.5,
+   "reachable": false,
+   "n_cells": 576
+  }
+ },
+ "precision": {
+  "jackknife_median_nats": 0.09333462214125435,
+  "replicate_precision_nats": 0.3910081627045375,
+  "sd_of_difference_nats": 0.5529690466953427,
+  "optimism_factor": 4.189315323018916,
+  "gate_was": 0.15,
+  "jackknife_passes_gate": true,
+  "replicate_passes_gate": false,
+  "median_lambda_nats": 0.551923224994292,
+  "n_cells": 336
+ },
+ "snr_preserving_null": {
+  "n_draws": 200,
+  "sign_frac_null_median": 0.7333333333333333,
+  "sign_frac_observed_median": 0.7666666666666667,
+  "max_over_rms_null_median": 2.567754090677827,
+  "max_over_rms_observed_median": 2.576334410643946,
+  "w1_sign_threshold": 0.65,
+  "w1_sign_threshold_below_null": true
+ },
+ "retracted": [
+  "W1_head_property as read by read_matrix.py",
+  "the claim that W3 was positively excluded -- its threshold was unreachable",
+  "the jackknife SE as the instrument floor for Lambda"
+ ]
+}

@@ -20,7 +20,8 @@
     "maxrms": 2.573167328640345,
     "sign": 0.7625,
     "jackknife_se_median_nats": 0.09274180562809012,
-    "n_cells": 336
+    "n_cells": 336,
+    "replicate_precision_note": "jackknife is 4.19x optimistic vs the off0/off400 replicate precision of 0.3910 nats; see retract_w1.py"
    },
    "coordinate1_above_instrument_floor": true,
    "coordinate1_verdict": "read",
@@ -29,7 +30,8 @@
     "W2_degenerate_ratio": false,
     "W3_few_items": false
    },
-   "reading": "W1_head_property"
+   "reading": "UNVERIFIED_MATRIX_UNFIT",
+   "reading_under_the_retracted_matrix": "W1_head_property"
   },
   "qwen2.5-1.5b|I_final|off400": {
    "contributes": true,
@@ -44,7 +46,8 @@
     "maxrms": 2.597229213733453,
     "sign": 0.7583333333333333,
     "jackknife_se_median_nats": 0.09691370441085397,
-    "n_cells": 336
+    "n_cells": 336,
+    "replicate_precision_note": "jackknife is 4.19x optimistic vs the off0/off400 replicate precision of 0.3910 nats; see retract_w1.py"
    },
    "coordinate1_above_instrument_floor": true,
    "coordinate1_verdict": "read",
@@ -53,7 +56,8 @@
     "W2_degenerate_ratio": false,
     "W3_few_items": false
    },
-   "reading": "W1_head_property"
+   "reading": "UNVERIFIED_MATRIX_UNFIT",
+   "reading_under_the_retracted_matrix": "W1_head_property"
   },
   "qwen2.5-3b|I_final|off0": {
    "contributes": true,
@@ -68,7 +72,8 @@
     "maxrms": 2.4605574285202096,
     "sign": 0.8,
     "jackknife_se_median_nats": 0.07671654885151816,
-    "n_cells": 576
+    "n_cells": 576,
+    "replicate_precision_note": "jackknife is 4.19x optimistic vs the off0/off400 replicate precision of 0.3910 nats; see retract_w1.py"
    },
    "coordinate1_above_instrument_floor": true,
    "coordinate1_verdict": "read",
@@ -77,26 +82,27 @@
     "W2_degenerate_ratio": false,
     "W3_few_items": false
    },
-   "reading": "W1_head_property"
+   "reading": "UNVERIFIED_MATRIX_UNFIT",
+   "reading_under_the_retracted_matrix": "W1_head_property"
   }
  },
  "collapsed_cells": {
   "qwen2.5-1.5b|I_final": {
    "item_sets": {
-    "off0": "W1_head_property",
-    "off400": "W1_head_property"
+    "off0": "UNVERIFIED_MATRIX_UNFIT",
+    "off400": "UNVERIFIED_MATRIX_UNFIT"
    },
-   "reading": "W1_head_property"
+   "reading": "UNVERIFIED_MATRIX_UNFIT"
   },
   "qwen2.5-3b|I_final": {
    "item_sets": {
-    "off0": "W1_head_property"
+    "off0": "UNVERIFIED_MATRIX_UNFIT"
    },
-   "reading": "W1_head_property"
+   "reading": "UNVERIFIED_MATRIX_UNFIT"
   }
  },
  "readings_by_cell": {
-  "W1_head_property": 2
+  "UNVERIFIED_MATRIX_UNFIT": 2
  },
  "enough_cells_to_decide": false,
  "verdict": "INCOMPLETE"

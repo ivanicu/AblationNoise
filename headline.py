@@ -3829,6 +3829,42 @@ def r29_matrix():
     return json.load(open(f)) if f.exists() else None
 
 
+def r29_retraction():
+    """Lambda is an ALGEBRAIC IDENTITY on SNR, and the null carrying no head information reads W1.
+
+        rms^2 = mean^2 + (n-1)/n * sd_i^2   and   snr = |mean| * sqrt(n) / sd_i
+        =>  Lambda = log(rms) - log|mean| = 0.5 * log(1 + (n-1)/snr^2)
+
+    Verified to max|dev| 1.332e-15 over 336 cells. So Lambda carries exactly the information in
+    |per_head| / per_head_sem and nothing else -- both columns already published in R11. Recomputed from
+    those two columns with ZERO forwards it reproduces the 2976-forward scan at corr 0.99999962, max
+    difference 8.123e-03 nats.
+
+    The registration called Lambda "a POINTWISE reparameterisation of the published number", which was
+    true and not the point: it is a reparameterisation of SNR SPECIFICALLY, so it cannot separate a head
+    property from a resolution limit -- and separating those was the entire question.
+
+    THREE MORE DEFECTS, each measured here:
+      · W1's sign-fraction bar of 0.65 sits BELOW its own SNR-preserving null, median 0.7333 against an
+        observed 0.7667. The coordinate that separated W1 from W2 was pre-satisfied.
+      · W3 needed a MEDIAN max|Delta|/rms >= 6.5 while the MAX over every cell is 4.4596 (1.5b) and
+        5.4534 (3b). Unreachable -- dead on arrival, like W0. So "W3 positively excluded" was a threshold
+        no data could reach, not a finding.
+      · the jackknife SE, used as "the instrument's own floor", is 0.0933 nats against a DIRECT
+        off0-vs-off400 replicate precision of 0.3910 -- 4.19x optimistic. The 0.15 gate passes on the
+        flattering estimator and fails on the honest one, and the registration quotes the honest figure
+        itself in its own W0 refutation. Median Lambda is 0.5519 nats, so per-cell SNR is about 1.41:
+        Lambda is barely resolved at the cell level.
+
+    RETRACTED: W1_head_property as read; the claim that W3 was positively excluded; the jackknife as the
+    instrument floor. read_matrix.py now returns UNVERIFIED_MATRIX_UNFIT for every cell and reports what
+    the retracted matrix would have said, because hiding that would hide the evidence the bars were
+    mis-set.
+    """
+    f = HERE / 'R29_cancellation' / 'results' / 'r29_retraction.json'
+    return json.load(open(f)) if f.exists() else None
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -5333,6 +5369,7 @@ def main() -> int:
     R29 = r29_on_disk()
     R29S = r29_scan()
     R29M = r29_matrix()
+    R29R = r29_retraction()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -5378,7 +5415,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'r28_kappa': R28K, 'r28_gate1_fd64': R28F, 'r29_on_disk': R29, 'r29_scan': R29S, 'r29_matrix': R29M, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'r28_kappa': R28K, 'r28_gate1_fd64': R28F, 'r29_on_disk': R29, 'r29_scan': R29S, 'r29_matrix': R29M, 'r29_retraction': R29R, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
