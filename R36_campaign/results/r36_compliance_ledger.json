@@ -48,7 +48,8 @@
    "max_draws": 30,
    "n_result_json": 15,
    "n_generators": 1,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 4
   },
   "R2_inversion": {
    "scores": {
@@ -82,7 +83,8 @@
    "max_draws": 0,
    "n_result_json": 5,
    "n_generators": 1,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 5
   },
   "R4_predictability": {
    "scores": {
@@ -94,12 +96,12 @@
     "multi_draw": "UNMEASURED",
     "uncertainty": "PASS",
     "null_present": "PASS",
-    "positive_control": "PASS",
+    "positive_control": "UNMEASURED",
     "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
    "n_fail": 0,
-   "n_unmeasured": 4,
+   "n_unmeasured": 5,
    "n_models": 5,
    "models": [
     "1.8b",
@@ -114,7 +116,8 @@
    "max_draws": 0,
    "n_result_json": 1,
    "n_generators": 1,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 5
   },
   "R5_factorial": {
    "scores": {
@@ -124,14 +127,14 @@
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "PASS",
-    "uncertainty": "UNMEASURED",
+    "uncertainty": "PASS",
     "null_present": "PASS",
     "positive_control": "PASS",
     "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
    "n_fail": 0,
-   "n_unmeasured": 4,
+   "n_unmeasured": 3,
    "n_models": 5,
    "models": [
     "1.5b",
@@ -146,7 +149,8 @@
    "max_draws": 30,
    "n_result_json": 3,
    "n_generators": 1,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 3
   },
   "R6_intervention": {
    "scores": {
@@ -157,13 +161,13 @@
     "multi_support": "PASS",
     "multi_draw": "PASS",
     "uncertainty": "PASS",
-    "null_present": "UNMEASURED",
+    "null_present": "PASS",
     "positive_control": "PASS",
     "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
    "n_fail": 0,
-   "n_unmeasured": 3,
+   "n_unmeasured": 2,
    "n_models": 6,
    "models": [
     "1.5b",
@@ -179,7 +183,8 @@
    "max_draws": 400,
    "n_result_json": 12,
    "n_generators": 2,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 2
   },
   "R7_norm_matched": {
    "scores": {
@@ -190,13 +195,13 @@
     "multi_support": "UNMEASURED",
     "multi_draw": "PASS",
     "uncertainty": "PASS",
-    "null_present": "UNMEASURED",
+    "null_present": "PASS",
     "positive_control": "PASS",
     "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
    "n_fail": 0,
-   "n_unmeasured": 4,
+   "n_unmeasured": 3,
    "n_models": 4,
    "models": [
     "1.8b",
@@ -210,7 +215,8 @@
    "max_draws": 30,
    "n_result_json": 4,
    "n_generators": 1,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 3
   },
   "R8_component": {
    "scores": {
@@ -221,13 +227,13 @@
     "multi_support": "UNMEASURED",
     "multi_draw": "PASS",
     "uncertainty": "PASS",
-    "null_present": "UNMEASURED",
+    "null_present": "PASS",
     "positive_control": "PASS",
-    "data_derived_null": "UNMEASURED",
+    "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
    "n_fail": 0,
-   "n_unmeasured": 4,
+   "n_unmeasured": 2,
    "n_models": 4,
    "models": [
     "1.8b",
@@ -241,7 +247,8 @@
    "max_draws": 30,
    "n_result_json": 5,
    "n_generators": 2,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 2
   },
   "R9_depth_profile": {
    "scores": {
@@ -275,7 +282,8 @@
    "max_draws": 30,
    "n_result_json": 4,
    "n_generators": 1,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 5
   },
   "R10_exhaustive": {
    "scores": {
@@ -287,12 +295,12 @@
     "multi_draw": "PASS",
     "uncertainty": "PASS",
     "null_present": "PASS",
-    "positive_control": "PASS",
+    "positive_control": "UNMEASURED",
     "data_derived_null": "UNMEASURED",
     "preregistered": "UNMEASURED"
    },
    "n_fail": 0,
-   "n_unmeasured": 4,
+   "n_unmeasured": 5,
    "n_models": 6,
    "models": [
     "1.5b",
@@ -308,7 +316,8 @@
    "max_draws": 2000,
    "n_result_json": 4,
    "n_generators": 1,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 5
   },
   "R11_instrument_noise": {
    "scores": {
@@ -321,11 +330,11 @@
     "uncertainty": "PASS",
     "null_present": "PASS",
     "positive_control": "PASS",
-    "data_derived_null": "PASS",
+    "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
    "n_fail": 1,
-   "n_unmeasured": 3,
+   "n_unmeasured": 4,
    "n_models": 2,
    "models": [
     "1.5b",
@@ -339,7 +348,8 @@
    "n_generators": 1,
    "failing_axes": [
     "cross_scale"
-   ]
+   ],
+   "n_unqualified": 5
   },
   "R13_task_audit": {
    "scores": {
@@ -372,7 +382,8 @@
    "max_draws": 0,
    "n_result_json": 1,
    "n_generators": 1,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 8
   },
   "R14_position_vs_binding": {
    "scores": {
@@ -404,7 +415,8 @@
     "cross_model",
     "cross_scale",
     "cross_arch"
-   ]
+   ],
+   "n_unqualified": 8
   },
   "R15_shuffled_scan": {
    "scores": {
@@ -436,7 +448,8 @@
    "max_draws": 0,
    "n_result_json": 1,
    "n_generators": 1,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 4
   },
   "R16_selection_vs_effect": {
    "scores": {
@@ -467,7 +480,8 @@
    "n_generators": 0,
    "failing_axes": [
     "cross_arch"
-   ]
+   ],
+   "n_unqualified": 5
   },
   "R18_all_positions": {
    "scores": {
@@ -500,7 +514,8 @@
    "max_draws": 0,
    "n_result_json": 2,
    "n_generators": 1,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 5
   },
   "R19_crossed_position_support": {
    "scores": {
@@ -510,14 +525,14 @@
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "PASS",
-    "uncertainty": "UNMEASURED",
+    "uncertainty": "PASS",
     "null_present": "PASS",
     "positive_control": "UNMEASURED",
-    "data_derived_null": "UNMEASURED",
+    "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
    "n_fail": 0,
-   "n_unmeasured": 4,
+   "n_unmeasured": 2,
    "n_models": 3,
    "models": [
     "1.5b",
@@ -530,7 +545,8 @@
    "max_draws": 2000,
    "n_result_json": 12,
    "n_generators": 10,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 2
   },
   "R20_direct_indirect": {
    "scores": {
@@ -542,12 +558,12 @@
     "multi_draw": "PASS",
     "uncertainty": "PASS",
     "null_present": "PASS",
-    "positive_control": "UNMEASURED",
-    "data_derived_null": "UNMEASURED",
+    "positive_control": "PASS",
+    "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
    "n_fail": 2,
-   "n_unmeasured": 3,
+   "n_unmeasured": 1,
    "n_models": 2,
    "models": [
     "1.5b",
@@ -562,7 +578,8 @@
    "failing_axes": [
     "cross_scale",
     "multi_support"
-   ]
+   ],
+   "n_unqualified": 3
   },
   "R21_indirect_attribution": {
    "scores": {
@@ -573,13 +590,13 @@
     "multi_support": "FAIL",
     "multi_draw": "UNMEASURED",
     "uncertainty": "PASS",
-    "null_present": "UNMEASURED",
+    "null_present": "PASS",
     "positive_control": "PASS",
     "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
    "n_fail": 1,
-   "n_unmeasured": 4,
+   "n_unmeasured": 3,
    "n_models": 3,
    "models": [
     "1.5b",
@@ -594,7 +611,8 @@
    "n_generators": 6,
    "failing_axes": [
     "multi_support"
-   ]
+   ],
+   "n_unqualified": 4
   },
   "R22_floor_identification": {
    "scores": {
@@ -626,7 +644,8 @@
     "cross_model",
     "cross_scale",
     "cross_arch"
-   ]
+   ],
+   "n_unqualified": 5
   },
   "R23_shape": {
    "scores": {
@@ -637,13 +656,13 @@
     "multi_support": "PASS",
     "multi_draw": "PASS",
     "uncertainty": "PASS",
-    "null_present": "UNMEASURED",
-    "positive_control": "PASS",
-    "data_derived_null": "UNMEASURED",
+    "null_present": "PASS",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
    "n_fail": 0,
-   "n_unmeasured": 3,
+   "n_unmeasured": 2,
    "n_models": 4,
    "models": [
     "1.5b",
@@ -657,7 +676,8 @@
    "max_draws": 4000,
    "n_result_json": 3,
    "n_generators": 3,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 2
   },
   "R24_concentration": {
    "scores": {
@@ -667,14 +687,14 @@
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "PASS",
-    "uncertainty": "UNMEASURED",
-    "null_present": "UNMEASURED",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
     "positive_control": "PASS",
     "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
    "n_fail": 0,
-   "n_unmeasured": 4,
+   "n_unmeasured": 2,
    "n_models": 4,
    "models": [
     "1.5b",
@@ -688,7 +708,8 @@
    "max_draws": 20000,
    "n_result_json": 5,
    "n_generators": 5,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 2
   },
   "R25_kv_group": {
    "scores": {
@@ -699,13 +720,13 @@
     "multi_support": "PASS",
     "multi_draw": "PASS",
     "uncertainty": "PASS",
-    "null_present": "UNMEASURED",
-    "positive_control": "PASS",
-    "data_derived_null": "UNMEASURED",
+    "null_present": "PASS",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
    "n_fail": 0,
-   "n_unmeasured": 3,
+   "n_unmeasured": 2,
    "n_models": 4,
    "models": [
     "1.5b",
@@ -719,7 +740,8 @@
    "max_draws": 40000,
    "n_result_json": 3,
    "n_generators": 3,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 2
   },
   "R26_decomposition": {
    "scores": {
@@ -729,9 +751,9 @@
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "PASS",
-    "uncertainty": "UNMEASURED",
+    "uncertainty": "PASS",
     "null_present": "PASS",
-    "positive_control": "PASS",
+    "positive_control": "UNMEASURED",
     "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
@@ -750,7 +772,8 @@
    "max_draws": 10000,
    "n_result_json": 5,
    "n_generators": 5,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 2
   },
   "R27_metric_gauge": {
    "scores": {
@@ -781,7 +804,8 @@
    "max_draws": 0,
    "n_result_json": 0,
    "n_generators": 1,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 8
   },
   "R28_kappa": {
    "scores": {
@@ -791,14 +815,14 @@
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "UNMEASURED",
-    "uncertainty": "UNMEASURED",
+    "uncertainty": "PASS",
     "null_present": "UNMEASURED",
-    "positive_control": "UNMEASURED",
+    "positive_control": "PASS",
     "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
    "n_fail": 0,
-   "n_unmeasured": 6,
+   "n_unmeasured": 4,
    "n_models": 4,
    "models": [
     "1.5b",
@@ -812,7 +836,8 @@
    "max_draws": 0,
    "n_result_json": 2,
    "n_generators": 3,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 4
   },
   "R29_cancellation": {
    "scores": {
@@ -847,7 +872,8 @@
    "max_draws": 20000,
    "n_result_json": 13,
    "n_generators": 8,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 0
   },
   "R30_response_field": {
    "scores": {
@@ -883,7 +909,8 @@
    "n_generators": 7,
    "failing_axes": [
     "multi_support"
-   ]
+   ],
+   "n_unqualified": 1
   },
   "R31_private_beyond_group": {
    "scores": {
@@ -893,14 +920,14 @@
     "multi_seed": "UNMEASURED",
     "multi_support": "FAIL",
     "multi_draw": "PASS",
-    "uncertainty": "UNMEASURED",
-    "null_present": "UNMEASURED",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
     "positive_control": "PASS",
     "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
    "n_fail": 1,
-   "n_unmeasured": 4,
+   "n_unmeasured": 2,
    "n_models": 2,
    "models": [
     "1.5b",
@@ -914,7 +941,8 @@
    "n_generators": 1,
    "failing_axes": [
     "multi_support"
-   ]
+   ],
+   "n_unqualified": 3
   },
   "R32_forced_choice": {
    "scores": {
@@ -948,7 +976,8 @@
    "failing_axes": [
     "multi_seed",
     "multi_support"
-   ]
+   ],
+   "n_unqualified": 3
   },
   "R33_residual_direction": {
    "scores": {
@@ -982,7 +1011,8 @@
    "failing_axes": [
     "multi_seed",
     "multi_support"
-   ]
+   ],
+   "n_unqualified": 2
   },
   "R34_shape": {
    "scores": {
@@ -992,14 +1022,14 @@
     "multi_seed": "UNMEASURED",
     "multi_support": "FAIL",
     "multi_draw": "PASS",
-    "uncertainty": "UNMEASURED",
+    "uncertainty": "PASS",
     "null_present": "PASS",
-    "positive_control": "UNMEASURED",
+    "positive_control": "PASS",
     "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
    "n_fail": 1,
-   "n_unmeasured": 3,
+   "n_unmeasured": 1,
    "n_models": 2,
    "models": [
     "1.5b",
@@ -1013,7 +1043,8 @@
    "n_generators": 3,
    "failing_axes": [
     "multi_support"
-   ]
+   ],
+   "n_unqualified": 2
   },
   "R35_support": {
    "scores": {
@@ -1040,9 +1071,10 @@
    "seeds": [],
    "n_supports": 2,
    "max_draws": 2000,
-   "n_result_json": 1,
-   "n_generators": 1,
-   "failing_axes": []
+   "n_result_json": 2,
+   "n_generators": 2,
+   "failing_axes": [],
+   "n_unqualified": 3
   },
   "R36_campaign": {
    "scores": {
@@ -1053,17 +1085,21 @@
     "multi_support": "UNMEASURED",
     "multi_draw": "UNMEASURED",
     "uncertainty": "UNMEASURED",
-    "null_present": "UNMEASURED",
+    "null_present": "PASS",
     "positive_control": "PASS",
     "data_derived_null": "PASS",
-    "preregistered": "UNMEASURED"
+    "preregistered": "PASS"
    },
    "n_fail": 0,
-   "n_unmeasured": 6,
-   "n_models": 7,
+   "n_unmeasured": 4,
+   "n_models": 11,
    "models": [
     "1.5b",
+    "1.8b",
+    "1b",
     "3b",
+    "5822276b",
+    "8b",
     "phi-3.5",
     "phi-3.5-mini",
     "phi-3.5-mini-instruct",
@@ -1076,7 +1112,8 @@
    "max_draws": 0,
    "n_result_json": 1,
    "n_generators": 1,
-   "failing_axes": []
+   "failing_axes": [],
+   "n_unqualified": 4
   }
  },
  "positive_control": {
@@ -1104,39 +1141,62 @@
   }
  },
  "positive_control_passed": true,
+ "negative_control": {
+  "arm": "all trigger words in a text VALUE, zero structured keys",
+  "scores": {
+   "uncertainty": "UNMEASURED",
+   "null_present": "UNMEASURED",
+   "positive_control": "UNMEASURED",
+   "preregistered": "UNMEASURED",
+   "data_derived_null": "UNMEASURED"
+  },
+  "passes": true
+ },
+ "headline": {
+  "rounds": 33,
+  "axes_scored": 11,
+  "axes_in_full_standard": 60,
+  "cells_scored": 363,
+  "cells_in_full_standard": 1980,
+  "demonstrated_PASS": 242,
+  "pct_of_full_standard_demonstrated": 12.22,
+  "demonstrated_by_a_FALSIFIABLE_check": 124,
+  "pct_of_full_standard_falsifiably_demonstrated": 6.26,
+  "warning": "the five non-counting axes have no failing world; only the six counting axes can return FAIL. Never quote demonstrated_PASS without this block."
+ },
  "redo_order": [
   "R14_position_vs_binding",
-  "R22_floor_identification",
-  "R20_direct_indirect",
-  "R32_forced_choice",
-  "R33_residual_direction",
-  "R16_selection_vs_effect",
-  "R21_indirect_attribution",
-  "R31_private_beyond_group",
-  "R11_instrument_noise",
-  "R34_shape",
-  "R30_response_field",
   "R13_task_audit",
   "R27_metric_gauge",
+  "R22_floor_identification",
+  "R11_instrument_noise",
+  "R16_selection_vs_effect",
+  "R2_inversion",
+  "R4_predictability",
+  "R9_depth_profile",
+  "R10_exhaustive",
+  "R18_all_positions",
+  "R21_indirect_attribution",
+  "R1_noise_floor",
+  "R15_shuffled_scan",
   "R28_kappa",
   "R36_campaign",
-  "R2_inversion",
-  "R9_depth_profile",
-  "R18_all_positions",
-  "R1_noise_floor",
-  "R4_predictability",
+  "R20_direct_indirect",
+  "R32_forced_choice",
+  "R31_private_beyond_group",
   "R5_factorial",
   "R7_norm_matched",
-  "R8_component",
-  "R10_exhaustive",
-  "R15_shuffled_scan",
-  "R19_crossed_position_support",
-  "R24_concentration",
-  "R6_intervention",
-  "R23_shape",
-  "R25_kv_group",
   "R35_support",
+  "R33_residual_direction",
+  "R34_shape",
+  "R6_intervention",
+  "R8_component",
+  "R19_crossed_position_support",
+  "R23_shape",
+  "R24_concentration",
+  "R25_kv_group",
   "R26_decomposition",
+  "R30_response_field",
   "R29_cancellation"
  ]
 }

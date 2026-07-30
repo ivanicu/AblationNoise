@@ -93,16 +93,53 @@ POSITIVE_CONTROL = {'R35_support': {'n_models_min': 2, 'n_scales_min': 2},
                     'R29_cancellation': {'n_supports_min': 2, 'n_seeds_min': 2}}
 
 
+# ⚠⚠ CORRECTION 2026-07-30, SECOND DEFECT, FOUND BY THE NAVIGATOR AND WORSE THAN THE FIRST.
+# The five axes below were scored by SUBSTRING over the concatenation of every JSON in a round's
+# directory. Measured consequences: `uncertainty` PASS fired on the bare word "band" in 12 of its
+# 22 PASSes; `positive_control` fired on "gate" in 6; `preregistered` on "rule"/"threshold" in 6.
+# A substring anywhere in any file certified a property of a DIFFERENT experiment's headline.
+# And because score() emitted only PASS or UNMEASURED for these five, they had NO FAILING WORLD --
+# 99 of the 223 PASSes came from checks that could not fail.
+# FIX: these five now PASS only on a STRUCTURED KEY in a parsed JSON object, never on prose.
+# A NEGATIVE CONTROL is wired in below: a synthetic blob carrying every trigger WORD in its text
+# values but no structured key must score UNMEASURED on all five, or the detector is still reading
+# prose and the whole ledger self-labels UNVERIFIED.
+KEYPAT = {
+    'uncertainty': re.compile(r'(^|_)(sd|sem|se|ci|ci95|iqr|boot|bootstrap|p95|p99|p999|'
+                              r'quantile|percentile|band|err|error)($|_|\d)', re.I),
+    'null_present': re.compile(r'(^|_)(null|floor|surrogate|perm|derange|sham|chance|baseline)', re.I),
+    'positive_control': re.compile(r'(^|_)(positive_control|poscontrol|control_pass|gate_pass|'
+                                   r'gate_passed|c1|c2|calibrat|injected|control)($|_)', re.I),
+    'preregistered': re.compile(r'^(registered_rule|rule|registered|prereg\w*)$', re.I),
+    'data_derived_null': re.compile(r'(^|_)(derange\w*|perm\w*|shuffl\w*|label_perm|item_perm)', re.I),
+}
+
+
+def walk_keys(o, acc):
+    """Every KEY in the parsed JSON, at any depth. Values are never inspected."""
+    if isinstance(o, dict):
+        for k, v in o.items():
+            acc.add(k)
+            walk_keys(v, acc)
+    elif isinstance(o, list):
+        for v in o[:200]:
+            walk_keys(v, acc)
+    return acc
+
+
 def scan_round(d):
     """Read every result JSON and generator in the round. Return raw evidence, not verdicts."""
     txt, files = [], []
+    keys = set()
     for p in sorted(d.rglob('*.json')):
         if 'archive' in p.parts:
             continue
         try:
-            txt.append(p.read_text(errors='ignore'))
+            raw = p.read_text(errors='ignore')
+            txt.append(raw)
             files.append(p.name)
-        except OSError:
+            walk_keys(json.loads(raw), keys)
+        except (OSError, ValueError):
             pass
     gens = [p for p in sorted(d.rglob('*.py')) if 'archive' not in p.parts]
     src = '\n'.join(p.read_text(errors='ignore') for p in gens) if gens else ''
@@ -120,7 +157,7 @@ def scan_round(d):
     prereg_md = any((d / n).exists() for n in
                     ('PREREGISTRATION.md', 'AMENDMENT_1.md')) or \
         any(p.name.startswith(('PREREG', 'AMEND')) for p in d.glob('*.md'))
-    return {'n_json': len(files), 'n_gen': len(gens), 'tags': sorted(tags),
+    return {'n_json': len(files), 'n_gen': len(gens), 'keys': keys, 'tags': sorted(tags),
             'families': sorted(fams), 'scales': sorted(scales), 'seeds': sorted(seeds),
             'supports': sorted(sups), 'max_draws': max(draws) if draws else 0,
             'blob': blob, 'src': src, 'prereg_md': prereg_md}
@@ -136,8 +173,9 @@ def score(ev):
     s['multi_draw'] = ('PASS' if ev['max_draws'] >= 30
                        else ('FAIL' if ev['max_draws'] > 0 else 'UNMEASURED'))
     for k in ('uncertainty', 'null_present', 'positive_control', 'data_derived_null'):
-        s[k] = 'PASS' if PAT[k].search(ev['blob']) else 'UNMEASURED'
-    s['preregistered'] = ('PASS' if (ev['prereg_md'] or 'registered_rule' in ev['blob'])
+        s[k] = 'PASS' if any(KEYPAT[k].search(x) for x in ev['keys']) else 'UNMEASURED'
+    s['preregistered'] = ('PASS' if (ev['prereg_md']
+                                     or any(KEYPAT['preregistered'].search(x) for x in ev['keys']))
                           else 'UNMEASURED')
     return s
 
@@ -198,7 +236,46 @@ def main():
     if not pc_ok:
         out['ledger_status'] = 'UNVERIFIED_INSTRUMENT_BLIND'
 
-    redo = sorted(rows, key=lambda k: (-rows[k]['n_fail'], -rows[k]['n_unmeasured']))
+    # ── NEGATIVE CONTROL: every trigger WORD in text, no structured key. Must score UNMEASURED. ──
+    fake = {'note': 'this band gate rule threshold null floor permutation derangement surrogate '
+                    'positive_control sham chance baseline registered bootstrap sd sem ci95'}
+    fk = walk_keys(fake, set())
+    neg = {a: ('UNMEASURED' if not any(KEYPAT[a].search(x) for x in fk) else 'PASS')
+           for a in ('uncertainty', 'null_present', 'positive_control', 'preregistered',
+                     'data_derived_null')}
+    neg_ok = all(v == 'UNMEASURED' for v in neg.values())
+    out['negative_control'] = {'arm': 'all trigger words in a text VALUE, zero structured keys',
+                               'scores': neg, 'passes': bool(neg_ok)}
+    print('\n  NEGATIVE CONTROL — trigger words present as prose, no structured key:')
+    print(f"    {neg}   -> {'detector reads KEYS, not prose' if neg_ok else 'STILL READING PROSE'}")
+    if not neg_ok:
+        out['ledger_status'] = 'UNVERIFIED_DETECTOR_READS_PROSE'
+
+    # ── the denominator that stops '223 PASS' being quoted as compliance ──
+    n_pass = sum(1 for k in rows for a in axes if rows[k]['scores'][a] == 'PASS')
+    falsifiable = ('cross_model', 'cross_scale', 'cross_arch', 'multi_seed', 'multi_support',
+                   'multi_draw')
+    n_fals_pass = sum(1 for k in rows for a in falsifiable if rows[k]['scores'][a] == 'PASS')
+    full = len(rows) * 60
+    out['headline'] = {
+        'rounds': len(rows), 'axes_scored': len(axes), 'axes_in_full_standard': 60,
+        'cells_scored': len(rows) * len(axes), 'cells_in_full_standard': full,
+        'demonstrated_PASS': n_pass,
+        'pct_of_full_standard_demonstrated': round(100 * n_pass / full, 2),
+        'demonstrated_by_a_FALSIFIABLE_check': n_fals_pass,
+        'pct_of_full_standard_falsifiably_demonstrated': round(100 * n_fals_pass / full, 2),
+        'warning': 'the five non-counting axes have no failing world; only the six counting axes '
+                   'can return FAIL. Never quote demonstrated_PASS without this block.'}
+    print(f"\n  HEADLINE, WITH THE REAL DENOMINATOR")
+    print(f"    {len(rows)} rounds x 60 axes in the standard = {full} cells")
+    print(f"    demonstrated PASS {n_pass} = {100 * n_pass / full:.1f}% of the standard")
+    print(f"    demonstrated by a check that COULD have failed: {n_fals_pass} = "
+          f"{100 * n_fals_pass / full:.1f}%")
+
+    # ── unqualified = FAIL + UNMEASURED; that is the redo key, not n_fail ──
+    for k in rows:
+        rows[k]['n_unqualified'] = rows[k]['n_fail'] + rows[k]['n_unmeasured']
+    redo = sorted(rows, key=lambda k: (-rows[k]['n_unqualified'], -rows[k]['n_fail']))
     out['redo_order'] = redo
     tot_f = sum(rows[k]['n_fail'] for k in rows)
     tot_u = sum(rows[k]['n_unmeasured'] for k in rows)
@@ -207,7 +284,11 @@ def main():
           f"({len(rows) * len(axes)} cells)")
     print(f"  rounds with zero FAIL: "
           f"{sorted(k for k in rows if rows[k]['n_fail'] == 0)}")
-    print(f"\n  REDO ORDER (most failing axes first):\n    " + '  '.join(redo[:14]))
+    print(f"\n  REDO ORDER (unqualified = FAIL + UNMEASURED, since an axis a round cannot\n"
+          f"  demonstrate is not an axis it has met):")
+    for k in redo[:12]:
+        print(f"    {k:<28} unqualified {rows[k]['n_unqualified']:2d}/11  "
+              f"(FAIL {rows[k]['n_fail']}, UNMEASURED {rows[k]['n_unmeasured']})")
     print(f"\n  ⚠ 49 of the standard's ~60 axes are NOT mechanically checkable and are NOT scored "
           f"here.\n    This ledger is a FLOOR on how much is unqualified, never a ceiling.")
 
