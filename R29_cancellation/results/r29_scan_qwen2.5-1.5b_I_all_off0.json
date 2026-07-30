@@ -8,18 +8,9 @@
  "chunk": 40,
  "base_margin_replayed": 4.476827144622803,
  "base_margin_frozen": 4.476821851730347,
- "chunk_probe": {
-  "1": {
-   "base_mean": 4.476823329925537,
-   "L00H00_mean": -0.1299840658903122
-  },
-  "40": {
-   "base_mean": 4.476827144622803,
-   "L00H00_mean": -0.12997502088546753
-  }
- },
- "batching_spread_base": 3.814697265625e-06,
- "batching_spread_one_cell": 9.045004844665527e-06,
+ "chunk_probe": {},
+ "batching_spread_base": null,
+ "batching_spread_one_cell": null,
  "control_per_cell": {
   "L00H00": {
    "delta_mean": 1.0533134142565181e-05,
@@ -1712,6 +1703,12 @@
   "sem_abs_floor": 2.1630324326636298e-06,
   "tol_mean": 1e-05,
   "tol_sem_rel_reported_only": 0.001,
+  "sem_control_applicable": false,
+  "sem_control_result": null,
+  "legs_actually_evaluated": [
+   "mean",
+   "base"
+  ],
   "pass": false
  },
  "inferential": false

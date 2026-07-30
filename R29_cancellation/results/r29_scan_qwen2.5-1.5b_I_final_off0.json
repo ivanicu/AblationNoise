@@ -3047,6 +3047,13 @@
   "sem_abs_floor": 4.6585181983064586e-07,
   "tol_mean": 1e-05,
   "tol_sem_rel_reported_only": 0.001,
+  "sem_control_applicable": true,
+  "sem_control_result": true,
+  "legs_actually_evaluated": [
+   "mean",
+   "base",
+   "sem"
+  ],
   "pass": true,
   "rel_delta_sem_median": 2.5845502287548157e-05,
   "rel_delta_sem_p95": 0.00021879026417823355,

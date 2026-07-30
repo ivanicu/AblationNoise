@@ -2903,6 +2903,12 @@
   "sem_abs_floor": 7.240336635233767e-07,
   "tol_mean": 1e-05,
   "tol_sem_rel_reported_only": 0.001,
+  "sem_control_applicable": false,
+  "sem_control_result": null,
+  "legs_actually_evaluated": [
+   "mean",
+   "base"
+  ],
   "pass": true
  },
  "per_cell": {
