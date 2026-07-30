@@ -3635,6 +3635,39 @@ def r26_attack_budget():
     return json.load(open(f)) if f.exists() else None
 
 
+def r25_cyclic():
+    """The shape-matched confound pool that replaces one whose only balanced member WAS the test.
+
+    `attack_partition.py` ranked KV against 11 contiguous splits. Their shapes run (1,11) to (11,1), so
+    exactly one is balanced -- and it is the KV partition. Contiguity and KV grouping were perfectly
+    collinear in that pool, which is why "contiguity predicts nothing about being the global argmax" was
+    UNVERIFIED rather than confirmed.
+
+    The cyclic-block pool is every contiguous half on the ring: 6 for 12 heads, 8 for 16. Shape-matched
+    throughout, so it asks WHICH contiguous half rather than WHETHER the split is contiguous, and the
+    per-cell floor of 1/6 and 1/8 means no single cell can carry the finding.
+
+    THE REGISTERED RULE IS NOT SATISFIED, 3 of 4. 3b|I_all|abs loses to 1111111000000001 -- heads
+    {0..6, 15}, the one-step rotation of the KV block, which is also the global argmax of all 6435.
+    Joint base rate, 40000 draws with one permutation per (model, layer) shared across both supports:
+    0.00125 for all four abs cells, 0.00230 for either transform. Both roughly 2x and 20x the reviewer's
+    0.00060 and 0.00010 -- a disagreement between implementations, and mine are the conservative ones.
+
+    The effect is not "where the biggest head sits": dropping each layer's top head leaves p = 0.0002 /
+    0.0722 / 0.0002 / 0.0007, and a within-layer rank transform, which destroys magnitude entirely,
+    leaves 0.0002 / 0.0042 / 0.0002 / 0.0002.
+
+    The 3b balanced-pool rate of 0.00000 at 2000 draws against an analytic 1/6435 is INADMISSIBLE, not
+    supporting: 0.32 expected hits. The 1.5b cells at 20000 draws (0.00170-0.00255 against 0.00216) are
+    what check the argument.
+    """
+    f = HERE / 'R25_kv_group' / 'results' / 'r25_cyclic.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    return {k: v for k, v in d.items() if k != 'observed'}
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -5133,6 +5166,7 @@ def main() -> int:
     R24F = r24_fence_rate()
     R26D = r26_decompose()
     R26A = r26_attack_budget()
+    R25C = r25_cyclic()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -5178,7 +5212,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
