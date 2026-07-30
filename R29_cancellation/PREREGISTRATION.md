@@ -8,6 +8,36 @@
  backed by R29_cancellation/decompose_on_disk.py. -->
 # R29 — the per-item effect vector R10 computed 218,880 times and discarded
 
+> ## ⛔ RETRACTED 2026-07-30 — BOTH COORDINATES ARE IDENTITIES ON TWO PUBLISHED COLUMNS
+>
+> The body below is preserved unedited, because a registration that is rewritten after its result is
+> not a registration. What it registered does not stand.
+>
+> ```
+> rms² = mean² + (n−1)/n · sd_i²      sd_i = sem·√n
+> ⇒  G = 0.5·log(mean² + (n−1)·sem²)        Λ = 0.5·log(1 + (n−1)/snr²)
+> ```
+>
+> `(mean, sem) ⟺ (G, Λ)` is a **bijection**, so the split is a change of coordinates on `per_head` and
+> `per_head_sem` — both already published in `R11_instrument_noise/results/`. Verified at `max|dev|
+> 1.332e-15` for `Λ` over 336 cells, and reproducible from those two columns with **zero forwards** at
+> `corr 0.99999962`. **The 2,976 forward passes bought nothing for either coordinate.**
+>
+> **So `G`'s `0.9982` replication, quoted below and reported at the time as this round's strongest
+> result, is a property of R11's two columns and not of anything this scan measured.** A restatement
+> inherits its source's reliability and adds no information.
+>
+> Also retracted, on separate grounds, all in `retract_w1.py` with every figure regenerated there:
+> the `W1` reading (an SNR-preserving null reproduces it — sign-fraction null median `0.7333` against a
+> `W1` bar of `0.65`); the claim that `W3` was positively excluded (its bar needed a *median*
+> `max|Δ|/rms ≥ 6.5` while the *max* over every cell is `4.4596` and `5.4534` — unreachable, dead on
+> arrival like `W0`); and the jackknife as the instrument floor (`0.0933` nats against a direct
+> off0-vs-off400 replicate of `0.3910`, `4.19×` optimistic).
+>
+> **What survives the round:** the persisted per-item tensors, which are the only object here that is
+> not a function of the two published columns.
+
+
 Registered 2026-07-29, before any R29 measurement code existed. Committed alone.
 
 **The worlds, the prediction matrix, every threshold, both controls and the stopping rule are an
