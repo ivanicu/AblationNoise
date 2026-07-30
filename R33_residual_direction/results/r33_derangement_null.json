@@ -1,0 +1,38 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "n_splits": 200,
+  "n_null_draws": 1000,
+  "percentile": 99.9,
+  "rank": 5,
+  "sumzero_pair_cosine_baseline": -0.2
+ },
+ "null": "derangement of head labels within held-out groups, off400 side, AFTER the Procrustes fit; preserves both spectra, all norms, every within-group Gram, both sum-zero constraints and frac0 exactly",
+ "scope": "n = 1 MODEL; no 3b off400 exists",
+ "observed": {
+  "mean_c": 0.7131091321681473,
+  "split_sd": 0.02809574043047873,
+  "min": 0.6378507336031244,
+  "max": 0.7794804029412936,
+  "n_splits": 200
+ },
+ "derangement_null": {
+  "mean": -0.11659231135909852,
+  "sd": 0.044450656650983515,
+  "p99": -0.016611108254291282,
+  "p999": 0.009079874489339031,
+  "max": 0.016424993194229458,
+  "n_draws": 1000
+ },
+ "separation_null_sd": 18.66567349143734,
+ "M4prime_rerun": {
+  "p_correct_group": 0.9107142857142857,
+  "p_correct_head_given_group": 0.869281045751634,
+  "n": 153,
+  "null_mean": 0.04329985307577658,
+  "null_p999": 0.11220813771518,
+  "clears": true,
+  "caveat": "conditional is selected on success and is upward biased"
+ },
+ "verdict": "DIRECTIONAL_PRIVACY_BEYOND_SCALE"
+}
