@@ -1,0 +1,57 @@
+{
+ "n_items": 120,
+ "snr_split": 2.0,
+ "note": "pointwise reparameterisation of the published scalar; no model run",
+ "replication": {
+  "logI": {
+   "corr": 0.9406424520512422,
+   "sd_diff_nats": 0.5650322080128325,
+   "var_A_nats2": 2.677206421558257,
+   "mean_A": -3.409800930928
+  },
+  "G": {
+   "corr": 0.9981946049319395,
+   "sd_diff_nats": 0.06821059100377154,
+   "var_A_nats2": 1.1753249944254904,
+   "mean_A": -2.437389179139705
+  },
+  "Lam": {
+   "corr": 0.8722475894407823,
+   "sd_diff_nats": 0.5526004814755197,
+   "var_A_nats2": 1.1993534213328265,
+   "mean_A": 0.9724117517882976
+  }
+ },
+ "reproducibility_ratio_logI_over_G": 8.283643341861536,
+ "variances": {
+  "var_logI": 2.677206421558257,
+  "var_G": 1.1753249944254904,
+  "var_Lambda": 1.1993534213328265,
+  "lambda_share_of_var_logI": 0.4479869059311264,
+  "mean_Lambda_nats": 0.9724117517882976
+ },
+ "within_layer_r2": {
+  "log_sd_i_same_set": 0.32190928758302195,
+  "log_sd_i_cross_set": 0.3153722812368955,
+  "G_and_Lam_cross_set": 0.921679607557132,
+  "target_replicate_ceiling": 0.9018601119404888,
+  "null_1_predictor": 0.09090909090909091,
+  "null_2_predictor": 0.18181818181818182
+ },
+ "error_mixture": {
+  "low_snr": {
+   "n": 60,
+   "var_err_nats2": 0.828634664376152,
+   "sd_err_nats": 0.9102937242319932,
+   "corr": 0.7372683760744533
+  },
+  "high_snr": {
+   "n": 276,
+   "var_err_nats2": 0.01361668109716264,
+   "sd_err_nats": 0.11669053559377744,
+   "corr": 0.9914036433085892
+  },
+  "n_sign_flips_between_item_sets": 17,
+  "frac_sign_flips": 0.050595238095238096
+ }
+}

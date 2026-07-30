@@ -3728,6 +3728,50 @@ def r28_gate1_fd64():
     return json.load(open(f)) if f.exists() else None
 
 
+def r29_on_disk():
+    """log|I| = G - Lambda, both in nats, from numbers already on disk. No model run.
+
+    The published scalar is log|mean_i Delta_i| -- the log of a SIGNED item mean -- so it mixes the gross
+    per-item magnitude with how much the per-item effects cancel. sd_i is recoverable from R11's stored
+    sem (sd_i = sem*sqrt(120)), so rms^2 = mean^2 + sd_i^2, and the split is a POINTWISE
+    reparameterisation of the published number rather than a new measurement:
+
+        G      = log rms_i(Delta)
+        Lambda = G - log|mean_i Delta|  >= 0
+
+    R11 kept TWO disjoint item sets over the same 336 cells, which makes every coordinate's
+    reproducibility measurable:
+
+        coordinate   corr(A,B)   sd(A-B) nats   Var(A) nats^2
+        log|I|         0.9406       0.5650         2.6772
+        G              0.9982       0.0682         1.1753
+        Lambda         0.8722       0.5526         1.1994
+
+    The gross magnitude is an essentially exact head property. The published signed mean is 8.28x LESS
+    reproducible, and every bit of that excess lives in the cancellation coordinate, which carries 0.448
+    of Var(log|I|) at a mean of 0.9724 nats.
+
+    Within-layer R2 of log|I|, against nulls of exactly k/(n-1) = 0.0909 and 0.1818:
+        log sd_i, same item set     0.3219
+        log sd_i, CROSS item set    0.3154     <- a field in R11's output nobody had used
+        (G, Lambda), CROSS set      0.9217
+        target's own replicate      0.9019     <- the ceiling, and 0.9217 EXCEEDS it
+
+    R26's best single predictor, from a hooked forward pass, was 0.2863 same-set. A number already on disk
+    beats it, and the two-coordinate cross-set fit beats the target's own replicate because the
+    coordinates are less noisy than the thing they predict.
+
+    The error is a mixture, not a level: split at |I|/sem = 2, the 60 low-SNR cells have sd(err) 0.9103
+    nats and reliability 0.7373 while the 276 high-SNR cells have 0.1167 and 0.9914. And 17 of 336 cells
+    -- 5.06% -- have their effect SIGN flip between the two item sets.
+
+    Computed first by an independent reviewer; reproduced here, every figure matching, because a number
+    taken on trust from another agent is what this repository refuses everywhere else.
+    """
+    f = HERE / 'R29_cancellation' / 'results' / 'r29_on_disk.json'
+    return json.load(open(f)) if f.exists() else None
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -5229,6 +5273,7 @@ def main() -> int:
     R25C = r25_cyclic()
     R28K = r28_kappa()
     R28F = r28_gate1_fd64()
+    R29 = r29_on_disk()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -5274,7 +5319,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'r28_kappa': R28K, 'r28_gate1_fd64': R28F, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'r28_kappa': R28K, 'r28_gate1_fd64': R28F, 'r29_on_disk': R29, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
