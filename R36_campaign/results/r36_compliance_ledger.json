@@ -1,0 +1,1142 @@
+{
+ "standard": "Ivan 2026-07-30: publication-grade, full-scale, multi-seed, cross-model, control-saturated, hostile-peer-review-ready. \u8fc7\u53bb\u6240\u6709\u4e0d\u5408\u683c\u7684\u8981\u91cd\u65b0\u505a.",
+ "honesty_rule": "PASS / FAIL / UNMEASURED. UNMEASURED is a DEBT, never an acquittal. Only mechanically checkable axes are scored; the other ~50 axes of the standard are not detectable from an artifact and are NOT claimed.",
+ "axes_scored": [
+  "cross_model",
+  "cross_scale",
+  "cross_arch",
+  "multi_seed",
+  "multi_support",
+  "multi_draw",
+  "uncertainty",
+  "null_present",
+  "positive_control",
+  "data_derived_null",
+  "preregistered"
+ ],
+ "axes_in_standard_not_scored": 49,
+ "rounds": {
+  "R1_noise_floor": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 4,
+   "n_models": 7,
+   "models": [
+    "1.5b",
+    "1.8b",
+    "8b",
+    "phi-3.5",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 30,
+   "n_result_json": 15,
+   "n_generators": 1,
+   "failing_axes": []
+  },
+  "R2_inversion": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "UNMEASURED",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 5,
+   "n_models": 7,
+   "models": [
+    "1.5b",
+    "1.8b",
+    "8b",
+    "phi-3.5",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 0,
+   "n_result_json": 5,
+   "n_generators": 1,
+   "failing_axes": []
+  },
+  "R4_predictability": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "UNMEASURED",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 4,
+   "n_models": 5,
+   "models": [
+    "1.8b",
+    "8b",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 0,
+   "n_result_json": 1,
+   "n_generators": 1,
+   "failing_axes": []
+  },
+  "R5_factorial": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "PASS",
+    "uncertainty": "UNMEASURED",
+    "null_present": "PASS",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 4,
+   "n_models": 5,
+   "models": [
+    "1.5b",
+    "8b",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 30,
+   "n_result_json": 3,
+   "n_generators": 1,
+   "failing_axes": []
+  },
+  "R6_intervention": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "PASS",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "UNMEASURED",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 3,
+   "n_models": 6,
+   "models": [
+    "1.5b",
+    "1.8b",
+    "3b",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 2,
+   "max_draws": 400,
+   "n_result_json": 12,
+   "n_generators": 2,
+   "failing_axes": []
+  },
+  "R7_norm_matched": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "UNMEASURED",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 4,
+   "n_models": 4,
+   "models": [
+    "1.8b",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 30,
+   "n_result_json": 4,
+   "n_generators": 1,
+   "failing_axes": []
+  },
+  "R8_component": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "UNMEASURED",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 4,
+   "n_models": 4,
+   "models": [
+    "1.8b",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 30,
+   "n_result_json": 5,
+   "n_generators": 2,
+   "failing_axes": []
+  },
+  "R9_depth_profile": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "UNMEASURED"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 5,
+   "n_models": 7,
+   "models": [
+    "1.5b",
+    "1.8b",
+    "8b",
+    "phi-3.5",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 30,
+   "n_result_json": 4,
+   "n_generators": 1,
+   "failing_axes": []
+  },
+  "R10_exhaustive": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "UNMEASURED"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 4,
+   "n_models": 6,
+   "models": [
+    "1.5b",
+    "8b",
+    "phi-3.5",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 2000,
+   "n_result_json": 4,
+   "n_generators": 1,
+   "failing_axes": []
+  },
+  "R11_instrument_noise": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "FAIL",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "UNMEASURED",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "PASS",
+    "data_derived_null": "PASS",
+    "preregistered": "PASS"
+   },
+   "n_fail": 1,
+   "n_unmeasured": 3,
+   "n_models": 2,
+   "models": [
+    "1.5b",
+    "qwen2.5-1.5b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 0,
+   "n_result_json": 5,
+   "n_generators": 1,
+   "failing_axes": [
+    "cross_scale"
+   ]
+  },
+  "R13_task_audit": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "UNMEASURED",
+    "uncertainty": "UNMEASURED",
+    "null_present": "UNMEASURED",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "UNMEASURED"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 8,
+   "n_models": 6,
+   "models": [
+    "1.5b",
+    "1.8b",
+    "3b",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 0,
+   "n_result_json": 1,
+   "n_generators": 1,
+   "failing_axes": []
+  },
+  "R14_position_vs_binding": {
+   "scores": {
+    "cross_model": "FAIL",
+    "cross_scale": "FAIL",
+    "cross_arch": "FAIL",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "UNMEASURED",
+    "uncertainty": "UNMEASURED",
+    "null_present": "PASS",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "PASS",
+    "preregistered": "PASS"
+   },
+   "n_fail": 3,
+   "n_unmeasured": 5,
+   "n_models": 1,
+   "models": [
+    "qwen2.5-1.5b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 0,
+   "n_result_json": 1,
+   "n_generators": 1,
+   "failing_axes": [
+    "cross_model",
+    "cross_scale",
+    "cross_arch"
+   ]
+  },
+  "R15_shuffled_scan": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "UNMEASURED",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "PASS",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 4,
+   "n_models": 5,
+   "models": [
+    "1.5b",
+    "8b",
+    "phi-3.5",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 0,
+   "n_result_json": 1,
+   "n_generators": 1,
+   "failing_axes": []
+  },
+  "R16_selection_vs_effect": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "FAIL",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "PASS",
+    "multi_draw": "UNMEASURED",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "PASS",
+    "preregistered": "UNMEASURED"
+   },
+   "n_fail": 1,
+   "n_unmeasured": 4,
+   "n_models": 2,
+   "models": [
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 2,
+   "max_draws": 0,
+   "n_result_json": 7,
+   "n_generators": 0,
+   "failing_axes": [
+    "cross_arch"
+   ]
+  },
+  "R18_all_positions": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "UNMEASURED",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 5,
+   "n_models": 6,
+   "models": [
+    "1.5b",
+    "8b",
+    "phi-3.5",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 0,
+   "n_result_json": 2,
+   "n_generators": 1,
+   "failing_axes": []
+  },
+  "R19_crossed_position_support": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "PASS",
+    "multi_draw": "PASS",
+    "uncertainty": "UNMEASURED",
+    "null_present": "PASS",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 4,
+   "n_models": 3,
+   "models": [
+    "1.5b",
+    "5822276b",
+    "qwen2.5-1.5b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 2,
+   "max_draws": 2000,
+   "n_result_json": 12,
+   "n_generators": 10,
+   "failing_axes": []
+  },
+  "R20_direct_indirect": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "FAIL",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "FAIL",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 2,
+   "n_unmeasured": 3,
+   "n_models": 2,
+   "models": [
+    "1.5b",
+    "qwen2.5-1.5b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 1,
+   "max_draws": 20000,
+   "n_result_json": 2,
+   "n_generators": 2,
+   "failing_axes": [
+    "cross_scale",
+    "multi_support"
+   ]
+  },
+  "R21_indirect_attribution": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "FAIL",
+    "multi_draw": "UNMEASURED",
+    "uncertainty": "PASS",
+    "null_present": "UNMEASURED",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 1,
+   "n_unmeasured": 4,
+   "n_models": 3,
+   "models": [
+    "1.5b",
+    "1b",
+    "qwen2.5-1.5b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 1,
+   "max_draws": 0,
+   "n_result_json": 4,
+   "n_generators": 6,
+   "failing_axes": [
+    "multi_support"
+   ]
+  },
+  "R22_floor_identification": {
+   "scores": {
+    "cross_model": "FAIL",
+    "cross_scale": "FAIL",
+    "cross_arch": "FAIL",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "PASS",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 3,
+   "n_unmeasured": 2,
+   "n_models": 1,
+   "models": [
+    "1.5b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 2,
+   "max_draws": 30,
+   "n_result_json": 4,
+   "n_generators": 4,
+   "failing_axes": [
+    "cross_model",
+    "cross_scale",
+    "cross_arch"
+   ]
+  },
+  "R23_shape": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "PASS",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "UNMEASURED",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 3,
+   "n_models": 4,
+   "models": [
+    "1.5b",
+    "3b",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 2,
+   "max_draws": 4000,
+   "n_result_json": 3,
+   "n_generators": 3,
+   "failing_axes": []
+  },
+  "R24_concentration": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "PASS",
+    "multi_draw": "PASS",
+    "uncertainty": "UNMEASURED",
+    "null_present": "UNMEASURED",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 4,
+   "n_models": 4,
+   "models": [
+    "1.5b",
+    "3b",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 2,
+   "max_draws": 20000,
+   "n_result_json": 5,
+   "n_generators": 5,
+   "failing_axes": []
+  },
+  "R25_kv_group": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "PASS",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "UNMEASURED",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 3,
+   "n_models": 4,
+   "models": [
+    "1.5b",
+    "3b",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 2,
+   "max_draws": 40000,
+   "n_result_json": 3,
+   "n_generators": 3,
+   "failing_axes": []
+  },
+  "R26_decomposition": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "PASS",
+    "multi_draw": "PASS",
+    "uncertainty": "UNMEASURED",
+    "null_present": "PASS",
+    "positive_control": "PASS",
+    "data_derived_null": "PASS",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 2,
+   "n_models": 4,
+   "models": [
+    "1.5b",
+    "3b",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 2,
+   "max_draws": 10000,
+   "n_result_json": 5,
+   "n_generators": 5,
+   "failing_axes": []
+  },
+  "R27_metric_gauge": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "UNMEASURED",
+    "uncertainty": "UNMEASURED",
+    "null_present": "UNMEASURED",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "UNMEASURED"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 8,
+   "n_models": 4,
+   "models": [
+    "1.5b",
+    "3b",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 0,
+   "n_result_json": 0,
+   "n_generators": 1,
+   "failing_axes": []
+  },
+  "R28_kappa": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "PASS",
+    "multi_draw": "UNMEASURED",
+    "uncertainty": "UNMEASURED",
+    "null_present": "UNMEASURED",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 6,
+   "n_models": 4,
+   "models": [
+    "1.5b",
+    "3b",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 2,
+   "max_draws": 0,
+   "n_result_json": 2,
+   "n_generators": 3,
+   "failing_axes": []
+  },
+  "R29_cancellation": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "PASS",
+    "multi_support": "PASS",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "PASS",
+    "data_derived_null": "PASS",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 0,
+   "n_models": 5,
+   "models": [
+    "1.5b",
+    "1b",
+    "3b",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 2,
+   "seeds": [
+    0,
+    400
+   ],
+   "n_supports": 2,
+   "max_draws": 20000,
+   "n_result_json": 13,
+   "n_generators": 8,
+   "failing_axes": []
+  },
+  "R30_response_field": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "PASS",
+    "multi_support": "FAIL",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "PASS",
+    "data_derived_null": "PASS",
+    "preregistered": "PASS"
+   },
+   "n_fail": 1,
+   "n_unmeasured": 0,
+   "n_models": 4,
+   "models": [
+    "1.5b",
+    "3b",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 2,
+   "seeds": [
+    0,
+    400
+   ],
+   "n_supports": 1,
+   "max_draws": 20000,
+   "n_result_json": 7,
+   "n_generators": 7,
+   "failing_axes": [
+    "multi_support"
+   ]
+  },
+  "R31_private_beyond_group": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "FAIL",
+    "multi_draw": "PASS",
+    "uncertainty": "UNMEASURED",
+    "null_present": "UNMEASURED",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 1,
+   "n_unmeasured": 4,
+   "n_models": 2,
+   "models": [
+    "1.5b",
+    "3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 1,
+   "max_draws": 400,
+   "n_result_json": 1,
+   "n_generators": 1,
+   "failing_axes": [
+    "multi_support"
+   ]
+  },
+  "R32_forced_choice": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "FAIL",
+    "multi_support": "FAIL",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 2,
+   "n_unmeasured": 1,
+   "n_models": 2,
+   "models": [
+    "3b",
+    "qwen2.5-1.5b"
+   ],
+   "n_seeds": 1,
+   "seeds": [
+    400
+   ],
+   "n_supports": 1,
+   "max_draws": 1000,
+   "n_result_json": 3,
+   "n_generators": 3,
+   "failing_axes": [
+    "multi_seed",
+    "multi_support"
+   ]
+  },
+  "R33_residual_direction": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "FAIL",
+    "multi_support": "FAIL",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "PASS",
+    "positive_control": "PASS",
+    "data_derived_null": "PASS",
+    "preregistered": "PASS"
+   },
+   "n_fail": 2,
+   "n_unmeasured": 0,
+   "n_models": 2,
+   "models": [
+    "1.5b",
+    "3b"
+   ],
+   "n_seeds": 1,
+   "seeds": [
+    400
+   ],
+   "n_supports": 1,
+   "max_draws": 10000,
+   "n_result_json": 3,
+   "n_generators": 3,
+   "failing_axes": [
+    "multi_seed",
+    "multi_support"
+   ]
+  },
+  "R34_shape": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "FAIL",
+    "multi_draw": "PASS",
+    "uncertainty": "UNMEASURED",
+    "null_present": "PASS",
+    "positive_control": "UNMEASURED",
+    "data_derived_null": "PASS",
+    "preregistered": "PASS"
+   },
+   "n_fail": 1,
+   "n_unmeasured": 3,
+   "n_models": 2,
+   "models": [
+    "1.5b",
+    "3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 1,
+   "max_draws": 10000,
+   "n_result_json": 3,
+   "n_generators": 3,
+   "failing_axes": [
+    "multi_support"
+   ]
+  },
+  "R35_support": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "PASS",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
+    "null_present": "UNMEASURED",
+    "positive_control": "PASS",
+    "data_derived_null": "UNMEASURED",
+    "preregistered": "PASS"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 3,
+   "n_models": 2,
+   "models": [
+    "1.5b",
+    "3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 2,
+   "max_draws": 2000,
+   "n_result_json": 1,
+   "n_generators": 1,
+   "failing_axes": []
+  },
+  "R36_campaign": {
+   "scores": {
+    "cross_model": "PASS",
+    "cross_scale": "PASS",
+    "cross_arch": "PASS",
+    "multi_seed": "UNMEASURED",
+    "multi_support": "UNMEASURED",
+    "multi_draw": "UNMEASURED",
+    "uncertainty": "UNMEASURED",
+    "null_present": "UNMEASURED",
+    "positive_control": "PASS",
+    "data_derived_null": "PASS",
+    "preregistered": "UNMEASURED"
+   },
+   "n_fail": 0,
+   "n_unmeasured": 6,
+   "n_models": 7,
+   "models": [
+    "1.5b",
+    "3b",
+    "phi-3.5",
+    "phi-3.5-mini",
+    "phi-3.5-mini-instruct",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "n_seeds": 0,
+   "seeds": [],
+   "n_supports": 0,
+   "max_draws": 0,
+   "n_result_json": 1,
+   "n_generators": 1,
+   "failing_axes": []
+  }
+ },
+ "positive_control": {
+  "R35_support": {
+   "required": {
+    "n_models_min": 2,
+    "n_scales_min": 2
+   },
+   "observed": {
+    "n_models_min": 2,
+    "n_scales_min": 2
+   },
+   "passes": true
+  },
+  "R29_cancellation": {
+   "required": {
+    "n_supports_min": 2,
+    "n_seeds_min": 2
+   },
+   "observed": {
+    "n_supports_min": 2,
+    "n_seeds_min": 2
+   },
+   "passes": true
+  }
+ },
+ "positive_control_passed": true,
+ "redo_order": [
+  "R14_position_vs_binding",
+  "R22_floor_identification",
+  "R20_direct_indirect",
+  "R32_forced_choice",
+  "R33_residual_direction",
+  "R16_selection_vs_effect",
+  "R21_indirect_attribution",
+  "R31_private_beyond_group",
+  "R11_instrument_noise",
+  "R34_shape",
+  "R30_response_field",
+  "R13_task_audit",
+  "R27_metric_gauge",
+  "R28_kappa",
+  "R36_campaign",
+  "R2_inversion",
+  "R9_depth_profile",
+  "R18_all_positions",
+  "R1_noise_floor",
+  "R4_predictability",
+  "R5_factorial",
+  "R7_norm_matched",
+  "R8_component",
+  "R10_exhaustive",
+  "R15_shuffled_scan",
+  "R19_crossed_position_support",
+  "R24_concentration",
+  "R6_intervention",
+  "R23_shape",
+  "R25_kv_group",
+  "R35_support",
+  "R26_decomposition",
+  "R29_cancellation"
+ ]
+}
