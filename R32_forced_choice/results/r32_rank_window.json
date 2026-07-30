@@ -1,0 +1,83 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "n_control_draws": 30,
+  "percentile": 95,
+  "windows": [
+   [
+    1,
+    6
+   ],
+   [
+    6,
+    11
+   ],
+   [
+    11,
+    21
+   ],
+   [
+    21,
+    41
+   ]
+  ],
+  "W1_window": [
+   11,
+   21
+  ],
+  "chance_group": 0.16666666666666666
+ },
+ "scope": "n = 1 MODEL; no 3b off400 on disk so no second disjoint-item-set replicate",
+ "windows": {
+  "1_6": {
+   "observed_top1": 0.9107142857142857,
+   "control_p95": 0.22351190476190474,
+   "control_median": 0.17559523809523808,
+   "control_min": 0.08928571428571429,
+   "control_max": 0.23214285714285715,
+   "strong_private_median": 0.6339285714285714,
+   "strong_private_p95": 0.6970238095238095,
+   "clears_own_p95": true,
+   "lift_over_control_median": 5.186440677966102,
+   "instrument_has_power": true
+  },
+  "6_11": {
+   "observed_top1": 0.8333333333333334,
+   "control_p95": 0.22351190476190474,
+   "control_median": 0.16666666666666666,
+   "control_min": 0.1130952380952381,
+   "control_max": 0.2261904761904762,
+   "strong_private_median": 0.30952380952380953,
+   "strong_private_p95": 0.4166666666666667,
+   "clears_own_p95": true,
+   "lift_over_control_median": 5.000000000000001,
+   "instrument_has_power": true
+  },
+  "11_21": {
+   "observed_top1": 0.8333333333333334,
+   "control_p95": 0.22351190476190474,
+   "control_median": 0.17857142857142858,
+   "control_min": 0.1130952380952381,
+   "control_max": 0.24404761904761904,
+   "strong_private_median": 0.17857142857142858,
+   "strong_private_p95": 0.20892857142857138,
+   "clears_own_p95": true,
+   "lift_over_control_median": 4.666666666666667,
+   "instrument_has_power": false
+  },
+  "21_41": {
+   "observed_top1": 0.7023809523809523,
+   "control_p95": 0.2208333333333333,
+   "control_median": 0.18154761904761907,
+   "control_min": 0.1130952380952381,
+   "control_max": 0.24404761904761904,
+   "strong_private_median": 0.1875,
+   "strong_private_p95": 0.24404761904761904,
+   "clears_own_p95": true,
+   "lift_over_control_median": 3.868852459016393,
+   "instrument_has_power": false
+  }
+ },
+ "gate_passed": true,
+ "verdict": "IDENTITY_EXTENDS_BEYOND_SHARED_SUBSPACE"
+}
