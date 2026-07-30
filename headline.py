@@ -3772,6 +3772,36 @@ def r29_on_disk():
     return json.load(open(f)) if f.exists() else None
 
 
+def r29_scan():
+    """R29 -- the per-item scan. Its POSITIVE CONTROL FAILED on 1 cell of 336 and the STOP executed;
+    no Lambda was read.
+
+    The means reproduce: worst |delta mean| 5.103e-06 against a 1e-5 tolerance, and base_margin replays
+    at 5.293e-06 -- batching changed the reduction order (it was bit-identical unbatched) and stayed
+    inside tolerance.
+
+    The sem does not, in exactly one cell. Per-cell relative discrepancy: median 2.585e-05, p95
+    2.188e-04, over tolerance in 1 of 336. The failure is L03H01 at 2.269e-03, whose sd_items is
+    3.484e-03 -- the smallest among the worst five. A sem is a difference of near-equal numbers, so a
+    5e-6 absolute perturbation per item is a large FRACTION of a near-dead cell's spread. The
+    instrument's own numerical floor on a sem is about 5e-6/sqrt(120) = 4.6e-7 absolute, which for this
+    cell's sem of 3.18e-04 is 1.4e-03 relative -- so the registered 1e-3 bar sits BELOW the floor for
+    the quietest cells.
+
+    Same aggregation defect as R28's control, in a different coordinate: a `max` over 336 cells,
+    including the near-dead ones, with a fixed RELATIVE bound. The 8.8 GB logits trap named in the
+    registration was avoided by applying lm_head to the final position only, so it never allocated.
+    """
+    out = {}
+    d = HERE / 'R29_cancellation' / 'results'
+    if d.exists():
+        for f in sorted(d.glob('r29_scan_*.json')):
+            j = json.load(open(f))
+            out[f.stem] = {k: v for k, v in j.items()
+                           if k not in ('per_cell', 'control_per_cell', 'layer_eigen')}
+    return out or None
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -5274,6 +5304,7 @@ def main() -> int:
     R28K = r28_kappa()
     R28F = r28_gate1_fd64()
     R29 = r29_on_disk()
+    R29S = r29_scan()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -5319,7 +5350,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'r28_kappa': R28K, 'r28_gate1_fd64': R28F, 'r29_on_disk': R29, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'r28_kappa': R28K, 'r28_gate1_fd64': R28F, 'r29_on_disk': R29, 'r29_scan': R29S, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
