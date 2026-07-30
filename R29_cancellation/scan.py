@@ -320,6 +320,29 @@ def main():
             'sign_frac': sum(1 for x in v if (x > 0) == (mu > 0)) / n,
             'snr': abs(mu) / (sd / math.sqrt(n)) if sd > 0 else float('inf')}
     out['per_cell'] = per
+
+    # ⚠ THE PER-ITEM TENSOR GETS PERSISTED. This round's entire premise was that R10 collapsing
+    # Delta_{c,i} to its mean was the mistake -- and the first version of this file computed all
+    # 218,880 numbers, wrote summaries, and threw the tensor away exactly as R10 had. An outside
+    # reader found it. Every quantity the next step needs (the layer's item eigen-basis, a
+    # head-label-permutation null, any shared/private split) is a function of the VECTORS and cannot
+    # be recovered from moments -- which is the same lesson Lambda taught by being an identity on two
+    # published columns: a summary cannot carry what it summarised away.
+    import numpy as _np
+    keys = sorted(cells)
+    arr = _np.stack([cells[k].numpy().astype(_np.float32) for k in keys])
+    vp = (HERE / 'results'
+          / f'r29_vectors_{args.tag}_{args.support}_off{args.seed_offset}.npz')
+    (HERE / 'results').mkdir(parents=True, exist_ok=True)
+    _np.savez_compressed(vp, delta=arr,
+                         cell=_np.array([f'L{L:02d}H{h:02d}' for (L, h) in keys]),
+                         layer=_np.array([L for (L, _) in keys], dtype=_np.int16),
+                         head=_np.array([h for (_, h) in keys], dtype=_np.int16),
+                         base=base.cpu().numpy().astype(_np.float32))
+    out['vectors_file'] = vp.name
+    out['vectors_shape'] = list(arr.shape)
+    print(f'  persisted the per-item tensor: {arr.shape} float32 -> {vp.name} '
+          f'({vp.stat().st_size / 1e6:.2f} MB)', flush=True)
     jse_med = st.median([v['lambda_jackknife_se_nats'] for v in per.values()
                          if v['lambda_jackknife_se_nats'] == v['lambda_jackknife_se_nats']])
     out['median_lambda_jackknife_se_nats'] = jse_med
