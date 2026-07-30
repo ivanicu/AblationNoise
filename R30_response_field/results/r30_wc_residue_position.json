@@ -1,0 +1,77 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "survives_if_ratio_below": 0.5,
+  "dead_if_ratio_atleast": 0.8,
+  "cells_required_survive": 2,
+  "cells_required_dead": 3,
+  "control_must_return_ratio_below": 0.5
+ },
+ "question": "WC residue: is the shared item field a smooth function of ITEM ORDER?",
+ "positive_control": {
+  "noise_0.0": {
+   "ratio": 0.0,
+   "ratio_sd": 0.0,
+   "ratio_min": 0.0,
+   "ratio_max": 0.0,
+   "R2_field": 1.0,
+   "R2_obs": 1.0,
+   "R2_perp": 0.0,
+   "cos_v1_pos_span": 1.0000000000000002
+  },
+  "noise_0.5": {
+   "ratio": 0.0022105111744182095,
+   "ratio_sd": 0.0002282318738002172,
+   "ratio_min": 0.0019624481431200717,
+   "ratio_max": 0.002641077596887169,
+   "R2_field": 0.7980529273561141,
+   "R2_obs": 0.812615853778208,
+   "R2_perp": 0.0017632931477718494,
+   "cos_v1_pos_span": 0.9993693359859174
+  },
+  "noise_1.0": {
+   "ratio": 0.00848009375652792,
+   "ratio_sd": 0.0009442597277204153,
+   "ratio_min": 0.00744930057982484,
+   "ratio_max": 0.010631249534314928,
+   "R2_field": 0.49895278018453937,
+   "R2_obs": 0.5360400099023318,
+   "R2_perp": 0.004225318159333291,
+   "cos_v1_pos_span": 0.9974409146435479
+  }
+ },
+ "control_passed": true,
+ "cells": {
+  "qwen2.5-1.5b_I_final_off0": {
+   "ratio": 0.9169848005724375,
+   "ratio_sd": 0.005686258902177409,
+   "ratio_min": 0.9037397475581271,
+   "ratio_max": 0.9265894737521561,
+   "R2_field": 0.5120425254878664,
+   "R2_obs": 0.07737993466336049,
+   "R2_perp": 0.4701644175625795,
+   "cos_v1_pos_span": 0.2768835883642101
+  },
+  "qwen2.5-1.5b_I_final_off400": {
+   "ratio": 0.9477583864296203,
+   "ratio_sd": 0.010218814784039286,
+   "ratio_min": 0.9356131499987199,
+   "ratio_max": 0.9772685229977047,
+   "R2_field": 0.5621045600271675,
+   "R2_obs": 0.06410669734925836,
+   "R2_perp": 0.5318738500974268,
+   "cos_v1_pos_span": 0.24566437167446642
+  },
+  "qwen2.5-3b_I_final_off0": {
+   "ratio": 0.9466152948878954,
+   "ratio_sd": 0.0035603866791988127,
+   "ratio_min": 0.9401003478350347,
+   "ratio_max": 0.9544666975801273,
+   "R2_field": 0.4782050598923932,
+   "R2_obs": 0.061751061034525004,
+   "R2_perp": 0.4525890063903548,
+   "cos_v1_pos_span": 0.23253025483099574
+  }
+ },
+ "verdict": "POSITION_DEAD"
+}
