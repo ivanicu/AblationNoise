@@ -1,0 +1,61 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "M1_n_draws": 1000,
+  "M1_percentile": 99.9,
+  "M1_headline": 0.8631,
+  "M2_downgrade_if_scalar_top1_atleast": 0.5,
+  "M3_contaminated_if_atleast": 0.4,
+  "target_frac0": 0.1468,
+  "frac0_tol": 0.02,
+  "rank": 5
+ },
+ "scope": "n = 1 MODEL; no 3b off400 -> no second disjoint-item-set replicate",
+ "observed_groupsplit_top1": 0.8630952380952381,
+ "observed_frac0": 0.14684700705403642,
+ "M1_matched_null": {
+  "chosen_noise": 32.0,
+  "achieved_frac0": 0.15845965927621497,
+  "frac0_matched": true,
+  "null_mean": 0.16567857142857145,
+  "null_sd": 0.02989118449222094,
+  "null_median": 0.16666666666666666,
+  "null_p999": 0.27381547619047675,
+  "null_max": 0.27976190476190477,
+  "n_draws": 1000,
+  "observed_clears_p999": true
+ },
+ "M2_scalar_baselines": {
+  "norm_l2": {
+   "top1": 0.6904761904761905,
+   "reaches_downgrade": true
+  },
+  "n_eff": {
+   "top1": 0.2857142857142857,
+   "reaches_downgrade": false
+  },
+  "row_kurtosis": {
+   "top1": 0.2916666666666667,
+   "reaches_downgrade": false
+  },
+  "head_index_DEGENERATE_REFERENCE": {
+   "top1": 1.0,
+   "reaches_downgrade": true
+  }
+ },
+ "M2_indexing_selfcheck_passed": true,
+ "M3_positional": {
+  "top1": 0.9285714285714286,
+  "contaminated": true
+ },
+ "M4_layer_decomposition": {
+  "top1_12way": 0.7916666666666666,
+  "p_correct_group": 0.9107142857142857,
+  "p_correct_head_given_group": 0.869281045751634,
+  "n_given_correct_group": 153,
+  "chance_group": 0.5,
+  "chance_head_given_group": 0.16666666666666666,
+  "group_level_only": false
+ },
+ "verdict": "DOWNGRADED_TO_PER_HEAD_SCALE"
+}
