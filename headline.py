@@ -3925,6 +3925,20 @@ def r29_kv_item_patterns():
     a residual sd of 0.1323 against a target sd of 0.1351. So this is a genuinely new coordinate that
     returns null -- the strongest form of a negative, and the opposite of how Lambda died.
 
+    ⚠ AND THE INSTRUMENT NOW HAS A POSITIVE CONTROL, which it did not when that null was first read as a
+    kill. Planting a shared within-KV-group direction at a fraction alpha of each head's own vector scale:
+
+        alpha   delta_r    p          fires at 0.05
+        0.00    0.0014     0.44789    no      <- and this is EXACTLY the observed real value
+        0.05    0.0066     0.35216    no
+        0.10    0.0225     0.12872    no
+        0.20    0.0750     0.00025    yes
+        0.40    0.2308     0.00025    yes
+
+    Blind at alpha <= 0.10, detects at alpha >= 0.20. So the kill SURVIVES but is SCOPED: KV-mates share
+    no per-item direction at or above about 20% of each head's own vector scale, and below 10% this
+    instrument cannot tell. The original claim carried no such bound.
+
     A second fact falls out: pairwise per-item correlations between heads of a layer are about +0.05
     overall, regardless of group. Heads have nearly UNCORRELATED item patterns. That reconciles the
     earlier lambda1 share of 0.54, which was computed on uncentred columns and is therefore dominated by

@@ -503,6 +503,43 @@
    }
   }
  },
+ "positive_control": {
+  "per_alpha": {
+   "0.0": {
+    "alpha": 0.0,
+    "delta_r": 0.0013555021670390935,
+    "p": 0.44788802799300176,
+    "fires_at_0.05": false
+   },
+   "0.05": {
+    "alpha": 0.05,
+    "delta_r": 0.006599391251659355,
+    "p": 0.35216195951012247,
+    "fires_at_0.05": false
+   },
+   "0.1": {
+    "alpha": 0.1,
+    "delta_r": 0.022503780731244448,
+    "p": 0.12871782054486378,
+    "fires_at_0.05": false
+   },
+   "0.2": {
+    "alpha": 0.2,
+    "delta_r": 0.07502101472690086,
+    "p": 0.00024993751562109475,
+    "fires_at_0.05": true
+   },
+   "0.4": {
+    "alpha": 0.4,
+    "delta_r": 0.2307965696353485,
+    "p": 0.00024993751562109475,
+    "fires_at_0.05": true
+   }
+  },
+  "largest_alpha_MISSED": 0.1,
+  "smallest_alpha_DETECTED": 0.2,
+  "note": "any null this instrument emits is scoped to shared directions at or above the smallest DETECTED alpha; below the largest MISSED alpha it is blind"
+ },
  "identity_check": {
   "note": "delta_r regressed on layer index, log mean |per_head|, log mean per_head_sem, and their difference (a log SNR)",
   "r2_explained_by_published": 0.04161546727680765,

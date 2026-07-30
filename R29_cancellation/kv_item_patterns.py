@@ -20,6 +20,12 @@ THE STATISTIC IS NOT A FUNCTION OF WHAT IS ALREADY PUBLISHED, and the file check
 asserting it: delta_r is regressed on per_head, per_head_sem, layer and head, and the residual is
 reported. A coordinate with no residual is an identity, which is how Lambda died.
 
+⚠ AND IT NOW HAS A POSITIVE CONTROL, WHICH IT DID NOT WHEN ITS NULL WAS FIRST READ. A null from an
+instrument that has never returned non-zero is silence, not an acquittal -- and the first version of this
+file reported p = 0.45 / 0.51 / 0.40 as "the mechanism is dead" without ever planting one. The control
+plants a shared within-KV-group item direction at a known fraction alpha of each head's own vector scale
+and reports where the instrument starts to see it. That fraction is the SCOPE of any null this file emits.
+
 NO VERDICT IS EMITTED.
 """
 import json
@@ -43,6 +49,48 @@ def pair_means(C, g):
     same = (g[:, None] == g[None, :])[iu]
     v = C[iu]
     return float(v[same].mean()), float(v[~same].mean())
+
+
+ALPHAS = (0.0, 0.05, 0.10, 0.20, 0.40)
+N_PERM_CTRL = 4000
+
+
+def delta_r_and_p(layers, g, nh, rng, nperm):
+    """Summed delta_r over layers against a within-layer head-label permutation null."""
+    obs, nulls = 0.0, np.zeros(nperm)
+    for X in layers:
+        Xc = X - X.mean(1, keepdims=True)
+        s = np.sqrt((Xc * Xc).sum(1, keepdims=True))
+        s[s == 0] = 1.0
+        C = (Xc / s) @ (Xc / s).T
+        w, b = pair_means(C, g)
+        obs += w - b
+        for t in range(nperm):
+            ww, bb = pair_means(C, g[rng.permutation(nh)])
+            nulls[t] += ww - bb
+    return obs, (1 + int((nulls >= obs).sum())) / (1 + nperm)
+
+
+def positive_control(d, lay, hd, g, nh, n, rng):
+    """Plant a shared within-group direction at a known fraction of each head's own scale."""
+    out = {}
+    order = sorted(set(lay.tolist()))
+    for a in ALPHAS:
+        planted = []
+        for L in order:
+            X = d[lay == L][np.argsort(hd[lay == L])].copy()
+            u = rng.standard_normal((int(g.max()) + 1, n))
+            u /= np.linalg.norm(u, axis=1, keepdims=True)
+            planted.append(X + a * np.linalg.norm(X, axis=1, keepdims=True) * u[g])
+        o, p = delta_r_and_p(planted, g, nh, rng, N_PERM_CTRL)
+        out[str(a)] = {'alpha': a, 'delta_r': o / len(order), 'p': p, 'fires_at_0.05': p < 0.05}
+    fired = [v['alpha'] for v in out.values() if v['fires_at_0.05']]
+    blind = [v['alpha'] for v in out.values() if not v['fires_at_0.05'] and v['alpha'] > 0]
+    return {'per_alpha': out,
+            'largest_alpha_MISSED': max(blind) if blind else None,
+            'smallest_alpha_DETECTED': min(fired) if fired else None,
+            'note': 'any null this instrument emits is scoped to shared directions at or above '
+                    'the smallest DETECTED alpha; below the largest MISSED alpha it is blind'}
 
 
 def main():
@@ -96,6 +144,25 @@ def main():
               f'{r["mean_r_between"]:+.4f}  delta_r {r["mean_delta_r"]:+.4f}  '
               f'p {p:.5f}  positive in {r["n_layers_positive"]}/{nl} layers', flush=True)
     out['cells'] = res
+
+    # ---- the positive control, on the cell whose null was read as a kill ----
+    f0 = HERE / 'results' / 'r29_vectors_qwen2.5-1.5b_I_final_off0.npz'
+    if f0.exists():
+        z = np.load(f0)
+        nh = GQA['qwen2.5-1.5b']['n_heads']
+        g = np.array([h // (nh // GQA['qwen2.5-1.5b']['n_kv']) for h in range(nh)])
+        pc = positive_control(z['delta'], z['layer'], z['head'], g, nh,
+                              z['delta'].shape[1], rng)
+        out['positive_control'] = pc
+        print(f'\n  POSITIVE CONTROL: a shared within-KV-group direction planted at a fraction '
+              f'alpha of each head\'s own scale')
+        print(f"    {'alpha':<10}{'delta_r':<12}{'p':<11}fires at 0.05")
+        for v in pc['per_alpha'].values():
+            print(f"    {v['alpha']:<10.2f}{v['delta_r']:<12.4f}{v['p']:<11.5f}"
+                  f"{v['fires_at_0.05']}")
+        print(f"    -> blind at alpha <= {pc['largest_alpha_MISSED']}, detects at alpha >= "
+              f"{pc['smallest_alpha_DETECTED']}")
+        print('    ANY NULL THIS FILE EMITS IS SCOPED TO THAT FLOOR.')
 
     # ---- is delta_r a function of what is already published? report the RESIDUAL ----
     f0 = HERE / 'results' / 'r29_vectors_qwen2.5-1.5b_I_final_off0.npz'
