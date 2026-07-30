@@ -3603,6 +3603,38 @@ def r26_decompose():
                        for t, r in d.get('models', {}).items()}}
 
 
+def r26_attack_budget():
+    """R26's committed variance budget has ZERO discriminating power. This is the proof.
+
+    share_size = Var(size)/Var(log|I|) does not reference the PAIRING between predictor and target, so
+    permuting which head has which size cannot move it. Measured over 10000 within-layer permutations:
+    max|delta| between 4.996e-16 and 9.992e-16 -- floating-point zero -- and P(null >= observed) =
+    1.0000 in all four cells. The null is a point mass AT the observed value.
+
+    The repository's own output already showed it: rho_bar_align came in at +0.0304 and -0.0071 in the
+    two 3b cells, i.e. no association at all, while share_align read 0.1385 and 0.1680. A term with
+    zero association "carrying" 14 to 17 percent of the variance is the signature.
+
+    AND THE BUDGET IS NOT AN IDENTITY. Var(log|I|) = Var(size)+Var(align)+2Cov requires
+    log|I| = size+align+c pointwise. Var(log|I| - (size+align))/Var(log|I|) is 0.8418 / 1.6118 /
+    0.8358 / 1.6376 -- above 1 in two cells. So `residual_share` is one minus a ratio of the variances
+    of two different variables, and the committed "30 to 57 percent" is void.
+
+    THE HONEST REPLACEMENT, which does depend on the pairing: within-layer R^2 of log|I| on the head's
+    own write, against its own permutation null whose mean is exactly k/(n-1). R2(size) =
+    0.2863/0.1885/0.2740/0.1075 against floors 0.0898/0.0908/0.0666/0.0661, p 0.0002 to 0.0060 -- the
+    write is real. The alignment term's net gain above the cost of its own free parameter is
+    +0.0199/-0.0123/-0.0069/+0.0082, so world B (DIRECTION) is dead on a statistic that can see it.
+
+    AND THE TARGET'S NOISE IS BOUNDED, not assumed: R11's disjoint item sets give sd(error) 0.3989
+    nats, 0.0594 of Var(log|I|), reliability 0.9406 over 336 cells. So the unexplained part is real and
+    is roughly ten times the measurement floor -- the gap survives, only the statistic that quantified
+    it does not.
+    """
+    f = HERE / 'R26_decomposition' / 'results' / 'r26_attack_budget.json'
+    return json.load(open(f)) if f.exists() else None
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -5100,6 +5132,7 @@ def main() -> int:
     R26G = r26_identity_gates()
     R24F = r24_fence_rate()
     R26D = r26_decompose()
+    R26A = r26_attack_budget()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -5145,7 +5178,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0

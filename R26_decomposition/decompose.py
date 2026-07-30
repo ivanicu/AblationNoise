@@ -344,6 +344,26 @@ def main():
                   f' (need |.| <= {GATE4_BOUND})', flush=True)
         out['models'][tag] = rec
 
+    # AMENDMENT_4 of R24 made this standing one round earlier and R26 did not carry it: a failed
+    # control means the verdict is UNVERIFIED and the numbers are DESCRIPTIVE. Gate 3 failed in every
+    # cell and nothing was flagged, so a reader of this JSON had no marker at all.
+    #
+    # And the budget's own shares are worse than unflagged -- they are PERMUTATION-INVARIANT, proven
+    # in attack_budget.py at max|delta| ~ 1e-16 over 10000 draws with P(null >= obs) = 1.0000. A
+    # statistic whose null is a point mass at the observed value cannot support any world. The
+    # `residual_share` is additionally not a residual: Var(log|I| - (size+align))/Var(log|I|) comes to
+    # 0.8418 / 1.6118 / 0.8358 / 1.6376, above 1 in two cells, so the budget was never an identity.
+    gates = [sr for r in out['models'].values() for sr in r['supports'].values()]
+    out['inferential'] = all(g['gate3_pass'] and g['gate4_pass'] for g in gates) if gates else False
+    out['n_gate3_fail'] = sum(1 for g in gates if not g['gate3_pass'])
+    out['n_gate4_fail'] = sum(1 for g in gates if not g['gate4_pass'])
+    out['budget_shares_are_permutation_invariant'] = True
+    out['budget_is_not_an_identity'] = True
+    out['residual_share_is_void'] = True
+    if not out['inferential']:
+        print(f'\n  ** inferential = False. Gate 3 failed in {out["n_gate3_fail"]} of {len(gates)} '
+              f'cells. **\n  Every share in this file is DESCRIPTIVE, and `residual_share` is VOID '
+              f'-- see attack_budget.py.')
     (HERE / 'results').mkdir(parents=True, exist_ok=True)
     op = HERE / 'results' / 'r26_decompose.json'
     json.dump(out, open(op, 'w'), indent=1)

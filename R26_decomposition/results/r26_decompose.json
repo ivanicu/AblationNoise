@@ -4897,5 +4897,11 @@
     }
    }
   }
- }
+ },
+ "inferential": false,
+ "n_gate3_fail": 4,
+ "n_gate4_fail": 0,
+ "budget_shares_are_permutation_invariant": true,
+ "budget_is_not_an_identity": true,
+ "residual_share_is_void": true
 }
