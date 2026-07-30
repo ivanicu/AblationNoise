@@ -1,0 +1,48 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "T1_privacy_dead_below": 0.15,
+  "T0_c2_max_abs": 0.05,
+  "rank": 5,
+  "n_null": 400
+ },
+ "question": "Does individual head identity exist above KV-group identity, in the loadings that R30 showed are stable across disjoint item sets?",
+ "C1": {
+  "rel_0.0": 0.011467388303760661,
+  "rel_0.3": -0.04851748797222046,
+  "rel_0.6": 0.312728129594203,
+  "rel_0.9": 0.6933182410160639,
+  "monotone": false
+ },
+ "C2": {
+  "rho_priv": -0.014094978791170054,
+  "null_median": 0.007110493405020856,
+  "null_p95": 0.07810226536113693,
+  "null_sd": 0.04090380009432914,
+  "inside_null_p95": true,
+  "z": -0.5184230352018275
+ },
+ "gate_passed": false,
+ "observed": {
+  "1.5b": {
+   "kv_group": {
+    "rho_priv": 0.9402055240704822,
+    "null_median": 0.025789433321731257,
+    "null_p95": 0.16894902016422178,
+    "null_sd": 0.08510172906002761,
+    "inside_null_p95": false,
+    "z": 10.74497663970794
+   },
+   "layer": {
+    "rho_priv": 0.9406039386654502,
+    "null_median": 0.009055671685648602,
+    "null_p95": 0.1000901827274911,
+    "null_sd": 0.05931660540473134,
+    "inside_null_p95": false,
+    "z": 15.704679332602156
+   },
+   "n_groups": 56
+  }
+ },
+ "verdict": "UNVERIFIED_GATE_FAILED"
+}
