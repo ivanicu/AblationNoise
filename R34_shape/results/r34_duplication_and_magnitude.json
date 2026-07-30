@@ -1,0 +1,65 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "T_abs_rho": 0.25,
+  "max_p": 0.01,
+  "n_perm": 10000,
+  "rank": 5
+ },
+ "question": "does within-KV-group query-head duplication (frac0_g) predict where the large ablation effects sit, or is it depth?",
+ "cells": {
+  "1.5b": {
+   "n_groups": 56,
+   "per_group": 6,
+   "frac0_g_quantiles_0_10_25_50_75_90_100": [
+    0.03239496857690183,
+    0.05819524766206163,
+    0.09781548697520812,
+    0.1697648921295023,
+    0.3105937619417506,
+    0.3913031396389824,
+    0.8763119730520389
+   ],
+   "frac0_g_sd": 0.18663592154473635,
+   "median_norm_nats_quantiles": [
+    0.17615547983807178,
+    0.7662084939630621,
+    2.867999510018567
+   ],
+   "spearman_raw": -0.18010936431989064,
+   "p_perm_raw": 0.185,
+   "spearman_within_layer": -0.2857142857142857,
+   "p_perm_within_layer": 0.0598,
+   "spearman_frac0_vs_layer": -0.20310472134926905,
+   "spearman_norm_vs_layer": 0.7321343928502608,
+   "passes_registered": false
+  },
+  "3b": {
+   "n_groups": 72,
+   "per_group": 8,
+   "frac0_g_quantiles_0_10_25_50_75_90_100": [
+    0.002525670023574511,
+    0.021468805681351646,
+    0.054626619649020075,
+    0.11133982677881687,
+    0.17477517535700787,
+    0.37837301499188486,
+    0.8159026177880295
+   ],
+   "frac0_g_sd": 0.16025576682647208,
+   "median_norm_nats_quantiles": [
+    0.15656768446618974,
+    0.8417897455622493,
+    4.0550853856935625
+   ],
+   "spearman_raw": -0.5309344652389221,
+   "p_perm_raw": 0.0,
+   "spearman_within_layer": -0.1111111111111111,
+   "p_perm_within_layer": 0.4822,
+   "spearman_frac0_vs_layer": -0.4602914406905014,
+   "spearman_norm_vs_layer": 0.726430600737546,
+   "passes_registered": true
+  }
+ },
+ "verdict": "DUPLICATION_DEAD"
+}
