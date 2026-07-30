@@ -3559,6 +3559,50 @@ def r24_fence_rate():
     return {k: v for k, v in d.items() if k != 'argmax_histogram'}
 
 
+def r26_decompose():
+    """R26 -- what GENERATES the effect distribution. Registered gate 3 FAILS in 4 of 4 cells, and
+    the registration assigned that exact failure to WORLD C before the run: the linear
+    size-times-direction ontology is unfit, the per-head scalar is not a head property, and the object
+    is propagation.
+
+        gate 3  rho(size+align, log|I|) at the deepest layer, need >= 0.70
+                +0.5315 (1.5b, L27)   +0.3353 (3b, L35)   FAIL, both
+        gate 4  sham readout direction, need |rho_bar| <= 0.114
+                +0.0512  -0.0355  +0.0454  -0.0116        PASS, all four
+
+    Gate 4 passing is what makes gate 3's failure mean something: a random direction of the same norm
+    predicts the effect far worse than the real readout direction, so the alignment term is not vector
+    length in disguise and the shortfall is not a broken instrument.
+
+    THE SHORTFALL IS THE MEASUREMENT. If log|I| were size+align exactly, the three variance shares
+    would sum to 1 by construction. They sum to 0.4294 / 0.6227 / 0.5788 / 0.7016, leaving a residual
+    of 0.5706 / 0.3773 / 0.4212 / 0.2984 -- 1.5276 / 0.6965 / 0.9489 / 0.5544 nats^2 that is not a
+    first-order property of the head's own write.
+
+    size and align are properties of ONE forward pass and are therefore identical across supports;
+    only the target changes. So the residual differing by support (0.57 vs 0.38 in 1.5b) is a fact
+    about the two supports, not about the predictors -- and I_all, which sums over all positions, is
+    the better-explained of the two.
+
+    The readout direction is pulled back through the final RMSNorm EXACTLY, not approximated by
+    gamma*du: (J^T v)_j = (gamma*v)_j/r - x_j <gamma*v, x>/(n r^3). The approximation would leave the
+    component along the residual stream uncancelled, which is the confound this round exists to
+    measure.
+    """
+    f = HERE / 'R26_decomposition' / 'results' / 'r26_decompose.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    return {'seed': d.get('seed'), 'gate3_rho': d.get('gate3_rho'),
+            'gate4_bound': d.get('gate4_bound'),
+            'models': {t: {'n_items': r['per_head']['n_items'],
+                           'n_layers': r['per_head']['n_layers'],
+                           'n_heads': r['per_head']['n_heads'],
+                           'supports': {s: {k: v for k, v in sr.items() if k != 'per_layer_rho'}
+                                        for s, sr in r['supports'].items()}}
+                       for t, r in d.get('models', {}).items()}}
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -5055,6 +5099,7 @@ def main() -> int:
     R26S = r26_support_divergence()
     R26G = r26_identity_gates()
     R24F = r24_fence_rate()
+    R26D = r26_decompose()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -5100,7 +5145,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
