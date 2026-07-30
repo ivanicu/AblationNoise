@@ -1,0 +1,65 @@
+{
+ "note": "shape of the replay discrepancy against the measured batch-noise scale",
+ "noise_medians": {
+  "qwen2.5-1.5b": {
+   "I_final": 1.541338860988617e-06,
+   "I_all": 1.8016435205936432e-06,
+   "n_cells_probed": 56
+  },
+  "qwen2.5-3b": {
+   "I_final": 1.5981495380401611e-06,
+   "I_all": 1.5757977962493896e-06,
+   "n_cells_probed": 16
+  }
+ },
+ "cells": {
+  "qwen2.5-1.5b|I_final": {
+   "n_cells": 336,
+   "median_D": 1.4203911026314242e-06,
+   "max_D": 5.103151003521544e-06,
+   "M": 1.541338860988617e-06,
+   "median_over_M": 0.9215307150047352,
+   "max_over_median": 3.5927787734430465,
+   "p90_D": 3.1707187493623668e-06,
+   "control_pass_as_registered": true,
+   "base_abs_delta": 5.292892455877052e-06
+  },
+  "qwen2.5-1.5b|I_all": {
+   "n_cells": 336,
+   "median_D": 1.7911195755171416e-06,
+   "max_D": 2.3694833119702885e-05,
+   "M": 1.8016435205936432e-06,
+   "median_over_M": 0.9941586973470568,
+   "max_over_median": 13.229062673195108,
+   "p90_D": 5.118052164743148e-06,
+   "control_pass_as_registered": false,
+   "base_abs_delta": 5.292892455877052e-06
+  },
+  "qwen2.5-3b|I_final": {
+   "n_cells": 576,
+   "median_D": 1.4233092466980901e-06,
+   "max_D": 7.931391398097176e-06,
+   "M": 1.5981495380401611e-06,
+   "median_over_M": 0.8905982905977117,
+   "max_over_median": 5.5725004362172665,
+   "p90_D": 3.677606582638826e-06,
+   "control_pass_as_registered": true,
+   "base_abs_delta": 3.0438105262931003e-06
+  },
+  "qwen2.5-3b|I_all": {
+   "n_cells": 576,
+   "median_D": 1.9952654838478745e-06,
+   "max_D": 1.302560170479694e-05,
+   "M": 1.5757977962493896e-06,
+   "median_over_M": 1.2661938534226118,
+   "max_over_median": 6.5282549165723225,
+   "p90_D": 5.182251334188981e-06,
+   "control_pass_as_registered": false,
+   "base_abs_delta": 3.0438105262931003e-06
+  }
+ },
+ "median_over_M_range": [
+  0.8905982905977117,
+  1.2661938534226118
+ ]
+}
