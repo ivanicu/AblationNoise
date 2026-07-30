@@ -3865,6 +3865,42 @@ def r29_retraction():
     return json.load(open(f)) if f.exists() else None
 
 
+def r29_batch_noise():
+    """How much does batching alone move a per-head mean? Measured, both supports, 14 cells each.
+
+    The I_all positive control failed at worst |delta mean| 2.369e-05 (1.5b) and 1.303e-05 (3b) against a
+    fixed 1e-5. R18 ran ONE ITEM AT A TIME, so the comparison is batch-versus-no-batch, and the noise
+    scale is the chunk=1 vs chunk=40 spread:
+
+        I_final   median 8.484e-07   p90 1.684e-06   max 3.783e-06   sd 1.057e-06
+        I_all     median 1.427e-06   p90 4.530e-06   max 1.463e-05   sd 4.027e-06
+        I_all / I_final median ratio 1.68x
+
+    Two things follow, neither of them an argument. First, 3b's 1.303e-05 failure is BELOW the 1.463e-05
+    max already reached in 14 cells of 1.5b I_all -- inside the measured noise. Second, the registered
+    tolerance was a fixed absolute bound on a MAX over 336 or 576 cells, judged against a scale whose sd
+    is 4.027e-06: an extreme value over that many draws exceeds 1e-5 without anything being wrong.
+
+    A genuine implementation error moves the MEDIAN of that distribution. Numerical noise moves only its
+    MAX. The registered rule tested the quantity that noise moves.
+
+    An earlier probe swept chunks 20/40/60/120 and reported 5.230e-06, which I read as the batching floor.
+    Every one of those sits INSIDE the batched regime while the reference is chunk=1, so it measured the
+    wrong quantity -- the same error as testing a convergence limit only at its endpoint.
+    """
+    f = HERE / 'R29_cancellation' / 'results' / 'r29_batch_noise_qwen2.5-1.5b.json'
+    if not f.exists():
+        return None
+    d = json.load(open(f))
+    return {k: ({kk: vv for kk, vv in v.items() if kk != 'per_cell'} if isinstance(v, dict) else v)
+            for k, v in d.items()} if 'supports' not in d else {
+        'model': d['model'], 'n_items': d['n_items'], 'prod_chunk': d['prod_chunk'],
+        'n_cells_probed': d['n_cells_probed'],
+        'i_all_over_i_final_median_ratio': d.get('i_all_over_i_final_median_ratio'),
+        'supports': {k: {kk: vv for kk, vv in v.items() if kk != 'per_cell'}
+                     for k, v in d['supports'].items()}}
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -5370,6 +5406,7 @@ def main() -> int:
     R29S = r29_scan()
     R29M = r29_matrix()
     R29R = r29_retraction()
+    R29B = r29_batch_noise()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -5415,7 +5452,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'r28_kappa': R28K, 'r28_gate1_fd64': R28F, 'r29_on_disk': R29, 'r29_scan': R29S, 'r29_matrix': R29M, 'r29_retraction': R29R, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'r28_kappa': R28K, 'r28_gate1_fd64': R28F, 'r29_on_disk': R29, 'r29_scan': R29S, 'r29_matrix': R29M, 'r29_retraction': R29R, 'r29_batch_noise': R29B, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0
