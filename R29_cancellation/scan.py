@@ -49,7 +49,13 @@ def main():
     ap.add_argument('--model', default='artifacts/model_qwen2.5-1.5b-instruct')
     ap.add_argument('--support', default='I_final', choices=['I_final', 'I_all'])
     ap.add_argument('--seed-offset', type=int, default=0)
-    ap.add_argument('--ref', default='R10_exhaustive/results/r10_exhaustive_qwen2.5-1.5b.json')
+    ap.add_argument('--ref', default='R10_exhaustive/results/r10_exhaustive_qwen2.5-1.5b.json',
+                    help='MUST be the reference for THIS item set. --seed-offset 400 is R11 itemsB '
+                         '(base_margin 4.417667237917582), not R10 -- comparing it to R10 fails by '
+                         '1.871e-01, which is the item sets differing, not the pipeline.')
+    ap.add_argument('--chunks', nargs='*', type=int, default=None,
+                    help='measure the batching noise floor: rerun the base pass at these chunk '
+                         'sizes and report the spread. The tolerance should be in THESE units.')
     args = ap.parse_args()
 
     ref = json.load(open(REPO / args.ref))
@@ -136,6 +142,30 @@ def main():
             out.append((c - o).float())
         return torch.cat(out)
 
+    # THE BATCHING NOISE FLOOR, MEASURED RATHER THAN ASSUMED. The registered mean tolerance of 1e-5
+    # was set from I_final's behaviour. I_all zeroes 121 positions instead of 1, so the perturbation
+    # propagates through far more arithmetic and accumulates more float32 divergence -- and the right
+    # unit for a reproduction tolerance is how much the pipeline moves against ITSELF under a change
+    # that should not matter. Chunk size is exactly such a change.
+    chunk_probe = {}
+    if args.chunks:
+        with torch.no_grad():
+            for ck in args.chunks:
+                globals()['CHUNK'] = ck
+                ACT.clear()
+                b0 = margin_vec()
+                ACT.clear(); ACT[0] = {0}
+                d0 = (b0 - margin_vec())
+                chunk_probe[str(ck)] = {'base_mean': float(b0.mean()),
+                                        'L00H00_mean': float(d0.mean())}
+                print(f'    chunk {ck:>4}: base {float(b0.mean())!r}  L00H00 '
+                      f'{float(d0.mean()):.9e}', flush=True)
+        globals()['CHUNK'] = 40
+        bs = [v['base_mean'] for v in chunk_probe.values()]
+        c0 = [v['L00H00_mean'] for v in chunk_probe.values()]
+        print(f'    -> batching spread: base {max(bs) - min(bs):.3e}   '
+              f'one cell {max(c0) - min(c0):.3e}', flush=True)
+
     with torch.no_grad():
         ACT.clear()
         base = margin_vec()
@@ -205,6 +235,13 @@ def main():
     out = {'model': args.tag, 'support': args.support, 'seed_offset': args.seed_offset,
            'n_items': n, 'n_layers': NL, 'n_heads': NH, 'chunk': CHUNK,
            'base_margin_replayed': bm, 'base_margin_frozen': want_bm,
+           'chunk_probe': chunk_probe,
+           'batching_spread_base': (max(v['base_mean'] for v in chunk_probe.values())
+                                    - min(v['base_mean'] for v in chunk_probe.values()))
+           if chunk_probe else None,
+           'batching_spread_one_cell': (max(v['L00H00_mean'] for v in chunk_probe.values())
+                                        - min(v['L00H00_mean'] for v in chunk_probe.values()))
+           if chunk_probe else None,
            'control_per_cell': diag,
            'control': {'n_cells_checked': nchk, 'worst_abs_delta_mean': worst_mean,
                        'worst_rel_delta_sem': worst_sem if semref else None,
