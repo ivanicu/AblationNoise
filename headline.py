@@ -3668,6 +3668,40 @@ def r25_cyclic():
     return {k: v for k, v in d.items() if k != 'observed'}
 
 
+def r28_kappa():
+    """R28 -- kappa = log|I| - log|<a_h, d margin/d a_h>|. Control 1 FAILED as registered and no kappa
+    was read; the emitted sequences then say WHY, and the reason exonerates the gradient.
+
+    The control required relative error <= 1% at the SMALLEST alpha, 1/32. But truncation error falls as
+    alpha while roundoff rises as 1/alpha, so in float32 the smallest alpha is the WORST place to look.
+    The emitted per-alpha sequences show both regimes:
+
+      L09H00  rel err 3.144e-01 -> 1.514e-01 -> 7.299e-02 -> 3.266e-02 -> 1.162e-02 -> 5.645e-03
+              five successive halvings, each roughly halving the error: textbook O(alpha) convergence
+              of a CORRECT first-order derivative. A gradient hooked one module later would be wrong
+              by a factor of W_O and would give a CONSTANT relative error instead.
+      L09H03  falls to 3.981e-04 at alpha=1/16, then RISES to 2.592e-02 at 1/32
+      L18H03  falls to 7.392e-03 at alpha=1/8,  then RISES to 1.296e-02 at 1/32
+
+    U-shaped with an interior minimum is the signature of a precision floor, not of a wrong tensor.
+
+    So the registered STOP is honoured -- no kappa is read from this run -- and the defect is in the
+    control's threshold, which demanded 1% at an alpha below the float32 roundoff floor. That is the
+    same class of error as every other threshold defect in this repository: a bar a working instrument
+    cannot clear.
+    """
+    out = {}
+    for tag in ('qwen2.5-1.5b', 'qwen2.5-3b'):
+        f = HERE / 'R28_kappa' / 'results' / f'r28_kappa_{tag}.json'
+        if f.exists():
+            d = json.load(open(f))
+            out[tag] = {k: v for k, v in d.items() if k not in ('supports',)}
+            if 'supports' in d:
+                out[tag]['supports'] = {s: {k: v for k, v in r.items() if k != 'rows_deepest'}
+                                        for s, r in d['supports'].items()}
+    return out or None
+
+
 def multiplicity():
     """A18 -- the family of decision rules, split by DIRECTION before it is corrected.
 
@@ -5167,6 +5201,7 @@ def main() -> int:
     R26D = r26_decompose()
     R26A = r26_attack_budget()
     R25C = r25_cyclic()
+    R28K = r28_kappa()
     SPH = split_half()
     RARM = residual_arm()
     POW = enrichment_power()
@@ -5212,7 +5247,7 @@ def main() -> int:
                             'n_ladder': _r['n_ladder']} for _r in ADD['rows']]
         print(json.dumps({'r1': A, 'r1_vocabulary': V, 'r2': B, 'r4': D, 'r5': E, 'r6': S, 'r6_diag': G, 'r7': R, 'r8': E8,
                           'r1_prior_effects': PE, 'r1_set_null': SN, 'r1_set_null_range': SR,
-                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
+                          'r9': NINE, 'r10': TEN, 'r1_floor_audit': FA, 'variance_decomposition': VD, 'defect_ledger': DL, 'item_noise_bound': IN, 'set_level_scale': SL, 'rank_vs_role': RV, 'input_replication': IR, 'task_audit': TA, 'r14': FT, 'r12': TW, 'r15_design': FD, 'taxonomy_power': TP, 'r2_centred': TC, 'r2_task_audit': TA2, 'selection_vs_effect': SV, 'depth_sensitivity': DS, 'r15': R15, 'r17': R17, 'r18': R18, 'set_enrichment': SE, 'selection_overlap': SO, 'floor_transport': FTR, 'wo_conditioning': WOC, 'resolution_limit': RSL, 'ov_copying': OVC, 'instrument_triangle': TRI, 'ov_3b': OV3, 'ov_permutation_null': OVP, 'band_boundary': BND, 'window_arm_control': WAC, 'condition_shape_rank': CSR, 'measurability': MEA, 'additivity': ADD, 'mechanism': MECH, 'enrichment_power': POW, 'residual_arm': RARM, 'split_half': SPH, 'r19_confirmatory': R19C, 'margin_normalisation': MNORM, 'multiplicity': MULT, 'r20_direct_indirect': R20, 'r21_indirect_attribution': R21, 'r21_adversary_recompute': R21A, 'r21_sensitivity': R21S, 'r22_floor_identification': R22, 'r22_leakage': R22L, 'r22_census': R22C, 'r22_enrichment_leak': R22E, 'r23_shape': R23, 'r23_depth': R23D, 'r23_attack': R23A, 'r24_concentration': R24, 'r24_boundary': R24B, 'r24_power': R24P, 'r24_width': R24W, 'r25_kv_group': R25, 'r25_attack_partition': R25A, 'r26_support_divergence': R26S, 'r26_identity_gates': R26G, 'r24_fence_rate': R24F, 'r26_decompose': R26D, 'r26_attack_budget': R26A, 'r25_cyclic': R25C, 'r28_kappa': R28K, 'adversary_scoring': AS, 'r11': EL, 'power': PW, 'reference_class': RC, 'centred_null': CN,
                           'r1_behavioural_scale': BS, 'cross_round_scale': CR},
                          indent=2, default=float))
         return 0

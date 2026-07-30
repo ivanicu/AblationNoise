@@ -1,4 +1,4 @@
-<!-- unbacked-ok: 50.29 48.95 48.77 48.41 47.91 46.59 4.03 42.56 41.27 41.08 40.30 38.03 37.86 37.56 37.17 36.85 36.76 36.28 36.11 36.11 36.11 36.11 36.23 36.12 36.08 36.07 36.10 35.99 35.99 36.07 36.06 36.07 35.86 35.69 35.71 35.53 34.59 34.16 34.72 35.02 35.38 36.74 2006 1719 1713 1671 1669 1683
+<!-- unbacked-ok: 50.56 50.29 48.95 48.77 48.41 47.91 46.59 4.03 42.56 41.27 41.08 40.30 38.03 37.86 37.56 37.17 36.85 36.76 36.28 36.11 36.11 36.11 36.11 36.23 36.12 36.08 36.07 36.10 35.99 35.99 36.07 36.06 36.07 35.86 35.69 35.71 35.53 34.59 34.16 34.72 35.02 35.38 36.74 2006 1719 1713 1671 1669 1683
  1596 1434 467 33 2909 2507 86 2 14 35.0 6 1.03 0.41 64 100 365 3 15
  -- MEASUREMENTS OF THE DETECTOR'S OWN POWER, and of the remedies tried against it. A detector
  cannot emit the statistics of its own false-pass rate into the reference set that rate is computed
@@ -7,7 +7,7 @@
  `python3 detectors/prose_numbers.py --power` and by the measurement script quoted in each section. -->
 # Detector 6 power breach — acknowledged, with the remedies measured and rejected
 
-`measured_false_pass_rate = 50.29`
+`measured_false_pass_rate = 50.56`
 
 The line above is machine-read by `detectors/prose_numbers.py`. **The gate fails unless it matches
 the current rate to two decimals**, so this file cannot be written in advance and goes stale the
@@ -110,7 +110,7 @@ pages changed; the instrument did. The remedy named at the top of this file -- a
 than COMPUTED values -- stopped being an improvement and became the only thing that keeps this gate
 meaningful at all.
 
-`36.11` -> `36.28` -> `36.76` -> `36.85` -> `37.17` -> `37.56` -> `37.86` -> `38.03` -> `40.30` -> `41.08` -> `41.27` -> `42.56` -> `46.59` -> `47.91` -> `48.41` -> `48.77` -> `48.95` -> `50.29`, 2026-07-28 into 2026-07-29. The first step was `margin_normalisation()` gaining
+`36.11` -> `36.28` -> `36.76` -> `36.85` -> `37.17` -> `37.56` -> `37.86` -> `38.03` -> `40.30` -> `41.08` -> `41.27` -> `42.56` -> `46.59` -> `47.91` -> `48.41` -> `48.77` -> `48.95` -> `50.29` -> `50.56`, 2026-07-28 into 2026-07-29. The first step was `margin_normalisation()` gaining
 `D145`'s matched-denominator block; the second was moving that repair's registered bound and kill
 thresholds out of pre-registration prose and **into the emitter**, so a reader can re-derive them.
 
