@@ -1,0 +1,61 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "T_form": "max(0.15, 2*RES) with RES at n_split=50 in this run",
+  "T_floor": 0.15,
+  "rho_S_target": 0.3,
+  "n_draw": 2000,
+  "n_split": 50,
+  "sham": "Freedman-Lane: permute resid(-c_h | rank m_all) within layer",
+  "admissible_iff": "wilson_lo >= 0.80 AND FL_fp <= 0.05 AND |FL_mean| <= 0.02",
+  "sham_stopping": "FL sd within +-25% of recovery sd -> retract the c_h-permutation sham repo-wide; FL sd < 0.023 -> null unmatched, test stays unread"
+ },
+ "sign_mix_frac_mfinal_negative": {
+  "0": 0.0,
+  "1": 0.0,
+  "2": 0.0,
+  "3": 0.0,
+  "4": 0.0,
+  "5": 0.0,
+  "6": 0.0,
+  "7": 0.0,
+  "8": 0.0,
+  "9": 0.0
+ },
+ "calibration": {
+  "lam": 0.1873336396229206,
+  "noiseless_X": 0.3000936646302674
+ },
+ "RES": 0.03217914198024527,
+ "T": 0.15,
+ "arms": {
+  "recovery": {
+   "mean_X": 0.282306774999818,
+   "sd_X": 0.03217914198024527,
+   "mean_layers_kept": 10.0,
+   "rate_at_T": 1.0,
+   "wilson95": [
+    0.9980828823994872,
+    1.0000000000000002
+   ]
+  },
+  "sham_freedman_lane": {
+   "mean_X": -5.7250790901136496e-05,
+   "sd_X": 0.015045668247978213,
+   "mean_layers_kept": 10.0,
+   "rate_at_T": 0.0,
+   "wilson95": [
+    0.0,
+    0.0019171176005129348
+   ]
+  }
+ },
+ "sham_geometry": {
+  "fl_sd": 0.015045668247978213,
+  "recovery_sd": 0.03217914198024527,
+  "ratio": 0.46755964646958975,
+  "matched_within_25pct": false,
+  "still_tight": true
+ },
+ "verdict": "UNVERIFIED_NULL_STILL_UNMATCHED"
+}
