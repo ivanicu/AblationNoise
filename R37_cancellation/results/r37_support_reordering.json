@@ -1,0 +1,112 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "T_floor": 0.15,
+  "n_null": 2000,
+  "n_boot": 2000,
+  "layers": [
+   0,
+   9
+  ],
+  "unit": "base instance n=64",
+  "primary": "partialled on rank m_h(.all)",
+  "asymmetry": "NEGATIVE is a legitimate one-model result; POSITIVE is not a result"
+ },
+ "mechanical_dependence": {
+  "corr_c_vs_m_all": 0.38111888111888115,
+  "corr_c_vs_m_final": -0.20419580419580421
+ },
+ "c_h": {
+  "mean": 0.7340957585636467,
+  "sd": 0.32260466420730166,
+  "min": 0.019489173785339646,
+  "max": 1.0
+ },
+ "results": {
+  "partialled": {
+   "X": -0.013463224715970962,
+   "per_layer_rho": [
+    -0.4195804195804196,
+    0.17482517482517482,
+    -0.3776223776223776,
+    0.09090909090909091,
+    0.1258741258741259,
+    0.1958041958041958,
+    0.5244755244755245,
+    -0.5734265734265734,
+    0.2517482517482518,
+    -0.06993006993006994
+   ],
+   "null_mean": 0.03716985189564947,
+   "null_sd": 0.1038238855517945,
+   "null_abs_p95": 0.21901833353381983,
+   "null_degenerate": false,
+   "RES": 0.07221927845496504,
+   "T": 0.15,
+   "bca_ci95": [
+    -0.09394003656573303,
+    0.19688707884391565
+   ],
+   "ci_covers_zero": true,
+   "abs_X_below_T": true
+  },
+  "raw": {
+   "X": -0.10347128202125626,
+   "per_layer_rho": [
+    -0.2937062937062937,
+    0.21678321678321677,
+    -0.42657342657342656,
+    0.0979020979020979,
+    -0.02097902097902098,
+    0.13986013986013987,
+    0.32167832167832167,
+    -0.4965034965034965,
+    -0.23076923076923078,
+    -0.26573426573426573
+   ],
+   "null_mean": 0.021869867072289915,
+   "null_sd": 0.09893788381600674,
+   "null_abs_p95": 0.1955241676942357,
+   "null_degenerate": false,
+   "RES": 0.05771561096971363,
+   "T": 0.15,
+   "bca_ci95": [
+    -0.2118161852975235,
+    0.02088451883375861
+   ],
+   "ci_covers_zero": true,
+   "abs_X_below_T": true
+  }
+ },
+ "instrument_control": {
+  "r11_mean_sem_band": 0.016949197883734137,
+  "within_layer_sd_m_all": {
+   "0": 1.1152097986515017,
+   "1": 1.3965401708444367,
+   "2": 1.8936346273631206,
+   "3": 0.980161881035837,
+   "4": 0.4596762150534414,
+   "5": 1.4128986299880362,
+   "6": 0.37870327859633,
+   "7": 0.47461853423393163,
+   "8": 1.0014296313623037,
+   "9": 1.4667325218518732
+  },
+  "layers_below_floor": []
+ },
+ "verdict": "UNVERIFIED_NO_POSITIVE_CONTROL",
+ "ANNOTATION_2026_07_30_verdict_not_readable": {
+  "from": "CANCELLATION_DEAD",
+  "to": "UNVERIFIED_NO_POSITIVE_CONTROL",
+  "why": "the registered asymmetry makes a NEGATIVE the cheap outcome, which is exactly the condition under which an underpowered instrument fabricates one. This run has NO positive control. A measured null is inadmissible until one passes. Same failure as R36, one layer down.",
+  "defects_found_after_the_run": {
+   "outcome_should_be_SIGNED": "E[|Delta r|] > 0 under the no-mechanism null and its value is set by the NOISE MAGNITUDE, which itself covaries with c_h. So |Delta r| has a null centre that MOVES WITH THE PREDICTOR and can be nonzero with zero mechanism. Signed Delta r has null mean exactly 0 under exchangeability. Registered direction: rho(Delta r, -c_h) > 0.",
+   "rectification_bias": "sum_t|e_hat_t| is a POSITIVELY BIASED estimator of sum_t|e_t|, maximal where |e_t|/sigma -> 0. A high-cancellation head is BY DEFINITION one with many near-zero e_t, so low-c_h heads carry the MOST inflated m_h \u2014 and .final effects are 2-10x smaller than .all, so the two conditions carry DIFFERENT bias whose difference is monotone in c_h. That is a nonzero X from noise alone, in the registered direction.",
+   "shared_noise_coupling": "c_h and m_h are estimated from the SAME 64 instances, so their errors are correlated by construction. Needs a 32/32 cross-fit: c_h from half A, both rank vectors from half B, averaged over >=50 splits.",
+   "T_too_low": "registered T = max(0.15, RES); the correct form is max(0.15, 2*RES). Spearman z variance is 1.06/(n-3), not 1/(n-3), and the 10 layers are NOT independent strata \u2014 they share the same 64 base instances \u2014 so any parametric pooled SE is wrong in an unknown direction. The bootstrap is the ONLY admissible CI source.",
+   "instrument_control_units_error": "I compared R19 effect spreads against R11 mean_sem_band raw. They are not commensurable: R11 base_margin 4.4768 vs R19 baseline_margin_mean 1.6357 (2.74x), 120 items vs 64 base instances, and R11 heads are band-selected. Both must be normalised by their own baseline margin first. This is the MW/W units family.",
+   "reliability_unmeasured": "within-layer split-half reliability of m_h was never computed. If it is far below 0.7, Delta r is mostly noise, X is attenuated toward 0, and the negative is manufactured."
+  },
+  "what_survives": "the null was verified NON-degenerate before reading (sd 0.1038 partialled, 0.0989 raw) \u2014 unlike R36 the floor could move. And the mechanical path was measured BEFORE building, not after: corr(c_h, m_h(.all)) = +0.3839 within layer."
+ }
+}
