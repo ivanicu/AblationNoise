@@ -1,0 +1,60 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "T_floor": 0.15,
+  "T_form": "max(0.15, 2*RES)",
+  "n_splits": 50,
+  "n_boot": 1000,
+  "G1_target_rho": 0.3,
+  "G1_min_recovery": 0.8,
+  "G2_max_sham": 0.05,
+  "G0_reliability_warn_below": 0.7,
+  "direction": "rho(signed Delta r, -c_h) > 0",
+  "asymmetry": "NEGATIVE is a legitimate one-model result; POSITIVE is not a result"
+ },
+ "G0_reliability": {
+  "within_layer_split_half": 0.891730285951244,
+  "spearman_brown": 0.9427668337009717,
+  "warn_below": 0.7,
+  "usable": true
+ },
+ "results": {
+  "partialled": {
+   "X": 0.16722317173947626,
+   "RES": 0.04140178015324688,
+   "T": 0.15,
+   "bca_ci95": [
+    0.09521598376319433,
+    0.261690220016941
+   ],
+   "ci_covers_zero": false,
+   "abs_X_below_T": false,
+   "n_boot": 100
+  },
+  "raw": {
+   "X": 0.4186551383603968,
+   "RES": 0.034367772334741455,
+   "T": 0.15,
+   "bca_ci95": [
+    0.36013270803320263,
+    0.48055799372009833
+   ],
+   "ci_covers_zero": false,
+   "abs_X_below_T": false,
+   "n_boot": 100
+  }
+ },
+ "G1_positive_control": {
+  "target_rho": 0.3,
+  "recovery": 0.93,
+  "n_draws": 200,
+  "threshold_used": 0.15,
+  "passes": true
+ },
+ "G2_sham": {
+  "X_sham": 0.12004696083830883,
+  "max_allowed": 0.05,
+  "passes": false
+ },
+ "verdict": "UNVERIFIED_RECTIFICATION_CONFOUND"
+}
