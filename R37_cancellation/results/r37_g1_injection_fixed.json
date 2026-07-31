@@ -1,0 +1,39 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "T": 0.208,
+  "rho_S_target": 0.3,
+  "n_power": 2000,
+  "injection_route": ".final tensor, exp(-lam*z_c) \u2014 NOT partialled out",
+  "sham": "permute c_h WITHIN layer \u2014 both marginals preserved, only the pairing destroyed",
+  "admissible_iff": "wilson_lo >= 0.80 AND sham <= 0.05"
+ },
+ "calibration": {
+  "lam": 0.22312112499179193,
+  "noiseless_X": 0.30327367794042465,
+  "target": 0.3,
+  "target_reached": true
+ },
+ "arms": {
+  "recovery": {
+   "rate": 0.9975,
+   "wilson95": [
+    0.9941607609565954,
+    0.9989317070308943
+   ],
+   "mean_X": 0.3017543835965504,
+   "sd_X": 0.031137568900553966
+  },
+  "sham": {
+   "rate": 0.0,
+   "wilson95": [
+    0.0,
+    0.0019171176005129348
+   ],
+   "mean_X": -0.0015942997693656228,
+   "sd_X": 0.05440309573853374
+  }
+ },
+ "measured_attenuation": 0.9949903520998195,
+ "verdict": "ADMISSIBLE_ON_1P5B_ALONE"
+}
