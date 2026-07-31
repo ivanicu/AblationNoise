@@ -97,6 +97,14 @@ def one_draw(bf, ba, lay, lam, zc, rng, fl=False, resample=True, n_split=N_SPLIT
     nb = bf.shape[1]
     bfd = bf * np.exp(-lam * zc)[:, None, None]
     idx = rng.integers(0, nb, nb) if resample else np.arange(nb)
+    # ⚠ FOURTH OCCURRENCE FIX: the Freedman-Lane permutation is drawn ONCE PER DRAW, outside the
+    # split loop, exactly as the bootstrap resample now is. Drawing it inside meant each draw
+    # averaged 50 INDEPENDENT permutations, so the null's entire spread -- which IS the
+    # permutation's variance -- was averaged away by ~sqrt(n_split) while the recovery arm's
+    # variance, dominated by the shared resample, survived. That is why FL sd came back at 0.0150
+    # against a recovery sd of 0.0322. ANY RANDOMISATION THAT DEFINES THE NULL MUST BE DRAWN AT
+    # THE SAME LEVEL AS THE QUANTITY WHOSE VARIABILITY IS REPORTED.
+    fl_perm = {L: rng.permutation(int((lay == L).sum())) for L in range(LMAX)} if fl else None
     xs, kept = [], []
     for _ in range(n_split):
         p = rng.permutation(nb)
@@ -113,7 +121,7 @@ def one_draw(bf, ba, lay, lam, zc, rng, fl=False, resample=True, n_split=N_SPLIT
             dr = resid((rk(mf[i]) - rk(ma[i])) / (len(i) - 1), g)
             pr = resid(-ch[i], g)
             if fl:                       # Freedman-Lane: permute the RESIDUAL, not the variable
-                pr = pr[rng.permutation(len(i))]
+                pr = pr[fl_perm[L]]        # ...and the SAME permutation across all splits
             rs.append(sp(dr, pr))
         v, k = zpool(rs)
         xs.append(v)

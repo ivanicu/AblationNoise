@@ -40,22 +40,22 @@
    ]
   },
   "sham_freedman_lane": {
-   "mean_X": -5.7250790901136496e-05,
-   "sd_X": 0.015045668247978213,
+   "mean_X": 0.0007573223541845276,
+   "sd_X": 0.08820130457697423,
    "mean_layers_kept": 10.0,
-   "rate_at_T": 0.0,
+   "rate_at_T": 0.091,
    "wilson95": [
-    0.0,
-    0.0019171176005129348
+    0.07916677708241403,
+    0.10440142511480556
    ]
   }
  },
  "sham_geometry": {
-  "fl_sd": 0.015045668247978213,
+  "fl_sd": 0.08820130457697423,
   "recovery_sd": 0.03217914198024527,
-  "ratio": 0.46755964646958975,
+  "ratio": 2.7409464376371777,
   "matched_within_25pct": false,
-  "still_tight": true
+  "still_tight": false
  },
- "verdict": "UNVERIFIED_NULL_STILL_UNMATCHED"
+ "verdict": "INSTRUMENT_NOT_SENSITIVE_1P5B"
 }
