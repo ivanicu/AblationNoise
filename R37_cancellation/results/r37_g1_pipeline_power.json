@@ -1,0 +1,46 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "T": 0.208,
+  "rho_S_target": 0.3,
+  "n_power": 2000,
+  "admissible_iff": "wilson_lo >= 0.80 AND sham <= 0.05",
+  "rho_P_equivalent": 0.31286893008046174
+ },
+ "calibration": {
+  "lam": 3.999999999998181,
+  "noiseless_X": 0.11593777540280717,
+  "target": 0.3
+ },
+ "arms": {
+  "recovery": {
+   "rate": 0.0,
+   "wilson95": [
+    0.0,
+    0.0019171176005129348
+   ],
+   "n": 2000,
+   "mean_X": 0.05297686120956585,
+   "sd_X": 0.04287925151967923
+  },
+  "sham": {
+   "rate": 0.076,
+   "wilson95": [
+    0.06518150350109796,
+    0.08844421222413701
+   ],
+   "n": 2000,
+   "mean_X": 0.1599907104940892,
+   "sd_X": 0.03316221226860945
+  }
+ },
+ "measured_attenuation": 0.45694219183959894,
+ "layer_dependence": {
+  "rho_bar_z": 0.001961627819601592,
+  "L_eff": 9.826516290473549,
+  "se_naive": 0.10540925533894596,
+  "se_corrected": 0.10947926893551833,
+  "ratio": 1.0386115392190671
+ },
+ "verdict": "UNVERIFIED_INSTRUMENT"
+}
