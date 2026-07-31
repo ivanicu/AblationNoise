@@ -1,0 +1,58 @@
+{
+ "seed": 20260730,
+ "registered_rule": {
+  "T_floor": 0.05,
+  "n_boot": 2000,
+  "layers": [
+   0,
+   9
+  ],
+  "unit": "base instance, n=64",
+  "support_for_f": ".final",
+  "floor": "within-head permutation of the 8 position labels (norm-matched by construction, analytic expectation exactly 1/8)"
+ },
+ "scope": "ONE MODEL ONLY \u2014 no 3b crossed scan exists, so the registered \"both models\" clause cannot be evaluated. PARTIAL by construction.",
+ "cells": {
+  "1.5b": {
+   "final": {
+    "n_heads": 120,
+    "mean_f_observed": 0.11517100098896377,
+    "floor_analytic": 0.125,
+    "floor_measured": 0.1250399330343451,
+    "delta_f": -0.009828999011036232,
+    "bca_ci95": [
+     -0.025361734235645944,
+     0.006821903972432526
+    ],
+    "ci_covers_zero": true,
+    "bca_z0": 0.02632263631095264,
+    "bca_accel": -0.0009466901149021443,
+    "resolution_delta_f": 0.00013010183624877382,
+    "T_registered": 0.05,
+    "abs_delta_below_T": true,
+    "boot_sd": 0.008252718728093803
+   },
+   "all": {
+    "n_heads": 120,
+    "mean_f_observed": 0.12174198983913251,
+    "floor_analytic": 0.125,
+    "floor_measured": 0.12538701564142177,
+    "delta_f": -0.0032580101608674916,
+    "bca_ci95": [
+     -0.013816265161450413,
+     0.0065491940651015
+    ],
+    "ci_covers_zero": true,
+    "bca_z0": -0.06396260838426929,
+    "bca_accel": -0.004866134146373944,
+    "resolution_delta_f": 0.0011976275308150813,
+    "T_registered": 0.05,
+    "abs_delta_below_T": true,
+    "boot_sd": 0.005232047858871301
+   },
+   "sign_agrees_across_support": true
+  }
+ },
+ "verdict": "POSITIONAL_LOCALISATION_DEAD_PARTIAL",
+ "partial_because": "registered rule requires BOTH models; only 1.5b has a crossed scan"
+}
