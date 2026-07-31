@@ -5,6 +5,9 @@
   "cross_model",
   "cross_scale",
   "cross_arch",
+  "cross_model_MEASURED",
+  "cross_scale_MEASURED",
+  "cross_arch_MEASURED",
   "multi_seed",
   "multi_support",
   "multi_draw",
@@ -21,6 +24,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "PASS",
@@ -32,6 +38,13 @@
    },
    "n_fail": 0,
    "n_unmeasured": 4,
+   "measured_models": [
+    "1.5b",
+    "1.8b",
+    "3b",
+    "8b"
+   ],
+   "mention_only_scales": [],
    "n_models": 7,
    "models": [
     "1.5b",
@@ -56,6 +69,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "UNMEASURED",
@@ -67,6 +83,13 @@
    },
    "n_fail": 0,
    "n_unmeasured": 5,
+   "measured_models": [
+    "1.5b",
+    "1.8b",
+    "3b",
+    "8b"
+   ],
+   "mention_only_scales": [],
    "n_models": 7,
    "models": [
     "1.5b",
@@ -91,6 +114,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "UNMEASURED",
@@ -102,6 +128,14 @@
    },
    "n_fail": 0,
    "n_unmeasured": 5,
+   "measured_models": [
+    "1.8b",
+    "8b",
+    "phi-3.5-mini",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "mention_only_scales": [],
    "n_models": 5,
    "models": [
     "1.8b",
@@ -124,6 +158,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "PASS",
@@ -135,6 +172,13 @@
    },
    "n_fail": 0,
    "n_unmeasured": 3,
+   "measured_models": [
+    "1.5b",
+    "3b"
+   ],
+   "mention_only_scales": [
+    8.0
+   ],
    "n_models": 5,
    "models": [
     "1.5b",
@@ -157,6 +201,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "PASS",
@@ -168,6 +215,12 @@
    },
    "n_fail": 0,
    "n_unmeasured": 2,
+   "measured_models": [
+    "1.5b",
+    "1.8b",
+    "3b"
+   ],
+   "mention_only_scales": [],
    "n_models": 6,
    "models": [
     "1.5b",
@@ -191,6 +244,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "PASS",
@@ -202,6 +258,12 @@
    },
    "n_fail": 0,
    "n_unmeasured": 3,
+   "measured_models": [
+    "1.5b",
+    "1.8b",
+    "3b"
+   ],
+   "mention_only_scales": [],
    "n_models": 4,
    "models": [
     "1.8b",
@@ -223,6 +285,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "PASS",
@@ -234,6 +299,12 @@
    },
    "n_fail": 0,
    "n_unmeasured": 2,
+   "measured_models": [
+    "1.5b",
+    "1.8b",
+    "3b"
+   ],
+   "mention_only_scales": [],
    "n_models": 4,
    "models": [
     "1.8b",
@@ -255,6 +326,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "PASS",
@@ -266,6 +340,14 @@
    },
    "n_fail": 0,
    "n_unmeasured": 5,
+   "measured_models": [
+    "1.5b",
+    "1.8b",
+    "3b"
+   ],
+   "mention_only_scales": [
+    8.0
+   ],
    "n_models": 7,
    "models": [
     "1.5b",
@@ -290,6 +372,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "PASS",
@@ -301,6 +386,13 @@
    },
    "n_fail": 0,
    "n_unmeasured": 5,
+   "measured_models": [
+    "1.5b",
+    "3b"
+   ],
+   "mention_only_scales": [
+    8.0
+   ],
    "n_models": 6,
    "models": [
     "1.5b",
@@ -324,6 +416,9 @@
     "cross_model": "PASS",
     "cross_scale": "FAIL",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "FAIL",
+    "cross_scale_MEASURED": "FAIL",
+    "cross_arch_MEASURED": "FAIL",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "UNMEASURED",
@@ -333,8 +428,12 @@
     "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
-   "n_fail": 1,
+   "n_fail": 4,
    "n_unmeasured": 4,
+   "measured_models": [
+    "1.5b"
+   ],
+   "mention_only_scales": [],
    "n_models": 2,
    "models": [
     "1.5b",
@@ -347,15 +446,21 @@
    "n_result_json": 5,
    "n_generators": 1,
    "failing_axes": [
-    "cross_scale"
+    "cross_scale",
+    "cross_model_MEASURED",
+    "cross_scale_MEASURED",
+    "cross_arch_MEASURED"
    ],
-   "n_unqualified": 5
+   "n_unqualified": 8
   },
   "R13_task_audit": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "UNMEASURED",
+    "cross_scale_MEASURED": "UNMEASURED",
+    "cross_arch_MEASURED": "UNMEASURED",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "UNMEASURED",
@@ -366,7 +471,13 @@
     "preregistered": "UNMEASURED"
    },
    "n_fail": 0,
-   "n_unmeasured": 8,
+   "n_unmeasured": 11,
+   "measured_models": [],
+   "mention_only_scales": [
+    1.5,
+    1.8,
+    3.0
+   ],
    "n_models": 6,
    "models": [
     "1.5b",
@@ -383,13 +494,16 @@
    "n_result_json": 1,
    "n_generators": 1,
    "failing_axes": [],
-   "n_unqualified": 8
+   "n_unqualified": 11
   },
   "R14_position_vs_binding": {
    "scores": {
     "cross_model": "FAIL",
     "cross_scale": "FAIL",
     "cross_arch": "FAIL",
+    "cross_model_MEASURED": "FAIL",
+    "cross_scale_MEASURED": "FAIL",
+    "cross_arch_MEASURED": "FAIL",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "UNMEASURED",
@@ -399,8 +513,12 @@
     "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
-   "n_fail": 3,
+   "n_fail": 6,
    "n_unmeasured": 5,
+   "measured_models": [
+    "1.5b"
+   ],
+   "mention_only_scales": [],
    "n_models": 1,
    "models": [
     "qwen2.5-1.5b"
@@ -414,15 +532,21 @@
    "failing_axes": [
     "cross_model",
     "cross_scale",
-    "cross_arch"
+    "cross_arch",
+    "cross_model_MEASURED",
+    "cross_scale_MEASURED",
+    "cross_arch_MEASURED"
    ],
-   "n_unqualified": 8
+   "n_unqualified": 11
   },
   "R15_shuffled_scan": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "FAIL",
+    "cross_scale_MEASURED": "FAIL",
+    "cross_arch_MEASURED": "FAIL",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "UNMEASURED",
@@ -432,8 +556,14 @@
     "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
-   "n_fail": 0,
+   "n_fail": 3,
    "n_unmeasured": 4,
+   "measured_models": [
+    "1.5b"
+   ],
+   "mention_only_scales": [
+    8.0
+   ],
    "n_models": 5,
    "models": [
     "1.5b",
@@ -448,14 +578,21 @@
    "max_draws": 0,
    "n_result_json": 1,
    "n_generators": 1,
-   "failing_axes": [],
-   "n_unqualified": 4
+   "failing_axes": [
+    "cross_model_MEASURED",
+    "cross_scale_MEASURED",
+    "cross_arch_MEASURED"
+   ],
+   "n_unqualified": 7
   },
   "R16_selection_vs_effect": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "FAIL",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "UNMEASURED",
@@ -467,6 +604,13 @@
    },
    "n_fail": 1,
    "n_unmeasured": 4,
+   "measured_models": [
+    "1.5b",
+    "3b",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "mention_only_scales": [],
    "n_models": 2,
    "models": [
     "qwen2.5-1.5b",
@@ -488,6 +632,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "UNMEASURED",
@@ -499,6 +646,13 @@
    },
    "n_fail": 0,
    "n_unmeasured": 5,
+   "measured_models": [
+    "1.5b",
+    "3b"
+   ],
+   "mention_only_scales": [
+    8.0
+   ],
    "n_models": 6,
    "models": [
     "1.5b",
@@ -522,6 +676,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "FAIL",
+    "cross_scale_MEASURED": "FAIL",
+    "cross_arch_MEASURED": "FAIL",
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "PASS",
@@ -531,8 +688,14 @@
     "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
-   "n_fail": 0,
+   "n_fail": 3,
    "n_unmeasured": 2,
+   "measured_models": [
+    "1.5b"
+   ],
+   "mention_only_scales": [
+    5822276.0
+   ],
    "n_models": 3,
    "models": [
     "1.5b",
@@ -545,14 +708,21 @@
    "max_draws": 2000,
    "n_result_json": 12,
    "n_generators": 10,
-   "failing_axes": [],
-   "n_unqualified": 2
+   "failing_axes": [
+    "cross_model_MEASURED",
+    "cross_scale_MEASURED",
+    "cross_arch_MEASURED"
+   ],
+   "n_unqualified": 5
   },
   "R20_direct_indirect": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "FAIL",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "FAIL",
+    "cross_scale_MEASURED": "FAIL",
+    "cross_arch_MEASURED": "FAIL",
     "multi_seed": "UNMEASURED",
     "multi_support": "FAIL",
     "multi_draw": "PASS",
@@ -562,8 +732,12 @@
     "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
-   "n_fail": 2,
+   "n_fail": 5,
    "n_unmeasured": 1,
+   "measured_models": [
+    "1.5b"
+   ],
+   "mention_only_scales": [],
    "n_models": 2,
    "models": [
     "1.5b",
@@ -577,15 +751,21 @@
    "n_generators": 2,
    "failing_axes": [
     "cross_scale",
+    "cross_model_MEASURED",
+    "cross_scale_MEASURED",
+    "cross_arch_MEASURED",
     "multi_support"
    ],
-   "n_unqualified": 3
+   "n_unqualified": 6
   },
   "R21_indirect_attribution": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "FAIL",
+    "cross_scale_MEASURED": "FAIL",
+    "cross_arch_MEASURED": "FAIL",
     "multi_seed": "UNMEASURED",
     "multi_support": "FAIL",
     "multi_draw": "UNMEASURED",
@@ -595,8 +775,14 @@
     "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
-   "n_fail": 1,
+   "n_fail": 4,
    "n_unmeasured": 3,
+   "measured_models": [
+    "1.5b"
+   ],
+   "mention_only_scales": [
+    1.0
+   ],
    "n_models": 3,
    "models": [
     "1.5b",
@@ -610,15 +796,21 @@
    "n_result_json": 4,
    "n_generators": 6,
    "failing_axes": [
+    "cross_model_MEASURED",
+    "cross_scale_MEASURED",
+    "cross_arch_MEASURED",
     "multi_support"
    ],
-   "n_unqualified": 4
+   "n_unqualified": 7
   },
   "R22_floor_identification": {
    "scores": {
     "cross_model": "FAIL",
     "cross_scale": "FAIL",
     "cross_arch": "FAIL",
+    "cross_model_MEASURED": "UNMEASURED",
+    "cross_scale_MEASURED": "UNMEASURED",
+    "cross_arch_MEASURED": "UNMEASURED",
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "PASS",
@@ -629,7 +821,11 @@
     "preregistered": "PASS"
    },
    "n_fail": 3,
-   "n_unmeasured": 2,
+   "n_unmeasured": 5,
+   "measured_models": [],
+   "mention_only_scales": [
+    1.5
+   ],
    "n_models": 1,
    "models": [
     "1.5b"
@@ -645,13 +841,16 @@
     "cross_scale",
     "cross_arch"
    ],
-   "n_unqualified": 5
+   "n_unqualified": 8
   },
   "R23_shape": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "FAIL",
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "PASS",
@@ -661,8 +860,13 @@
     "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
-   "n_fail": 0,
+   "n_fail": 1,
    "n_unmeasured": 2,
+   "measured_models": [
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "mention_only_scales": [],
    "n_models": 4,
    "models": [
     "1.5b",
@@ -676,14 +880,19 @@
    "max_draws": 4000,
    "n_result_json": 3,
    "n_generators": 3,
-   "failing_axes": [],
-   "n_unqualified": 2
+   "failing_axes": [
+    "cross_arch_MEASURED"
+   ],
+   "n_unqualified": 3
   },
   "R24_concentration": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "FAIL",
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "PASS",
@@ -693,8 +902,13 @@
     "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
-   "n_fail": 0,
+   "n_fail": 1,
    "n_unmeasured": 2,
+   "measured_models": [
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "mention_only_scales": [],
    "n_models": 4,
    "models": [
     "1.5b",
@@ -708,14 +922,19 @@
    "max_draws": 20000,
    "n_result_json": 5,
    "n_generators": 5,
-   "failing_axes": [],
-   "n_unqualified": 2
+   "failing_axes": [
+    "cross_arch_MEASURED"
+   ],
+   "n_unqualified": 3
   },
   "R25_kv_group": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "FAIL",
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "PASS",
@@ -725,8 +944,13 @@
     "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
-   "n_fail": 0,
+   "n_fail": 1,
    "n_unmeasured": 2,
+   "measured_models": [
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "mention_only_scales": [],
    "n_models": 4,
    "models": [
     "1.5b",
@@ -740,14 +964,19 @@
    "max_draws": 40000,
    "n_result_json": 3,
    "n_generators": 3,
-   "failing_axes": [],
-   "n_unqualified": 2
+   "failing_axes": [
+    "cross_arch_MEASURED"
+   ],
+   "n_unqualified": 3
   },
   "R26_decomposition": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "FAIL",
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "PASS",
@@ -757,8 +986,13 @@
     "data_derived_null": "PASS",
     "preregistered": "PASS"
    },
-   "n_fail": 0,
+   "n_fail": 1,
    "n_unmeasured": 2,
+   "measured_models": [
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "mention_only_scales": [],
    "n_models": 4,
    "models": [
     "1.5b",
@@ -772,14 +1006,19 @@
    "max_draws": 10000,
    "n_result_json": 5,
    "n_generators": 5,
-   "failing_axes": [],
-   "n_unqualified": 2
+   "failing_axes": [
+    "cross_arch_MEASURED"
+   ],
+   "n_unqualified": 3
   },
   "R27_metric_gauge": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "UNMEASURED",
+    "cross_scale_MEASURED": "UNMEASURED",
+    "cross_arch_MEASURED": "UNMEASURED",
     "multi_seed": "UNMEASURED",
     "multi_support": "UNMEASURED",
     "multi_draw": "UNMEASURED",
@@ -790,7 +1029,12 @@
     "preregistered": "UNMEASURED"
    },
    "n_fail": 0,
-   "n_unmeasured": 8,
+   "n_unmeasured": 11,
+   "measured_models": [],
+   "mention_only_scales": [
+    1.5,
+    3.0
+   ],
    "n_models": 4,
    "models": [
     "1.5b",
@@ -805,13 +1049,16 @@
    "n_result_json": 0,
    "n_generators": 1,
    "failing_axes": [],
-   "n_unqualified": 8
+   "n_unqualified": 11
   },
   "R28_kappa": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "FAIL",
+    "cross_scale_MEASURED": "FAIL",
+    "cross_arch_MEASURED": "FAIL",
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "UNMEASURED",
@@ -821,8 +1068,14 @@
     "data_derived_null": "UNMEASURED",
     "preregistered": "PASS"
    },
-   "n_fail": 0,
+   "n_fail": 3,
    "n_unmeasured": 4,
+   "measured_models": [
+    "1.5b"
+   ],
+   "mention_only_scales": [
+    3.0
+   ],
    "n_models": 4,
    "models": [
     "1.5b",
@@ -836,14 +1089,21 @@
    "max_draws": 0,
    "n_result_json": 2,
    "n_generators": 3,
-   "failing_axes": [],
-   "n_unqualified": 4
+   "failing_axes": [
+    "cross_model_MEASURED",
+    "cross_scale_MEASURED",
+    "cross_arch_MEASURED"
+   ],
+   "n_unqualified": 7
   },
   "R29_cancellation": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "PASS",
     "multi_support": "PASS",
     "multi_draw": "PASS",
@@ -855,6 +1115,15 @@
    },
    "n_fail": 0,
    "n_unmeasured": 0,
+   "measured_models": [
+    "1.5b",
+    "3b",
+    "qwen2.5-1.5b",
+    "qwen2.5-3b"
+   ],
+   "mention_only_scales": [
+    1.0
+   ],
    "n_models": 5,
    "models": [
     "1.5b",
@@ -870,7 +1139,7 @@
    ],
    "n_supports": 2,
    "max_draws": 20000,
-   "n_result_json": 13,
+   "n_result_json": 15,
    "n_generators": 8,
    "failing_axes": [],
    "n_unqualified": 0
@@ -880,6 +1149,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "UNMEASURED",
+    "cross_scale_MEASURED": "UNMEASURED",
+    "cross_arch_MEASURED": "UNMEASURED",
     "multi_seed": "PASS",
     "multi_support": "FAIL",
     "multi_draw": "PASS",
@@ -890,7 +1162,12 @@
     "preregistered": "PASS"
    },
    "n_fail": 1,
-   "n_unmeasured": 0,
+   "n_unmeasured": 3,
+   "measured_models": [],
+   "mention_only_scales": [
+    1.5,
+    3.0
+   ],
    "n_models": 4,
    "models": [
     "1.5b",
@@ -910,13 +1187,16 @@
    "failing_axes": [
     "multi_support"
    ],
-   "n_unqualified": 1
+   "n_unqualified": 4
   },
   "R31_private_beyond_group": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "UNMEASURED",
+    "cross_scale_MEASURED": "UNMEASURED",
+    "cross_arch_MEASURED": "UNMEASURED",
     "multi_seed": "UNMEASURED",
     "multi_support": "FAIL",
     "multi_draw": "PASS",
@@ -927,7 +1207,12 @@
     "preregistered": "PASS"
    },
    "n_fail": 1,
-   "n_unmeasured": 2,
+   "n_unmeasured": 5,
+   "measured_models": [],
+   "mention_only_scales": [
+    1.5,
+    3.0
+   ],
    "n_models": 2,
    "models": [
     "1.5b",
@@ -942,13 +1227,16 @@
    "failing_axes": [
     "multi_support"
    ],
-   "n_unqualified": 3
+   "n_unqualified": 6
   },
   "R32_forced_choice": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "UNMEASURED",
+    "cross_scale_MEASURED": "UNMEASURED",
+    "cross_arch_MEASURED": "UNMEASURED",
     "multi_seed": "FAIL",
     "multi_support": "FAIL",
     "multi_draw": "PASS",
@@ -959,7 +1247,12 @@
     "preregistered": "PASS"
    },
    "n_fail": 2,
-   "n_unmeasured": 1,
+   "n_unmeasured": 4,
+   "measured_models": [],
+   "mention_only_scales": [
+    1.5,
+    3.0
+   ],
    "n_models": 2,
    "models": [
     "3b",
@@ -977,13 +1270,16 @@
     "multi_seed",
     "multi_support"
    ],
-   "n_unqualified": 3
+   "n_unqualified": 6
   },
   "R33_residual_direction": {
    "scores": {
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "FAIL",
     "multi_support": "FAIL",
     "multi_draw": "PASS",
@@ -995,6 +1291,11 @@
    },
    "n_fail": 2,
    "n_unmeasured": 0,
+   "measured_models": [
+    "1.5b",
+    "3b"
+   ],
+   "mention_only_scales": [],
    "n_models": 2,
    "models": [
     "1.5b",
@@ -1019,6 +1320,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "FAIL",
     "multi_draw": "PASS",
@@ -1030,6 +1334,11 @@
    },
    "n_fail": 1,
    "n_unmeasured": 1,
+   "measured_models": [
+    "1.5b",
+    "3b"
+   ],
+   "mention_only_scales": [],
    "n_models": 2,
    "models": [
     "1.5b",
@@ -1051,6 +1360,9 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "PASS",
+    "cross_scale_MEASURED": "PASS",
+    "cross_arch_MEASURED": "PASS",
     "multi_seed": "UNMEASURED",
     "multi_support": "PASS",
     "multi_draw": "PASS",
@@ -1062,6 +1374,11 @@
    },
    "n_fail": 0,
    "n_unmeasured": 3,
+   "measured_models": [
+    "1.5b",
+    "3b"
+   ],
+   "mention_only_scales": [],
    "n_models": 2,
    "models": [
     "1.5b",
@@ -1081,10 +1398,13 @@
     "cross_model": "PASS",
     "cross_scale": "PASS",
     "cross_arch": "PASS",
+    "cross_model_MEASURED": "UNMEASURED",
+    "cross_scale_MEASURED": "UNMEASURED",
+    "cross_arch_MEASURED": "UNMEASURED",
     "multi_seed": "UNMEASURED",
-    "multi_support": "UNMEASURED",
-    "multi_draw": "UNMEASURED",
-    "uncertainty": "UNMEASURED",
+    "multi_support": "PASS",
+    "multi_draw": "PASS",
+    "uncertainty": "PASS",
     "null_present": "PASS",
     "positive_control": "PASS",
     "data_derived_null": "PASS",
@@ -1092,6 +1412,15 @@
    },
    "n_fail": 0,
    "n_unmeasured": 4,
+   "measured_models": [],
+   "mention_only_scales": [
+    1.0,
+    1.5,
+    1.8,
+    3.0,
+    8.0,
+    5822276.0
+   ],
    "n_models": 11,
    "models": [
     "1.5b",
@@ -1108,10 +1437,10 @@
    ],
    "n_seeds": 0,
    "seeds": [],
-   "n_supports": 0,
-   "max_draws": 0,
-   "n_result_json": 1,
-   "n_generators": 1,
+   "n_supports": 2,
+   "max_draws": 2000,
+   "n_result_json": 2,
+   "n_generators": 2,
    "failing_axes": [],
    "n_unqualified": 4
   }
@@ -1154,36 +1483,42 @@
  },
  "headline": {
   "rounds": 33,
-  "axes_scored": 11,
+  "axes_scored": 14,
   "axes_in_full_standard": 60,
-  "cells_scored": 363,
+  "cells_scored": 462,
   "cells_in_full_standard": 1980,
-  "demonstrated_PASS": 242,
-  "pct_of_full_standard_demonstrated": 12.22,
-  "demonstrated_by_a_FALSIFIABLE_check": 124,
-  "pct_of_full_standard_falsifiably_demonstrated": 6.26,
+  "demonstrated_PASS": 298,
+  "pct_of_full_standard_demonstrated": 15.05,
+  "demonstrated_by_a_FALSIFIABLE_check": 89,
+  "pct_of_full_standard_falsifiably_demonstrated": 4.49,
   "warning": "the five non-counting axes have no failing world; only the six counting axes can return FAIL. Never quote demonstrated_PASS without this block."
  },
  "redo_order": [
   "R14_position_vs_binding",
   "R13_task_audit",
   "R27_metric_gauge",
-  "R22_floor_identification",
   "R11_instrument_noise",
+  "R22_floor_identification",
+  "R21_indirect_attribution",
+  "R15_shuffled_scan",
+  "R28_kappa",
+  "R20_direct_indirect",
+  "R32_forced_choice",
+  "R31_private_beyond_group",
+  "R19_crossed_position_support",
   "R16_selection_vs_effect",
   "R2_inversion",
   "R4_predictability",
   "R9_depth_profile",
   "R10_exhaustive",
   "R18_all_positions",
-  "R21_indirect_attribution",
+  "R30_response_field",
   "R1_noise_floor",
-  "R15_shuffled_scan",
-  "R28_kappa",
   "R36_campaign",
-  "R20_direct_indirect",
-  "R32_forced_choice",
-  "R31_private_beyond_group",
+  "R23_shape",
+  "R24_concentration",
+  "R25_kv_group",
+  "R26_decomposition",
   "R5_factorial",
   "R7_norm_matched",
   "R35_support",
@@ -1191,12 +1526,6 @@
   "R34_shape",
   "R6_intervention",
   "R8_component",
-  "R19_crossed_position_support",
-  "R23_shape",
-  "R24_concentration",
-  "R25_kv_group",
-  "R26_decomposition",
-  "R30_response_field",
   "R29_cancellation"
  ]
 }

@@ -53,6 +53,15 @@
    "sign_agrees_across_support": true
   }
  },
- "verdict": "POSITIONAL_LOCALISATION_DEAD_PARTIAL",
- "partial_because": "registered rule requires BOTH models; only 1.5b has a crossed scan"
+ "verdict": "UNVERIFIED_INSTRUMENT_UNFIT_AT_THE_TESTED_COORDINATE",
+ "partial_because": "registered rule requires BOTH models; only 1.5b has a crossed scan",
+ "ANNOTATION_2026_07_30_verdict_downgraded": {
+  "from": "POSITIONAL_LOCALISATION_DEAD_PARTIAL",
+  "to": "UNVERIFIED_INSTRUMENT_UNFIT_AT_THE_TESTED_COORDINATE",
+  "why": "position 7 is the ONE coordinate where the test has no discriminating power. baseline_margin_by_pos share at t=7 is 0.1232, my permutation floor is 0.1250, and the measurements are 0.11517 (.final) and 0.12174 (.all). Flat-profile, margin-proportional-profile and no-final-preference are three DIFFERENT worlds lying inside 0.0098 of each other at t=7. Reproduced from the object.",
+  "what_the_null_could_never_see": "permuting the 8 position labels preserves each head profile's MULTISET exactly, so every dispersion statistic is invariant under it. Measured participation ratio of the .final profiles: mean 5.812 of 8, range [1.528, 7.869] -- profiles are strongly non-flat and strongly heterogeneous, which is precisely what R35's generator requires. Delta f_h = 0 killed FINAL-TOKEN PREFERENCE and never touched NON-FLAT PROFILE.",
+  "pairing_defect": "R35's X is a BETWEEN-head within-layer reordering; mean_h f_h - 1/8 discards the head-level pairing entirely, so the test cannot fail in the informative direction.",
+  "spec_robustness_struck": "the .final/.all sign agreement is hollow -- both arms are pinned near 0.123 by the same baseline-margin confound. WITHDRAWN as evidence.",
+  "resolution_line_struck": "the sem-propagated 0.00013 is not a resolution of Delta f_h at all; it is the resolution of a different estimand. The base-instance bootstrap sd 0.00825 IS the resolution."
+ }
 }

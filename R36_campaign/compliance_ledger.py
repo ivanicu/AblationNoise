@@ -115,6 +115,45 @@ KEYPAT = {
 }
 
 
+# ⚠⚠ THIRD CORRECTION. cross_model / cross_scale / cross_arch were MENTION detectors: a PASS meant
+# two model tags APPEARED somewhere in the round's artifacts, which is necessary and nowhere near
+# sufficient for a cross-model claim. I flagged that limit in the first commit and then left the
+# number standing at 31/29/30, which is the same error as scoring prose -- a proxy read in the
+# unsound direction. The measurement-grade version below is added ALONGSIDE, never silently
+# replacing it, so the GAP between "mentions two models" and "MEASURES two models" is itself a
+# reported quantity.
+#
+# A round MEASURES >=2 models iff either:
+#   (a) >=2 distinct model tags appear in its result FILENAMES, or
+#   (b) some result JSON has a dict whose KEYS include >=2 distinct model tags
+# Both are structural. Prose can satisfy neither.
+
+
+def measured_models(d, tagpat):
+    """Distinct model tags a round actually keys its RESULTS by. Structure only, never prose."""
+    from_files, from_keys = set(), set()
+    for p in sorted(d.rglob('*.json')):
+        if 'archive' in p.parts:
+            continue
+        for m in tagpat.finditer(p.name):
+            from_files.add(m.group(1).lower())
+        try:
+            obj = json.loads(p.read_text(errors='ignore'))
+        except (OSError, ValueError):
+            continue
+        stack = [obj]
+        while stack:
+            o = stack.pop()
+            if isinstance(o, dict):
+                hits = {m.group(1).lower() for k in o for m in [tagpat.search(k)] if m}
+                if len(hits) >= 2:
+                    from_keys |= hits
+                stack.extend(o.values())
+            elif isinstance(o, list):
+                stack.extend(o[:200])
+    return from_files, from_keys
+
+
 def walk_keys(o, acc):
     """Every KEY in the parsed JSON, at any depth. Values are never inspected."""
     if isinstance(o, dict):
@@ -157,7 +196,19 @@ def scan_round(d):
     prereg_md = any((d / n).exists() for n in
                     ('PREREGISTRATION.md', 'AMENDMENT_1.md')) or \
         any(p.name.startswith(('PREREG', 'AMEND')) for p in d.glob('*.md'))
+    mf, mk = measured_models(d, PAT['model_tag'])
+    meas = mf | mk
+    mscales = set()
+    for t in meas:
+        m2 = SCALE.search(t)
+        if m2:
+            mscales.add(float(m2.group(1)))
+    mfams = {next((v for k, v in FAMILY.items() if t.startswith(k)), t.split('-')[0])
+             for t in meas}
     return {'n_json': len(files), 'n_gen': len(gens), 'keys': keys, 'tags': sorted(tags),
+            'measured_models': sorted(meas), 'measured_from_filenames': sorted(mf),
+            'measured_from_json_keys': sorted(mk), 'measured_scales': sorted(mscales),
+            'measured_families': sorted(mfams),
             'families': sorted(fams), 'scales': sorted(scales), 'seeds': sorted(seeds),
             'supports': sorted(sups), 'max_draws': max(draws) if draws else 0,
             'blob': blob, 'src': src, 'prereg_md': prereg_md}
@@ -168,6 +219,12 @@ def score(ev):
     s['cross_model'] = 'PASS' if len(ev['tags']) >= 2 else ('FAIL' if ev['tags'] else 'UNMEASURED')
     s['cross_scale'] = 'PASS' if len(ev['scales']) >= 2 else ('FAIL' if ev['scales'] else 'UNMEASURED')
     s['cross_arch'] = 'PASS' if len(ev['families']) >= 2 else ('FAIL' if ev['families'] else 'UNMEASURED')
+    s['cross_model_MEASURED'] = ('PASS' if len(ev['measured_models']) >= 2
+                                 else ('FAIL' if ev['measured_models'] else 'UNMEASURED'))
+    s['cross_scale_MEASURED'] = ('PASS' if len(ev['measured_scales']) >= 2
+                                 else ('FAIL' if ev['measured_scales'] else 'UNMEASURED'))
+    s['cross_arch_MEASURED'] = ('PASS' if len(ev['measured_families']) >= 2
+                                else ('FAIL' if ev['measured_families'] else 'UNMEASURED'))
     s['multi_seed'] = 'PASS' if len(ev['seeds']) >= 2 else ('FAIL' if ev['seeds'] else 'UNMEASURED')
     s['multi_support'] = 'PASS' if len(ev['supports']) >= 2 else ('FAIL' if ev['supports'] else 'UNMEASURED')
     s['multi_draw'] = ('PASS' if ev['max_draws'] >= 30
@@ -183,7 +240,9 @@ def score(ev):
 def main():
     rounds = sorted([p for p in REPO.glob('R*') if p.is_dir() and re.match(r'R\d+', p.name)],
                     key=lambda p: int(re.match(r'R(\d+)', p.name).group(1)))
-    axes = ['cross_model', 'cross_scale', 'cross_arch', 'multi_seed', 'multi_support',
+    axes = ['cross_model', 'cross_scale', 'cross_arch',
+            'cross_model_MEASURED', 'cross_scale_MEASURED', 'cross_arch_MEASURED',
+            'multi_seed', 'multi_support',
             'multi_draw', 'uncertainty', 'null_present', 'positive_control',
             'data_derived_null', 'preregistered']
     out = {'standard': 'Ivan 2026-07-30: publication-grade, full-scale, multi-seed, cross-model, '
@@ -204,6 +263,15 @@ def main():
         nu = sum(1 for v in s.values() if v == 'UNMEASURED')
         fails = [k for k, v in s.items() if v == 'FAIL']
         rows[d.name] = {'scores': s, 'n_fail': nf, 'n_unmeasured': nu,
+                        'measured_models': ev['measured_models'],
+                        # compare on SCALE, not on the raw string: the mention set carries full
+                        # tags ('qwen2.5-1.5b') while the measured set is often keyed by the bare
+                        # scale ('1.5b'), and differencing the raw strings invents a gap that is
+                        # pure tag normalisation. Scale is the common denominator both carry.
+                        'mention_only_scales': sorted(
+                            {float(m.group(1)) for t in ev['tags']
+                             for m in [SCALE.search(t)] if m}
+                            - set(ev['measured_scales'])),
                         'n_models': len(ev['tags']), 'models': ev['tags'],
                         'n_seeds': len(ev['seeds']), 'seeds': ev['seeds'],
                         'n_supports': len(ev['supports']), 'max_draws': ev['max_draws'],
@@ -253,8 +321,8 @@ def main():
 
     # ── the denominator that stops '223 PASS' being quoted as compliance ──
     n_pass = sum(1 for k in rows for a in axes if rows[k]['scores'][a] == 'PASS')
-    falsifiable = ('cross_model', 'cross_scale', 'cross_arch', 'multi_seed', 'multi_support',
-                   'multi_draw')
+    falsifiable = ('cross_model_MEASURED', 'cross_scale_MEASURED', 'cross_arch_MEASURED',
+                   'multi_seed', 'multi_support', 'multi_draw')
     n_fals_pass = sum(1 for k in rows for a in falsifiable if rows[k]['scores'][a] == 'PASS')
     full = len(rows) * 60
     out['headline'] = {
