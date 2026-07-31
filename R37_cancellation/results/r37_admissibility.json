@@ -1,0 +1,135 @@
+{
+ "seed": 20260730,
+ "question": "can the registered test admit a kill at n = 12 heads x 10 layers, at T = 0.208 and rho = 0.30?",
+ "per_layer": {
+  "0": {
+   "r_ss_all": 0.6947552447552447,
+   "r_ss_final": 0.9815384615384616,
+   "sign_agree": 0.8723958333333335,
+   "n_heads": 12
+  },
+  "1": {
+   "r_ss_all": 0.9502797202797203,
+   "r_ss_final": 0.9859790209790211,
+   "sign_agree": 0.9331770833333334,
+   "n_heads": 12
+  },
+  "2": {
+   "r_ss_all": 0.9103146853146853,
+   "r_ss_final": 0.9865734265734267,
+   "sign_agree": 0.931875,
+   "n_heads": 12
+  },
+  "3": {
+   "r_ss_all": 0.908986013986014,
+   "r_ss_final": 0.9853496503496504,
+   "sign_agree": 0.92953125,
+   "n_heads": 12
+  },
+  "4": {
+   "r_ss_all": 0.8983566433566433,
+   "r_ss_final": 0.9798951048951048,
+   "sign_agree": 0.9438541666666667,
+   "n_heads": 12
+  },
+  "5": {
+   "r_ss_all": 0.8924475524475524,
+   "r_ss_final": 0.97006993006993,
+   "sign_agree": 0.8215625,
+   "n_heads": 12
+  },
+  "6": {
+   "r_ss_all": 0.791083916083916,
+   "r_ss_final": 0.991818181818182,
+   "sign_agree": 0.871875,
+   "n_heads": 12
+  },
+  "7": {
+   "r_ss_all": 0.8505594405594405,
+   "r_ss_final": 0.8220979020979021,
+   "sign_agree": 0.8266145833333333,
+   "n_heads": 12
+  },
+  "8": {
+   "r_ss_all": 0.9307342657342655,
+   "r_ss_final": 0.9311188811188811,
+   "sign_agree": 0.8471875,
+   "n_heads": 12
+  },
+  "9": {
+   "r_ss_all": 0.8916433566433567,
+   "r_ss_final": 0.9848951048951049,
+   "sign_agree": 0.96296875,
+   "n_heads": 12
+  }
+ },
+ "pooled_r_ss_all": 0.8719160839160839,
+ "pooled_sign_agreement": 0.8941041666666667,
+ "layers_below_0p60_dropped": [],
+ "power_1p5b_layers0_9": {
+  "T0.15_rho0.2": {
+   "power": 0.6401607093922935,
+   "se": 0.10540925533894596,
+   "attenuated_rho": 0.18675289383740046
+  },
+  "T0.15_rho0.3": {
+   "power": 0.9026292003553607,
+   "se": 0.10540925533894596,
+   "attenuated_rho": 0.28012934075610063
+  },
+  "T0.15_rho0.4": {
+   "power": 0.988979290438611,
+   "se": 0.10540925533894596,
+   "attenuated_rho": 0.3735057876748009
+  },
+  "T0.208_rho0.2": {
+   "power": 0.4169321119407553,
+   "se": 0.10540925533894596,
+   "attenuated_rho": 0.18675289383740046
+  },
+  "T0.208_rho0.3": {
+   "power": 0.7667062454021529,
+   "se": 0.10540925533894596,
+   "attenuated_rho": 0.28012934075610063
+  },
+  "T0.208_rho0.4": {
+   "power": 0.9573761113829287,
+   "se": 0.10540925533894596,
+   "attenuated_rho": 0.3735057876748009
+  },
+  "T0.25_rho0.2": {
+   "power": 0.2642405858782628,
+   "se": 0.10540925533894596,
+   "attenuated_rho": 0.18675289383740046
+  },
+  "T0.25_rho0.3": {
+   "power": 0.620755100888891,
+   "se": 0.10540925533894596,
+   "attenuated_rho": 0.28012934075610063
+  },
+  "T0.25_rho0.4": {
+   "power": 0.9032746810392087,
+   "se": 0.10540925533894596,
+   "attenuated_rho": 0.3735057876748009
+  }
+ },
+ "admissible_geometries": {
+  "1.5b layers 0-9 (as registered)": {
+   "power": 0.7667062454021529,
+   "se": 0.10540925533894596
+  },
+  "3b   layers 0-9 (16 heads/layer, needs job 495)": {
+   "power": 0.8092125869509085,
+   "se": 0.08770580193070292
+  },
+  "1.5b + 3b layers 0-9 pooled": {
+   "power": 0.8724969901775739,
+   "se": 0.06741998624632421
+  },
+  "1.5b all 28 layers (MIXES REGIMES \u2014 not the question)": {
+   "power": 0.8884351815619134,
+   "se": 0.0629940788348712
+  }
+ },
+ "conclusion": "at T = 0.208 the registered 1.5b-only geometry has power 0.767 at rho = 0.30, below the 0.80 bar. The test is NOT admissible as registered on one model."
+}
